@@ -16,8 +16,8 @@ else
 fi
 
 cp "Release/lib$ProjName.$ProjVersion.dylib" "$ProjName/lib$ProjName.$ProjVersion.dylib"
-cp "api/can_defs.h" "$ProjName/inc/can_defs.h"
-cp "api/can_api.h" "$ProjName/inc/can_api.h"
+cp "../api/can_defs.h" "$ProjName/inc/can_defs.h"
+cp "../api/can_api.h" "$ProjName/inc/can_api.h"
 cp "install.sh" "$ProjName/install.sh"
 cp "COPYRIGHT" "$ProjName/COPYRIGHT"
 cp "LICENSE" "$ProjName/LICENSE"

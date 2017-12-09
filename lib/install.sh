@@ -1,6 +1,6 @@
 #!/bin/sh
 
-ProjName=UVCAN300
+ProjName=UVCANPCB
 ProjVersion=0.1.rc1
 BaseDir=$(dirname $0)
 InstallDir=/usr/local/lib
