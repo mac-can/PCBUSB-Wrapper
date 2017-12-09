@@ -20,7 +20,7 @@
  *
  *  -----------  description  --------------------------------------------
  */
-/** @file        can_api.h
+/** @file        can_defs.h
  *
  *  @brief       CAN API V3 for PEAK PCAN-Basic Interfaces - Defines
  *
@@ -35,6 +35,7 @@
  *  @defgroup    can_defs Options and Definitions
  *  @{
  */
+
 #ifndef __CAN_DEFS_H
 #define __CAN_DEFS_H
 

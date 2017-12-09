@@ -1,0 +1,24 @@
+CAN API V3 for PCAN-USB Interfaces (macOS, x86_64)
+
+Copyright (C) 2013-2017 by UV Software, Berlin
+
+
+Deployment of libUVCANPCB
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1) Check the working copy of '.../CAN/DRV/Library' for modifications and commit them, if any
+2) Update the version information and commit them:
+   - set the version number (variable __version__) in file '.../CAN/DRV/Library/api/can_api.c'
+   - set the version number (variable ProgVersion) in file '.../CAN/DRV/Library/lib/install.sh'
+   - set the build variable ${LibVersion} for all configurations in the Eclipse environment
+3) Update the Change-Log in file '.../CAN/DRV/Library/lib/README' and commit the change(s)
+4) Build the Release configuration to create artifact tarball 'CAN_API_V3_for_PCBUSB_on_macOS_vX.Y.tar.gz'
+5) Verify the PCBUSB library by installation using the 'install.sh' script and running a client app
+6) Update the doxygen documentation (at least the version number) and commit the Doxyfile if changed
+7) Make a SVN tag in the repository with name 'version_X.Y' and commit comment "Tag of version X.Y"
+8) Make a local folder and copy the artifact (tarball) and readme into this folder
+9) Add the local artifact folder into the SVN tags folder with name 'release_X.Y'
+10) Create a MD5 check-sum file for the artifact (tarball) with name 'CAN_API_V3_for_PCBUSB_on_macOS_vX.Y.tar.gz.md5'
+11) Copy the artifact and readme to 'www.uv-software.com/files/pub/utilities/MacCAN/DRV/Library'
+12) Update download and release information on the 'www.mac-can.com' website
+13) Post news on Facebook, Twitter and Google+
