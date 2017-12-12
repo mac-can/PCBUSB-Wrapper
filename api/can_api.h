@@ -2,7 +2,7 @@
  *
  *  project   :  CAN - Controller Area Network
  *
- *  purpose   :  CAN Interface API, Version 3 (PCAN-Basic)
+ *  purpose   :  CAN Interface API, Version 3 (PCAN-USB)
  *
  *  copyright :  (C) 2010,2012 by UV Software, Friedrichshafen
  *               (C) 2013-2017 by UV Software, Berlin
@@ -35,9 +35,9 @@
  */
 /** @file        can_api.h
  *
- *  @brief       CAN API V3 for PEAK PCAN-Basic Interfaces - API
+ *  @brief       CAN API V3 for PEAK PCAN-USB Interfaces - API
  *
- *               For PEAK PCAN-Basic Interfaces (libPCBUSB v0.8):
+ *               For PEAK PCAN-USB Interfaces (libPCBUSB v0.8):
  *               - PCAN-USB Interface (channel 1 - 8)
  *               - PCAN-USB FD Interface (channel 1 - 8)
  *  @note        Up to 8 handles are supported by the API.
@@ -142,7 +142,7 @@ extern "C" {
 #define CANERR_BAUDRATE             -91 /**< USR - illegal baudrate */
 #define CANERR_HANDLE               -92 /**< USR - illegal handle */
 #define CANERR_ILLPARA              -93 /**< USR - illegal parameter */
-#define CANERR_NULLPTR              -94 /**< USR - null-pointer assignement */
+#define CANERR_NULLPTR              -94 /**< USR - null-pointer assignment */
 #define CANERR_NOTINIT              -95 /**< USR - not initialized */
 #define CANERR_YETINIT              -96 /**< USR - already initialized */
 #define CANERR_NOTSUPP              -98 /**< USR - not supported */
@@ -223,7 +223,7 @@ typedef union _can_bitrate_t
             unsigned short brp;         /**<     bit-rate prescaler */
             unsigned short tseg1;       /**<     TSEG1 segment */
             unsigned short tseg2;       /**<     TSEG2 segment */
-            unsigned short sjw;         /**<     synchonization jump width */
+            unsigned short sjw;         /**<     synchronization jump width */
             unsigned char  sam;         /**<     number of samples (SJA1000) */
         }   nominal;                    /**<   nominal bus speed */
 #ifndef CAN_20_ONLY
@@ -231,7 +231,7 @@ typedef union _can_bitrate_t
             unsigned short brp;         /**<     bit-rate prescaler */
             unsigned short tseg1;       /**<     TSEG1 segment */
             unsigned short tseg2;       /**<     TSEG2 segment */
-            unsigned short sjw;         /**<     synchonization jump width */
+            unsigned short sjw;         /**<     synchronization jump width */
         }   data;                       /**<   data bus speed */
 #endif
     }   btr;                            /**< bit-timing register */
@@ -334,7 +334,7 @@ CANAPI int can_start(int handle, const can_bitrate_t *bitrate);
 CANAPI int can_reset(int handle);
 
 
-/** @brief       transmitts a message over the CAN bus. The CAN interface must be 
+/** @brief       transmits a message over the CAN bus. The CAN interface must be
  *               in operation status 'running'.
  *
  *  @param[in]   handle  - handle of the CAN interface.

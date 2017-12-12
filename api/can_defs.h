@@ -2,7 +2,7 @@
  *
  *  project   :  CAN - Controller Area Network
  *
- *  purpose   :  CAN Interface API, Version 3 (PCAN-Basic)
+ *  purpose   :  CAN Interface API, Version 3 (libPCBUSB)
  *
  *  copyright :  (C) 2010,2012 UV Software, Friedrichshafen
  *               (C) 2014,2017 UV Software, Berlin
@@ -22,9 +22,9 @@
  */
 /** @file        can_defs.h
  *
- *  @brief       CAN API V3 for PEAK PCAN-Basic Interfaces - Defines
+ *  @brief       CAN API V3 for PEAK PCAN-USB Interfaces - Defines
  *
- *               For PEAK PCAN-Basic Interfaces (libPCBUSB v0.8):
+ *               For PEAK PCAN-USB Interfaces (libPCBUSB v0.8):
  *               - PCAN-USB Interface (channel 1 - 8)
  *               - PCAN-USB FD Interface (channel 1 - 8)
  *

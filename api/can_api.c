@@ -2,7 +2,7 @@
  *
  *  project   :  CAN - Controller Area Network
  *
- *  purpose   :  CAN Interface API, Version 3 (PCAN-Basic)
+ *  purpose   :  CAN Interface API, Version 3 (PCAN-USB)
  *
  *  copyright :  (C) 2010,2012 by UV Software, Friedrichshafen
  *               (C) 2013-2017 by UV Software, Berlin
@@ -22,7 +22,7 @@
  */
 /** @file        can_api.h
  *
- *  @brief       CAN API V3 for PEAK PCAN-Basic Interfaces - API
+ *  @brief       CAN API V3 for PEAK PCAN-USB Interfaces - API
  *
  *  @author      $Author$
  *
@@ -32,11 +32,11 @@
  *  @{
  */
 
-#define VERSION "0.1.dev"
+#define VERSION "0.1.rc1s"
 #ifdef _DEBUG
-static char _id[] = "CAN API V3 for PEAK PCAN-Basic Interfaces, Version "VERSION" _DEBUG";
+static char _id[] = "CAN API V3 for PEAK PCAN-USB Interfaces, Version "VERSION" _DEBUG";
 #else
-static char _id[] = "CAN API V3 for PEAK PCAN-Basic Interfaces, Version "VERSION;
+static char _id[] = "CAN API V3 for PEAK PCAN-USB Interfaces, Version "VERSION;
 #endif
 
 /*  -----------  includes  -------------------------------------------------
@@ -461,7 +461,7 @@ int can_read(int handle, can_msg_t *msg, unsigned short timeout)
     if(can[handle].status.b.can_stopped)// must be running!
         return CANERR_OFFLINE;
 
-    // blokking read
+    // blocking read
     fd_set rdfs;
     FD_ZERO(&rdfs);
     FD_SET(can[handle].fdes, &rdfs);
@@ -682,6 +682,7 @@ static int pcan_error(TPCANStatus status)
     if((status & PCAN_ERROR_ILLHANDLE)    == PCAN_ERROR_ILLHW)          return PCAN_ERR_ILLHW;
     if((status & PCAN_ERROR_RESOURCE)     == PCAN_ERROR_RESOURCE)       return PCAN_ERR_RESOURCE;
     if((status & PCAN_ERROR_ILLPARAMTYPE) == PCAN_ERROR_ILLPARAMTYPE)   return PCAN_ERR_ILLPARAMTYPE;
+    if((status & PCAN_ERROR_ILLPARAMVAL)  == PCAN_ERROR_ILLPARAMVAL)    return PCAN_ERR_ILLPARAMVAL;
     if((status & PCAN_ERROR_ILLDATA)      == PCAN_ERROR_ILLDATA)        return PCAN_ERR_ILLDATA;
     if((status & PCAN_ERROR_ILLOPERATION) == PCAN_ERROR_ILLOPERATION)   return PCAN_ERR_ILLOPERATION;
     if((status & PCAN_ERROR_CAUTION)      == PCAN_ERROR_CAUTION)        return PCAN_ERR_CAUTION;
