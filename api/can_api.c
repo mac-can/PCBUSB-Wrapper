@@ -32,7 +32,7 @@
  *  @{
  */
 
-#define VERSION "0.1.rc1s"
+#define VERSION "0.1.rc1"
 #ifdef _DEBUG
 static char _id[] = "CAN API V3 for PEAK PCAN-USB Interfaces, Version "VERSION" _DEBUG";
 #else
