@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<depman version="1.0">
+    <project name="pcb_test"
+             path="." />
+    <dependencies>
+        <item name="bitrates (header)"
+              target="bitrates.h"
+              source="/Users/neptune/Projects/git/CAN/DRV/API/misc/bitrates.h"
+              version="file:2017-12-12T14:41" />
+        <item name="bitrates (c-file)"
+              target="bitrates.c"
+              source="/Users/neptune/Projects/git/CAN/DRV/API/misc/bitrates.c"
+              version="file:2017-12-12T14:41" />
+    </dependencies>
+</depman>
