@@ -5,9 +5,9 @@
  *  purpose   :  CAN Interface API, Version 3 (PCAN-USB)
  *
  *  copyright :  (C) 2010,2012 by UV Software, Friedrichshafen
- *               (C) 2013-2017 by UV Software, Berlin
+ *               (C) 2013-2019 by UV Software, Berlin
  *
- *  compiler  :  Apple LLVM version 9.0.0 (clang-900.0.38)
+ *  compiler  :  Apple LLVM version 10.0.0 (clang-1000.11.45.5)
  *
  *  export    :  int can_test(int board, unsigned char mode, const void *param, int *result);
  *               int can_init(int board, unsigned char mode, const void *param);
@@ -268,7 +268,7 @@ CANAPI can_board_t can_board[];     /**< list of CAN interface boards */
  */
 
 /** @brief       tests if the CAN interface (hardware and driver) given by
- *               the arguments s 'library' and 'board' is present.
+ *               the argument 'board' is present.
  *
  *  @param[in]   board   - type of the CAN interface board.
  *  @param[in]   mode    - operation mode to be checked.

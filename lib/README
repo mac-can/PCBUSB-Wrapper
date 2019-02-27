@@ -1,6 +1,6 @@
 CAN API V3 for PCAN-USB Interfaces (macOS, x86_64)
 
-Copyright (C) 2013-2017 by UV Software, Berlin
+Copyright (C) 2013-2019 by UV Software, Berlin
 
 
 CAN API V3
@@ -17,7 +17,7 @@ Mac and macOS are trademarks of Apple Inc., registered in the U.S. and other cou
 This software is freeware without any warranty or support!
 
 Change-Log:
-- Version 0.1 of 12/dd/2017:
+- Version 0.1 of mm/dd/2019:
   Initial revision
 
 Limitations:

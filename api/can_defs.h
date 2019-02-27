@@ -5,9 +5,9 @@
  *  purpose   :  CAN Interface API, Version 3 (libPCBUSB)
  *
  *  copyright :  (C) 2010,2012 UV Software, Friedrichshafen
- *               (C) 2014,2017 UV Software, Berlin
+ *               (C) 2014,2017-2019 UV Software, Berlin
  *
- *  compiler  :  Apple LLVM version 9.0.0 (clang-900.0.38)
+ *  compiler  :  Apple LLVM version 10.0.0 (clang-1000.11.45.5)
  *
  *  export    :  (see below)
  *
@@ -24,7 +24,7 @@
  *
  *  @brief       CAN API V3 for PEAK PCAN-USB Interfaces - Defines
  *
- *               For PEAK PCAN-USB Interfaces (libPCBUSB v0.8):
+ *               For PEAK PCAN-USB Interfaces (libPCBUSB.dylib):
  *               - PCAN-USB Interface (channel 1 - 8)
  *               - PCAN-USB FD Interface (channel 1 - 8)
  *
@@ -94,7 +94,7 @@ extern "C" {
  #define PCAN_ERR_OFFSET           -200 //   offset for PCANBasic-specific errors
  #define PCAN_ERR_UNKNOWN          -299 //   unknown error
 
- #define PCAN_LIB_ID                200 //   library ID (CAN/COP API V1 compatible) 
+ #define PCAN_LIB_ID                400 //   library ID (CAN/COP API V1 compatible)
  #define PCAN_LIB_BASIC            "libPCBUSB.dylib"
 
  struct _pcan_param                     //   installation parameter:
