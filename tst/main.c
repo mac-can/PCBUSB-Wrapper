@@ -6,7 +6,7 @@
  *
  *  copyright :  (C) 2012-2017 by UV Software, Berlin
  *
- *  compiler  :  Apple LLVM version 9.0.0 (clang-900.0.38)
+ *  compiler  :  Apple LLVM version 10.0.0 (clang-1000.11.45.5)
  *
  *  syntax    :  <program> [<option>...] <file>...
  *               Options:
@@ -15,7 +15,7 @@
  *
  *  libraries :  (none)
  *
- *  includes  :  can_api.h (can_defs.h), bitrates.h
+ *  includes  :  can_api.h (can_defs.h), bitrates.h, printmsg.h
  *
  *  author    :  Uwe Vogt, UV Software
  *
@@ -27,12 +27,17 @@
  *  <description>
  */
 
-//static const char* __copyright__ = "Copyright (C) 2012-2017 by UV Software, Berlin";
+//static const char* __copyright__ = "Copyright (C) 2005-2019 by UV Software, Berlin";
 //static const char* __version__   = "0.x";
 //static const char* __revision__  = "$Rev$";
 
+
 /*  -----------  includes  -----------------------------------------------
  */
+
+#include "can_api.h"
+#include "bitrates.h"
+//#include "printmsg.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,14 +45,9 @@
 #include <signal.h>
 #include <errno.h>
 #ifndef _WIN32
+#include <unistd.h>
+#include <time.h>
 #include <stdint.h>
-//#include <libgen.h>
-//#include <getopt.h>
-//#include <pthread.h>
-//#include <dlfcn.h>
-//#include <time.h>
-//#include <sys/time.h>
-//#include <assert.h>
 #define BYTE uint8_t
 #define WORD uint16_t
 #define DWORD uint32_t
@@ -58,9 +58,6 @@
 #define QWORD unsigned long long
 #endif
 #endif
-#include "can_api.h"                    // CAN API V3 Interface
-#include "bitrates.h"                   // Bit-rate conversion
-
 
 /*  -----------  options  ------------------------------------------------
  */
@@ -77,11 +74,15 @@
 #define PROMPT_OVERRUN      (1)
 #define PROMPT_ISSUE198     (2)
 
-#define TIME_IO_POLLING     (3)
+#define TIME_IO_POLLING     (0)
 #define TIME_IO_BLOCKING    (65535)
 
 #define OPTION_MODE_CAN_20  (0)
 #define OPTION_MODE_CAN_FD  (1)
+
+#define OPTION_TIME_ZERO    (0)
+#define OPTION_TIME_ABS     (1)
+#define OPTION_TIME_REL     (2)
 
 #define OPTION_IO_POLLING   (0)
 #define OPTION_IO_BLOCKING  (1)
@@ -109,17 +110,16 @@
 #define BR_CiA_1M5M         "f_clock_mhz=80,nom_brp=2,nom_tseg1=31,nom_tseg2=8,nom_sjw=8,data_brp=2,data_tseg1=5,data_tseg2=2,data_sjw=2"
 
 
-
- /*  -----------  types  --------------------------------------------------
+/*  -----------  types  --------------------------------------------------
  */
 
 
- /*  -----------  prototypes  ---------------------------------------------
+/*  -----------  prototypes  ---------------------------------------------
  */
 
-static int transmit(int handle, int frames);
+static int transmit(int handle, int frames, DWORD delay);
 static int receive(int handle);
-static int transmit_fd(int handle, int frames);
+static int transmit_fd(int handle, int frames, DWORD delay);
 static int receive_fd(int handle);
 static int convert(const char *string, can_bitrate_t *bitrate);
 static void verbose(BYTE op_mode, const can_bitrate_t *bitrate);
@@ -134,6 +134,7 @@ static void sigterm(int signo);
  */
 
 static int option_io = OPTION_IO_BLOCKING;
+static int option_time = OPTION_TIME_ZERO;
 static int option_test = OPTION_NO;
 static int option_info = OPTION_NO;
 static int option_stat = OPTION_NO;
@@ -151,7 +152,7 @@ static int option_brs = OPTION_NO;
 #if (STOP_FRAMES != 0)
 static int stop_frames = 0;
 #endif
-static const BYTE dtab[16] = {0,1,2,3,4,5,6,7,8,12,16,20,24,32,48,64};
+static const BYTE dtab[16] = { 0,1,2,3,4,5,6,7,8,12,16,20,24,32,48,64 };
 
 static int running = 1;
 
@@ -169,16 +170,15 @@ int main(int argc, char *argv[])
  * result   : 0    - no error occurred.
  */
 {
-    int rc = -1;
     int handle = -1;
+    int rc = -1;
+    int opt, i;
 
     int channel = PCAN_USB1;
     BYTE op_mode = CANMODE_DEFAULT;
+    DWORD delay = 0;
     can_bitrate_t bitrate = {-CANBDR_250};
     char *device, *firmware, *software;
-
-
-    int opt, i;
 
     //struct option long_options[] = {
     //  {"help", no_argument, 0, 'h'},
@@ -242,12 +242,18 @@ int main(int argc, char *argv[])
         if(!strcmp(argv[i], "CHECK")) option_check = OPTION_YES;
         /* echo ON/OFF */
         if(!strcmp(argv[i], "SILENT")) option_echo = OPTION_NO;
+        /* time-stamps */
+        if(!strcmp(argv[i], "ZERO")) option_time = OPTION_TIME_ZERO;
+        if(!strcmp(argv[i], "ABS") || !strcmp(argv[i], "ABSOLUTE")) option_time = OPTION_TIME_ABS;
+        if(!strcmp(argv[i], "REL") || !strcmp(argv[i], "RELATIVE")) option_time = OPTION_TIME_REL;
 #if (0)
         /* logging and debugging */
         if(!strcmp(argv[i], "TRACE")) option_trace = OPTION_YES;
         if(!strcmp(argv[i], "LOG")) option_log = OPTION_YES;
 #endif
         /* transmit messages */
+        if(!strncmp(argv[i], "C:", 2) && sscanf(argv[i], "C:%i", &opt) == 1) delay = (DWORD)opt * 1000;
+        if(!strncmp(argv[i], "U:", 2) && sscanf(argv[i], "U:%i", &opt) == 1) delay = (DWORD)opt;
         if(sscanf(argv[i], "%i", &opt) == 1 && opt > 0) option_transmit = opt;
         /* CAN FD operation */
         if(!strcmp(argv[i], "CANFD") || !strcmp(argv[i], "FD")) { option_mode = OPTION_MODE_CAN_FD; op_mode = CANMODE_FDOE; }
@@ -296,11 +302,11 @@ int main(int argc, char *argv[])
     /* transmit messages */
     if(option_transmit > 0) {
         if(option_mode == OPTION_MODE_CAN_20) {
-            if(transmit(handle, option_transmit) < 0)
+            if(transmit(handle, option_transmit, delay) < 0)
                 goto end;
         }
         else {
-            if(transmit_fd(handle, option_transmit) < 0)
+            if(transmit_fd(handle, option_transmit, delay) < 0)
                 goto end;
         }
     }
@@ -327,7 +333,7 @@ end:
     return 0;
 }
 
-static int transmit(int handle, int frames)
+static int transmit(int handle, int frames, DWORD delay)
 {
     can_msg_t message;
     int rc = -1, i;
@@ -346,21 +352,37 @@ static int transmit(int handle, int frames)
         message.data[5] = (BYTE)(((QWORD)i & 0x0000FF0000000000) >> 40);
         message.data[6] = (BYTE)(((QWORD)i & 0x00FF000000000000) >> 48);
         message.data[7] = (BYTE)(((QWORD)i & 0xFF00000000000000) >> 56);
+
+        //start_timer(delay);
+    repeat:
         if((rc = can_write(handle, &message)) != CANERR_NOERROR) {
+            if(rc == CANERR_TX_BUSY && running)
+                goto repeat;
             printf("+++ error(%i): can_write failed\n", rc);
             if(option_stop)
                 return -1;
         }
+        usleep(delay);
+        //while(!is_timeout()) {
+        //    if(!running) {
+        //        printf("%i\n", frames);
+        //        return i;
+        //    }
+        //}
         if(!(i % 2048)) {
             fprintf(stdout, ".");
             fflush(stdout);
         }
+        if(!running) {
+            printf("%i\n", frames);
+            return i;
+        }
     }
-    printf("\n");
+    printf("%i\n", frames);
     return i;
 }
 
-static int transmit_fd(int handle, int frames)
+static int transmit_fd(int handle, int frames, DWORD delay)
 {
     can_msg_t message;
     int rc = -1, i; BYTE j;
@@ -385,17 +407,33 @@ static int transmit_fd(int handle, int frames)
         message.data[5] = (BYTE)(((QWORD)i & 0x0000FF0000000000) >> 40);
         message.data[6] = (BYTE)(((QWORD)i & 0x00FF000000000000) >> 48);
         message.data[7] = (BYTE)(((QWORD)i & 0xFF00000000000000) >> 56);
+
+        //start_timer(delay);
+repeat_fd:
         if((rc = can_write(handle, &message)) != CANERR_NOERROR) {
+            if(rc == CANERR_TX_BUSY && running)
+                goto repeat_fd;
             printf("+++ error(%i): can_write failed\n", rc);
             if(option_stop)
                 return -1;
         }
+        usleep(delay);
+        //while(!is_timeout()) {
+        //    if(!running) {
+        //        printf("%i\n", frames);
+        //        return i;
+        //    }
+        //}
         if(!(i % 2048)) {
             fprintf(stdout, ".");
             fflush(stdout);
         }
+        if(!running) {
+            printf("%i\n", frames);
+            return i;
+        }
     }
-    printf("\n");
+    printf("%i\n", frames);
     return i;
 }
 
@@ -471,6 +509,10 @@ static int receive(int handle)
             printf("+++ error(%i): can_read failed\n", rc);
             errors++;
         }
+    }
+    if(!option_echo) {
+        fprintf(stdout, "%llu\n", frames);
+        fflush(stdout);
     }
     return 0;
 }
@@ -551,18 +593,22 @@ static int receive_fd(int handle)
             errors++;
         }
     }
+    if(!option_echo) {
+        fprintf(stdout, "%llu\n", frames);
+        fflush(stdout);
+    }
     return 0;
 }
 
 static int convert(const char *string, can_bitrate_t *bitrate)
 {
-    long  freq = 0; struct btr_bit_timing slow, fast;
+    unsigned long freq = 0; struct btr_bit_timing slow, fast;
 
-    if(!btr_string_to_bit_timing(string, (unsigned long *)&freq, &slow, &fast)) {
+    if(!btr_string_to_bit_timing(string, &freq, &slow, &fast)) {
         fprintf(stderr, "+++ error: illegal argument in option /BITRATE!\n\n");
         return 0;
     }
-    bitrate->btr.frequency = freq;
+    bitrate->btr.frequency = (long)freq;
     bitrate->btr.nominal.brp = (unsigned short)slow.brp;
     bitrate->btr.nominal.tseg1 = (unsigned short)slow.tseg1;
     bitrate->btr.nominal.tseg2 = (unsigned short)slow.tseg2;

@@ -27,7 +27,7 @@
 		<link>
 			<name>api</name>
 			<type>2</type>
-			<location>/Users/neptune/Projects/git/CAN/DRV/Drivers/PCBUSB/api</location>
+			<locationURI>PARENT-1-PROJECT_LOC/api</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>
