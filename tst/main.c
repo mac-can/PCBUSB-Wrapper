@@ -4,7 +4,7 @@
  *
  *  purpose   :  CAN API V3 Tester (PCAN-Basic)
  *
- *  copyright :  (C) 2012-2017 by UV Software, Berlin
+ *  copyright :  (C) 2012-2019 by UV Software, Berlin
  *
  *  compiler  :  Apple LLVM version 10.0.0 (clang-1000.11.45.5)
  *
@@ -37,14 +37,13 @@
 
 #include "can_api.h"
 #include "bitrates.h"
-//#include "printmsg.h"
+#include "printmsg.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
 #include <errno.h>
-#ifndef _WIN32
 #include <unistd.h>
 #include <time.h>
 #include <stdint.h>
@@ -52,12 +51,9 @@
 #define WORD uint16_t
 #define DWORD uint32_t
 #define QWORD uint64_t
-#else
-#include <windows.h>
-#ifndef QWORD
-#define QWORD unsigned long long
-#endif
-#endif
+#include <inttypes.h>
+
+
 
 /*  -----------  options  ------------------------------------------------
  */
@@ -217,6 +213,16 @@ int main(int argc, char *argv[])
         if(!strcmp(argv[i], "PCAN-USB6")) channel = PCAN_USB6;
         if(!strcmp(argv[i], "PCAN-USB7")) channel = PCAN_USB7;
         if(!strcmp(argv[i], "PCAN-USB8")) channel = PCAN_USB8;
+#if !defined(__APPLE__)
+        if(!strcmp(argv[i], "PCAN-USB9")) channel = PCAN_USB9;
+        if(!strcmp(argv[i], "PCAN-USB10")) channel = PCAN_USB10;
+        if(!strcmp(argv[i], "PCAN-USB11")) channel = PCAN_USB11;
+        if(!strcmp(argv[i], "PCAN-USB12")) channel = PCAN_USB12;
+        if(!strcmp(argv[i], "PCAN-USB13")) channel = PCAN_USB13;
+        if(!strcmp(argv[i], "PCAN-USB14")) channel = PCAN_USB14;
+        if(!strcmp(argv[i], "PCAN-USB15")) channel = PCAN_USB15;
+        if(!strcmp(argv[i], "PCAN-USB16")) channel = PCAN_USB16;
+#endif
         /* baud rate (CAN 2.0) */
         if(!strcmp(argv[i], "BD:0") || !strcmp(argv[i], "BD:1000")) bitrate.index = -CANBDR_1000;
         if(!strcmp(argv[i], "BD:1") || !strcmp(argv[i], "BD:800")) bitrate.index = -CANBDR_800;
@@ -327,9 +333,13 @@ int main(int argc, char *argv[])
             fprintf(stdout, "Firmware: %s\n", firmware);
     }
 end:
+    printf("Teardown..."); fflush(stdout);
     if((rc = can_exit(handle)) != CANERR_NOERROR) {
+        printf("FAILED\n");
         printf("+++ error(%i): can_exit failed\n", rc);
+        return 1;
     }
+    printf("Bye!\n");
     return 0;
 }
 
@@ -458,14 +468,11 @@ static int receive(int handle)
     while(running) {
         if((rc = can_read(handle, &message, (option_io == OPTION_IO_BLOCKING)? TIME_IO_BLOCKING : TIME_IO_POLLING)) == CANERR_NOERROR) {
             if(option_echo) {
-                printf("%c %llu\t", symbol[prompt], frames++);
-                printf("%llu.%03lu\t", ((QWORD)message.timestamp.sec * 1000ull) + ((QWORD)message.timestamp.usec / 1000ull), ((DWORD)message.timestamp.usec % 1000ul));
-                printf("%03lX %c%c [%u]\t", message.id, 
-                                            message.ext? 'X' : ' ',
-                                            message.rtr? 'R' : ' ',
-                                            message.dlc);
+                printf("%c %"PRIu64"\t", symbol[prompt], frames++);
+                msg_print_time(stdout, (struct msg_timestamp*)&message.timestamp, option_time);  // an evil cast!
+                msg_print_id(stdout, message.id, message.ext, message.rtr, message.dlc, MSG_MODE_HEX);
                 for(i = 0;i < message.dlc; i++)
-                    printf("%02X ", message.data[i]);
+                    msg_print_data(stdout, message.data[i], ((i+1) == message.dlc), MSG_MODE_HEX);
                 printf("\n");
             }
             else {
@@ -485,9 +492,9 @@ static int receive(int handle)
             if(message.dlc > 7) received |= (QWORD)message.data[7] << 56;
             if(received != expected) {
                 if(option_check != OPTION_NO) {
-                    printf("+++ error(X): received data is not equal to expected data (%llu : %llu)\n", received, expected);
+                    printf("+++ error(X): received data is not equal to expected data (%"PRIu64" : %"PRIu64")\n", received, expected);
                     if(expected > received) {
-                        printf("              issue #198: old messages on pipe #3 (offset -%llu)\a\n", expected - received);
+                        printf("              issue #198: old messages on pipe #3 (offset -%"PRIu64")\a\n", expected - received);
 #if (STOP_FRAMES == 0)
                         if(option_stop)
                             return -1;
@@ -511,7 +518,7 @@ static int receive(int handle)
         }
     }
     if(!option_echo) {
-        fprintf(stdout, "%llu\n", frames);
+        fprintf(stdout, "%"PRIu64"\n", frames);
         fflush(stdout);
     }
     return 0;
@@ -538,17 +545,11 @@ static int receive_fd(int handle)
     while(running) {
         if((rc = can_read(handle, &message, (option_io == OPTION_IO_BLOCKING)? TIME_IO_BLOCKING : TIME_IO_POLLING)) == CANERR_NOERROR) {
             if(option_echo) {
-                printf("%c %llu\t", symbol[prompt], frames++);
-                printf("%llu.%03lu\t", ((QWORD)message.timestamp.sec * 1000ull) + ((QWORD)message.timestamp.usec / 1000ull), ((DWORD)message.timestamp.usec % 1000ul));
-                printf("%03lX %c%c%c%c%c [%u]\t", message.id, 
-                                                    message.ext? 'X' : ' ', 
-                                                    message.rtr? 'R' : ' ',  
-                                                    message.fdf? 'F' : ' ',  
-                                                    message.brs? 'B' : ' ',  
-                                                    message.esi? 'E' : ' ',  
-                                                    DLC2DLEN(message.dlc));
+                printf("%c %"PRIu64"\t", symbol[prompt], frames++);
+                msg_print_time(stdout, (struct msg_timestamp*)&message.timestamp, option_time);  // an evil cast!
+                msg_print_id_fd(stdout, message.id, message.ext, message.rtr, message.fdf, message.brs, message.esi, DLC2DLEN(message.dlc), MSG_MODE_HEX);
                 for(i = 0; i < DLC2DLEN(message.dlc); i++)
-                    printf("%02X ", message.data[i]);
+                    msg_print_data(stdout, message.data[i], ((i + 1) == DLC2DLEN(message.dlc)), MSG_MODE_HEX);
                 printf("\n");
             }
             else {
@@ -568,9 +569,9 @@ static int receive_fd(int handle)
             if(message.dlc > 7) received |= (QWORD)message.data[7] << 56;
             if(received != expected) {
                 if(option_check != OPTION_NO) {
-                    printf("+++ error(X): received data is not equal to expected data (%llu : %llu)\n", received, expected);
+                    printf("+++ error(X): received data is not equal to expected data (%"PRIu64" : %"PRIu64")\n", received, expected);
                     if(expected > received) {
-                        printf("              issue #198: old messages on pipe #3 (offset -%llu)\a\n", expected - received);
+                        printf("              issue #198: old messages on pipe #3 (offset -%"PRIu64")\a\n", expected - received);
 #if (STOP_FRAMES == 0)
                         if(option_stop)
                             return -1;
@@ -594,7 +595,7 @@ static int receive_fd(int handle)
         }
     }
     if(!option_echo) {
-        fprintf(stdout, "%llu\n", frames);
+        fprintf(stdout, "%"PRIu64"\n", frames);
         fflush(stdout);
     }
     return 0;
@@ -623,7 +624,7 @@ static int convert(const char *string, can_bitrate_t *bitrate)
 
 static void verbose(BYTE op_mode, const can_bitrate_t *bitrate)
 {
-    unsigned freq; struct btr_bit_timing slow, fast;
+    unsigned long freq; struct btr_bit_timing slow, fast;
 
     freq = bitrate->btr.frequency;
     slow.brp   = bitrate->btr.nominal.brp;
@@ -678,31 +679,6 @@ static void sigterm(int signo)
     running = 0;
     (void)signo;
 }
-
-//static void version(FILE *stream, char *program)
-//{
-//  int revision = 0; if(sscanf(__revision__,"\044Rev: %i\044", &revision) != 1) revision = (-1);
-//  
-//  fprintf(stream, "%s (PCAN USB - Access via IOKitUSB), version %s.%i of %s\n%s.\n\n",
-//                               program,__version__,(revision+1),__DATE__,__copyright__);
-//#ifdef __gpl_license
-//  #error This software is not open source!
-//#else
-//  fprintf(stream, "This software is freeware without any warranty or support!\n\n");
-//#endif
-//  fprintf(stream, "Written by Uwe Vogt, UV Software <http://www.uv-software.de/>\n");
-//}
-
-//static void usage(FILE *stream, char *program)
-//{
-//  fprintf(stream, "Usage: %s [<option>...] <file>...\n", program);
-//  fprintf(stream, "Options:\n");
-//  fprintf(stream, " -h, --help                   display this help and exit\n");
-//  fprintf(stream, "     --version  show version information and exit\n");
-//  fprintf(stream, "Hazard note:\n");
-//  fprintf(stream, "  Do not connect your CAN interface to a real CAN network when\n");
-//  fprintf(stream, "  using this program. This can damage your application.\n");
-//}
 
 /*  ----------------------------------------------------------------------
  *  Uwe Vogt,  UV Software,  Chausseestrasse 33 A,  10115 Berlin,  Germany

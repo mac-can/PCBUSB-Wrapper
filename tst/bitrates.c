@@ -4,10 +4,10 @@
  *
  *  purpose   :  CAN FD Bit-rates (Converter)
  *
- *  copyright :  (C) 2017, UV Software, Berlin
+ *  copyright :  (C) 2017-20xx, UV Software, Berlin
  *
- *  compiler  :  Microsoft Visual C/C++ Compiler (VS 2017 v141)
- *               Apple LLVM version 9.0.0 (clang-900.0.39.2)
+ *  compiler  :  Microsoft Visual C/C++ Compiler (Version 19.15)
+ *               Apple LLVM version (clang)
  *
  *  export    :  (see header file)
  *

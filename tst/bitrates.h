@@ -4,10 +4,10 @@
  *
  *  purpose   :  CAN FD Bit-rates (Converter)
  *
- *  copyright :  (C) 2017, UV Software, Berlin
+ *  copyright :  (C) 2017-20xx, UV Software, Berlin
  *
- *  compiler  :  Microsoft Visual C/C++ Compiler (VS 2017 v141)
- *               Apple LLVM version 9.0.0 (clang-900.0.39.2)
+ *  compiler  :  Microsoft Visual C/C++ Compiler (Version 19.15)
+ *               Apple LLVM version (clang)
  *
  *  export    :  int btr_string_to_bit_timing(const char *bit_rate,
  *                                            unsigned long *frequency, 
@@ -36,10 +36,6 @@
  */
 #ifndef BITRATES_H_INCLUDED
 #define BITRATES_H_INCLUDED
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*  -----------  includes  -----------------------------------------------
  */
@@ -94,6 +90,7 @@ int btr_string_to_bit_timing(const char *bit_rate,
 /** @brief       TBD
  */
 unsigned long btr_calc_bit_rate_sja1000(unsigned short btr0btr1);
+
 /** @brief       TBD
  */
 float btr_calc_sample_point_sja1000(unsigned short btr0btr1);
@@ -107,9 +104,11 @@ int btr_find_bit_timing_sja1000(unsigned long bit_rate,
  */
 unsigned long btr_calc_bit_rate_nominal(const struct btr_bit_timing *bit_timing, 
                                         unsigned long frequency);
+
 /** @brief       TBD
  */
 float btr_calc_sample_point_nominal(const struct btr_bit_timing *bit_timing);
+
 /** @brief       TBD
  */
 int btr_find_bit_timing_nominal(unsigned long bit_rate, float sample_point, 
@@ -121,9 +120,11 @@ int btr_find_bit_timing_nominal(unsigned long bit_rate, float sample_point,
  */
 unsigned long btr_calc_bit_rate_data(const struct btr_bit_timing *bit_timing, 
                                      unsigned long frequency);
+
 /** @brief       TBD
  */
 float btr_calc_sample_point_data(const struct btr_bit_timing *bit_timing);
+
 /** @brief       TBD
  */
 int btr_find_bit_timing_data(unsigned long bit_rate, 
@@ -133,9 +134,6 @@ int btr_find_bit_timing_data(unsigned long bit_rate,
                              unsigned long options);
 
 
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
 #endif /* BITRATES_H_INCLUDED */
 /** @}
  */

@@ -6,10 +6,18 @@
         <item name="bitrates (header)"
               target="bitrates.h"
               source="/Users/neptune/Projects/SVN/CAN/DRV/API/misc/bitrates.h"
-              version="file:2019-01-03T20:03" />
+              version="file:latest" />
         <item name="bitrates (c-file)"
               target="bitrates.c"
               source="/Users/neptune/Projects/SVN/CAN/DRV/API/misc/bitrates.c"
-              version="file:2019-01-03T20:03" />
+              version="file:latest" />
+        <item name="printmsg (header)"
+              target="printmsg.h"
+              source="/Users/neptune/Projects/SVN/CAN/DRV/API/misc/printmsg.h"
+              version="file:latest" />
+        <item name="printmsg (c-file)"
+              target="printmsg.c"
+              source="/Users/neptune/Projects/SVN/CAN/DRV/API/misc/printmsg.c"
+              version="file:latest" />
     </dependencies>
 </depman>
