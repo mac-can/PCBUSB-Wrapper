@@ -39,9 +39,6 @@
 #ifndef __CAN_DEFS_H
 #define __CAN_DEFS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*  -----------  options  ------------------------------------------------
  */
@@ -95,8 +92,11 @@ extern "C" {
  #define PCAN_ERR_UNKNOWN          -299 //   unknown error
 
  #define PCAN_LIB_ID                400 //   library ID (CAN/COP API V1 compatible)
+#ifndef __APPLE__
+ #define PCAN_LIB_BASIC            "PCANBasic.DLL"
+#else
  #define PCAN_LIB_BASIC            "libPCBUSB.dylib"
-
+#endif
  struct _pcan_param                     //   installation parameter:
  {
     unsigned char  type;                //     operation mode (non-plug'n'play devices)
@@ -106,9 +106,6 @@ extern "C" {
 #endif
 
 
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
 #endif /* __CAN_DEFS_H */
 /** @}
  */

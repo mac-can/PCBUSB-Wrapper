@@ -11,7 +11,7 @@
  *
  *  export    :  (see header file)
  *
- *  includes  :  can_io.h (can_defs.h), PCBUSB.h
+ *  includes  :  can_api.h (can_defs.h), PCBUSB.h
  *
  *  author    :  Uwe Vogt, UV Software
  *
@@ -52,7 +52,7 @@ static char _id[] = "CAN API V3 for PEAK PCAN-USB Interfaces, Version "VERSION;
 #else
 #include <unistd.h>                     // Posix: standard symbolic constants and types
 #include <sys/select.h>                 // Posix: select types
-#include "PCBUSB.h"                     // PEAK PCAN-USb interface(s)
+#include "PCBUSB.h"                     // PEAK PCAN-USB interface(s)
 #endif
 
 /*  -----------  defines  ------------------------------------------------
@@ -99,9 +99,9 @@ typedef struct {
     int   reset;                        // re-initialization flag (a helper)
     can_mode_t mode;                    // operation mode of the CAN channel
     can_status_t status;                // 8-bit status register
-#ifdef _WIN32
-#else
+#ifndef _WIN32
     int   fdes;                         // file descriptor (for blocking read)
+#else
 #endif
 }   can_interface_t;
 
@@ -140,7 +140,7 @@ can_board_t can_board[PCAN_BOARDS] =    // list of CAN Interface boards:
 static const BYTE dlc_table[16] = {     // DLC to length
     0,1,2,3,4,5,6,7,8,12,16,20,24,32,48,64
 };
-static can_interface_t can[PCAN_MAX_HANDLES];   // interface handles 
+static can_interface_t can[PCAN_MAX_HANDLES];   // interface handles
 static char hardware[256] = "";         // hardware version of the CAN interface board
 static char software[256] = "";         // software version of the CAN interface driver
 static int  init = 0;                   // initialization flag
@@ -234,7 +234,9 @@ int can_init(int board, unsigned char mode, const void *param)
         can[i].brd_port = ((struct _pcan_param*)param)->port;
         can[i].brd_irq  = ((struct _pcan_param*)param)->irq;
     }
+#ifndef _WIN32
     can[i].fdes = -1;                   // clear file descriptor
+#endif
     can[i].reset = 0;                   // clear re-initialization flag
     can[i].mode.byte = mode;            // store selected operation mode
     can[i].status.byte = CANSTAT_RESET; // CAN controller not started yet!
@@ -253,7 +255,9 @@ int can_exit(int handle)
     /*if(!can[handle].status.b.can_stopped) // release the CAN interface!*/
     {
         CAN_Uninitialize(can[handle].board);
+#ifndef _WIN32
         close(can[handle].fdes);
+#endif
     }
     can[handle].status.byte |= CANSTAT_RESET;// CAN controller in INIT state
     can[handle].board = PCAN_NONEBUS;   // handle can be used again
@@ -264,7 +268,7 @@ int can_exit(int handle)
 EXPORT
 int can_start(int handle, const can_bitrate_t *bitrate)
 {
-    TPCANBaudrate baudrate;             // btr0btr1 value
+    TPCANBaudrate baudrate = 0;         // btr0btr1 value
     char string[256] = "";              // bit-rate string
     DWORD value;                        // parameter value
     TPCANStatus rc;                     // return value
@@ -344,15 +348,17 @@ int can_start(int handle, const can_bitrate_t *bitrate)
         }
         else {                          //   CAN 2.0 operation mode
             if((rc = CAN_Initialize(can[handle].board, baudrate,
-                                    can[handle].brd_type, can[handle].brd_port, 
+                                    can[handle].brd_type, can[handle].brd_port,
                                     can[handle].brd_irq)) != PCAN_ERROR_OK)
                 return pcan_error(rc);
         }
+#ifndef _WIN32
         if((rc = CAN_GetValue(can[handle].board, PCAN_RECEIVE_EVENT,
                              &can[handle].fdes, sizeof(int))) != PCAN_ERROR_OK) {
             CAN_Uninitialize(can[handle].board);
             return pcan_error(rc);
         }
+#endif
     }
     can[handle].status.byte = 0x00;     // clear old status bits
     can[handle].status.b.can_stopped = 0;// CAN controller started!
@@ -462,6 +468,7 @@ int can_read(int handle, can_msg_t *msg, unsigned short timeout)
         return CANERR_OFFLINE;
 
     // blocking read
+#ifndef _WIN32
     fd_set rdfs;
     FD_ZERO(&rdfs);
     FD_SET(can[handle].fdes, &rdfs);
@@ -469,11 +476,13 @@ int can_read(int handle, can_msg_t *msg, unsigned short timeout)
     tv.tv_sec = (time_t)(timeout / 1000u);
     tv.tv_usec = (suseconds_t)(timeout % 1000u) * (suseconds_t)1000;
 retry:
+#endif
     if(!can[handle].mode.b.fdoe)
         rc = CAN_Read(can[handle].board, &can_msg, &timestamp);
     else
         rc = CAN_ReadFD(can[handle].board, &can_msg_fd, &timestamp_fd);
     if(rc == PCAN_ERROR_QRCVEMPTY) {
+#ifndef _WIN32
         if(timeout == 65535u) {
             if(select(can[handle].fdes+1, &rdfs, NULL, NULL, NULL) > 0)
                 goto retry;
@@ -482,13 +491,14 @@ retry:
             if(select(can[handle].fdes+1, &rdfs, NULL, NULL, &tv) > 0)
                 goto retry;
         }
+#endif
         can[handle].status.b.receiver_empty = 1;
         return CANERR_RX_EMPTY;         //   receiver empty!
     }
     else if(rc != PCAN_ERROR_OK) {
         return pcan_error(rc);          //   something�s wrong!
     }
-    else if((can_msg.MSGTYPE == PCAN_MESSAGE_STATUS) || 
+    else if((can_msg.MSGTYPE == PCAN_MESSAGE_STATUS) ||
             (can_msg_fd.MSGTYPE == PCAN_MESSAGE_STATUS)) {
         can[handle].status.b.bus_off = (can_msg.DATA[3] & PCAN_ERROR_BUSOFF) != PCAN_ERROR_OK;
         can[handle].status.b.bus_error = (can_msg.DATA[3] & PCAN_ERROR_BUSPASSIVE) != PCAN_ERROR_OK;

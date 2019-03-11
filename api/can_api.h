@@ -54,11 +54,16 @@
 
 /*  -----------  options  ------------------------------------------------
  */
-#ifdef __cplusplus
-extern "C" {
-#endif
-#define CANAPI  extern
+#ifdef _CANAPI_EXPORTS
+    #define CANAPI  __declspec(dllexport)
+#else
+  #ifndef _CANAPI_EXTERN
+    #define CANAPI  __declspec(dllimport)
+  #else
 
+#define CANAPI  extern
+  #endif
+#endif
 
 /*  -----------  includes  -----------------------------------------------
  */
@@ -261,7 +266,9 @@ typedef struct _can_msg_t {
 /*  -----------  variables  ----------------------------------------------
  */
 
-CANAPI can_board_t can_board[];     /**< list of CAN interface boards */
+#ifndef _CANAPI_EXPORTS
+ CANAPI can_board_t can_board[];     /**< list of CAN interface boards */
+#endif
 
 
 /*  -----------  prototypes  ---------------------------------------------
@@ -427,9 +434,6 @@ CANAPI int can_library(int *library);
 CANAPI char* can_version();
 
 
-#ifdef __cplusplus
-}
-#endif /* __cplusplus */
 #endif /* __CAN_API_H */
 /** @}
  */
