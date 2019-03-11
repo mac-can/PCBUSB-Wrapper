@@ -333,7 +333,7 @@ int main(int argc, char *argv[])
             fprintf(stdout, "Firmware: %s\n", firmware);
     }
 end:
-    printf("Teardown..."); fflush(stdout);
+    printf("Teardown.."); fflush(stdout);
     if((rc = can_exit(handle)) != CANERR_NOERROR) {
         printf("FAILED\n");
         printf("+++ error(%i): can_exit failed\n", rc);
