@@ -7,7 +7,7 @@ CAN API V3
 ~~~~~~~~~~
 
 The CAN API V3 is a wrapper specification to have common CAN interface API for
-different CAN interfaces from different vendors. The present CAN API for macOS 
+different CAN interfaces from different vendors. The present CAN API for macOS
 supports up to 8 PCAN-USB or PCAN-USB FD devices from PEAK-System Technik.
 See the header-file can_api.h for details.
 
@@ -17,7 +17,7 @@ Mac and macOS are trademarks of Apple Inc., registered in the U.S. and other cou
 This software is freeware without any warranty or support!
 
 Change-Log:
-- Version 0.1 of mm/dd/2019:
+- Version 0.1 of 03/13/2019:
   Initial revision
 
 Limitations:
@@ -33,4 +33,3 @@ Contact
 
 E-Mail:  mailto:info@mac-can.com
 Internet: http://www.mac-can.com
-

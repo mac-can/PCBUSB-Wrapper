@@ -32,11 +32,11 @@
  *  @{
  */
 
-#define VERSION "0.1.rc1"
+#define VERSION "0.1"
 #ifdef _DEBUG
-static char _id[] = "CAN API V3 for PEAK PCAN-USB Interfaces, Version "VERSION" _DEBUG";
+static char _id[] = "CAN API V3 for PEAK PCAN-USB Interfaces, Version "VERSION" (macOS) _DEBUG";
 #else
-static char _id[] = "CAN API V3 for PEAK PCAN-USB Interfaces, Version "VERSION;
+static char _id[] = "CAN API V3 for PEAK PCAN-USB Interfaces, Version "VERSION" (macOS)";
 #endif
 
 /*  -----------  includes  -------------------------------------------------
