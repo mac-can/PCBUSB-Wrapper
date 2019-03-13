@@ -53,6 +53,7 @@
 								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.macosx.so.debug.option.optimization.level.1114600188" name="Optimization Level" superClass="gnu.c.compiler.macosx.so.debug.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
 								<option id="gnu.c.compiler.macosx.so.debug.option.debugging.level.427169382" name="Debug Level" superClass="gnu.c.compiler.macosx.so.debug.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.637515626" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="_CANAPI_EXTERN"/>
 									<listOptionValue builtIn="false" value="_CANAPI_SHARED_LIBRARY"/>
 									<listOptionValue builtIn="false" value="_PCBUSB_SHARED_LIBRARY"/>
 								</option>
@@ -119,6 +120,7 @@
 								<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.macosx.so.release.option.optimization.level.1620078672" name="Optimization Level" superClass="gnu.c.compiler.macosx.so.release.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
 								<option id="gnu.c.compiler.macosx.so.release.option.debugging.level.1907011014" name="Debug Level" superClass="gnu.c.compiler.macosx.so.release.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.none" valueType="enumerated"/>
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.515991617" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="_CANAPI_EXTERN"/>
 									<listOptionValue builtIn="false" value="_CANAPI_SHARED_LIBRARY"/>
 									<listOptionValue builtIn="false" value="_PCBUSB_SHARED_LIBRARY"/>
 								</option>
