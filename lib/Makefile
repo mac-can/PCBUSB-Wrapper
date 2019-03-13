@@ -48,7 +48,7 @@ endif
 
 ifeq ($(current_OS),Darwin) # MacOS - libUVCANPCB.dylib - - - - - - - - - - - -
 
-VERSION = 0.1.dev
+VERSION = 0.1
 
 LIBRARY = libUVCANPCB
 
