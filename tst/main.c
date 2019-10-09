@@ -54,7 +54,6 @@
 #include <inttypes.h>
 
 
-
 /*  -----------  options  ------------------------------------------------
  */
 
@@ -148,7 +147,7 @@ static int option_brs = OPTION_NO;
 #if (STOP_FRAMES != 0)
 static int stop_frames = 0;
 #endif
-static const BYTE dtab[16] = { 0,1,2,3,4,5,6,7,8,12,16,20,24,32,48,64 };
+static const BYTE dtab[16] = {0,1,2,3,4,5,6,7,8,12,16,20,24,32,48,64};
 
 static int running = 1;
 
@@ -173,7 +172,7 @@ int main(int argc, char *argv[])
     int channel = PCAN_USB1;
     BYTE op_mode = CANMODE_DEFAULT;
     DWORD delay = 0;
-    can_bitrate_t bitrate = {-CANBDR_250};
+    can_bitrate_t bitrate = { -CANBDR_250 };
     char *device, *firmware, *software;
 
     //struct option long_options[] = {
@@ -293,7 +292,13 @@ int main(int argc, char *argv[])
     }
     /* channel tester */
     if(option_test) {
-    }
+		for(i = 0; i < PCAN_BOARDS; i++) {
+			if((rc = can_test(can_board[i].type, op_mode, NULL, &opt)) == CANERR_NOERROR)
+				printf("Channel 0x%02lx: %s\n", can_board[i].type, opt == CANBRD_NOT_PRESENT ? "unavailable" : opt == CANBRD_PRESENT ? "available" : "occuptied");
+			else
+				printf("Channel 0x%02lx: can_test failed (%i)\n", can_board[i].type, rc);
+		}
+	}
     /* initialization */
     if((rc = can_init(channel, op_mode, NULL)) < 0) {
         printf("+++ error(%i): can_init failed\n", rc);
@@ -460,18 +465,18 @@ static int receive(int handle)
     char symbol[] = ">!?";
     int prompt = 0;
 
-    printf("Receiving CAN 2.0 messages (%s)", (option_io == OPTION_IO_BLOCKING)? "blocking" : "polling");
+    printf("Receiving CAN 2.0 messages (%s)", (option_io == OPTION_IO_BLOCKING) ? "blocking" : "polling");
     if(option_echo)
         printf(":\n");
     else
         fflush(stdout);
     while(running) {
-        if((rc = can_read(handle, &message, (option_io == OPTION_IO_BLOCKING)? TIME_IO_BLOCKING : TIME_IO_POLLING)) == CANERR_NOERROR) {
+        if((rc = can_read(handle, &message, (option_io == OPTION_IO_BLOCKING) ? TIME_IO_BLOCKING : TIME_IO_POLLING)) == CANERR_NOERROR) {
             if(option_echo) {
                 printf("%c %"PRIu64"\t", symbol[prompt], frames++);
                 msg_print_time(stdout, (struct msg_timestamp*)&message.timestamp, option_time);  // an evil cast!
                 msg_print_id(stdout, message.id, message.ext, message.rtr, message.dlc, MSG_MODE_HEX);
-                for(i = 0;i < message.dlc; i++)
+                for(i = 0; i < message.dlc; i++)
                     msg_print_data(stdout, message.data[i], ((i+1) == message.dlc), MSG_MODE_HEX);
                 printf("\n");
             }
@@ -502,7 +507,7 @@ static int receive(int handle)
                         prompt = PROMPT_ISSUE198;
                     }
                     else {
-                        prompt = prompt != PROMPT_ISSUE198? PROMPT_OVERRUN : PROMPT_ISSUE198;
+                        prompt = prompt != PROMPT_ISSUE198 ? PROMPT_OVERRUN : PROMPT_ISSUE198;
                     }
                 }
             }
@@ -537,13 +542,13 @@ static int receive_fd(int handle)
     char symbol[] = ">!?";
     int prompt = 0;
 
-    printf("Receiving CAN FD messages (%s)", (option_io == OPTION_IO_BLOCKING)? "blocking" : "polling");
+    printf("Receiving CAN FD messages (%s)", (option_io == OPTION_IO_BLOCKING) ? "blocking" : "polling");
     if(option_echo)
         printf(":\n");
     else
         fflush(stdout);
     while(running) {
-        if((rc = can_read(handle, &message, (option_io == OPTION_IO_BLOCKING)? TIME_IO_BLOCKING : TIME_IO_POLLING)) == CANERR_NOERROR) {
+        if((rc = can_read(handle, &message, (option_io == OPTION_IO_BLOCKING) ? TIME_IO_BLOCKING : TIME_IO_POLLING)) == CANERR_NOERROR) {
             if(option_echo) {
                 printf("%c %"PRIu64"\t", symbol[prompt], frames++);
                 msg_print_time(stdout, (struct msg_timestamp*)&message.timestamp, option_time);  // an evil cast!
@@ -579,7 +584,7 @@ static int receive_fd(int handle)
                         prompt = PROMPT_ISSUE198;
                     }
                     else {
-                        prompt = prompt != PROMPT_ISSUE198? PROMPT_OVERRUN : PROMPT_ISSUE198;
+                        prompt = prompt != PROMPT_ISSUE198 ? PROMPT_OVERRUN : PROMPT_ISSUE198;
                     }
                 }
             }
@@ -627,32 +632,32 @@ static void verbose(BYTE op_mode, const can_bitrate_t *bitrate)
     unsigned long freq; struct btr_bit_timing slow, fast;
 
     freq = bitrate->btr.frequency;
-    slow.brp   = bitrate->btr.nominal.brp;
+    slow.brp = bitrate->btr.nominal.brp;
     slow.tseg1 = bitrate->btr.nominal.tseg1;
     slow.tseg2 = bitrate->btr.nominal.tseg2;
-    slow.sjw   = bitrate->btr.nominal.sjw;
-    fast.brp   = bitrate->btr.data.brp;
+    slow.sjw = bitrate->btr.nominal.sjw;
+    fast.brp = bitrate->btr.data.brp;
     fast.tseg1 = bitrate->btr.data.tseg1;
     fast.tseg2 = bitrate->btr.data.tseg2;
-    fast.sjw   = bitrate->btr.data.sjw;
+    fast.sjw = bitrate->btr.data.sjw;
 
 
     if(bitrate->btr.frequency > 0) {
-        fprintf(stdout, "Baudrate: %lubps@%.2f%%", 
-                btr_calc_bit_rate_nominal(&slow, freq),
-                btr_calc_sample_point_nominal(&slow) * 100.);
+        fprintf(stdout, "Baudrate: %lubps@%.2f%%",
+            btr_calc_bit_rate_nominal(&slow, freq),
+            btr_calc_sample_point_nominal(&slow) * 100.);
         if((op_mode & (CANMODE_FDOE | CANMODE_BRSE)) == (CANMODE_FDOE | CANMODE_BRSE))
-            fprintf(stdout, ":%lubps@%.2f%%", 
-                    btr_calc_bit_rate_data(&fast, freq),
-                    btr_calc_sample_point_data(&fast) * 100.);
+            fprintf(stdout, ":%lubps@%.2f%%",
+                btr_calc_bit_rate_data(&fast, freq),
+                btr_calc_sample_point_data(&fast) * 100.);
         fprintf(stdout, " (f_clock=%lu,nom_brp=%u,nom_tseg1=%u,nom_tseg2=%u,nom_sjw=%u",
-                bitrate->btr.frequency,
-                bitrate->btr.nominal.brp,
-                bitrate->btr.nominal.tseg1,
-                bitrate->btr.nominal.tseg2,
-                bitrate->btr.nominal.sjw);
+            bitrate->btr.frequency,
+            bitrate->btr.nominal.brp,
+            bitrate->btr.nominal.tseg1,
+            bitrate->btr.nominal.tseg2,
+            bitrate->btr.nominal.sjw);
         if((op_mode & (CANMODE_FDOE | CANMODE_BRSE)) == (CANMODE_FDOE | CANMODE_BRSE))
-        fprintf(stdout, ",data_brp=%u,data_tseg1=%u,data_tseg2=%u,data_sjw=%u",
+            fprintf(stdout, ",data_brp=%u,data_tseg1=%u,data_tseg2=%u,data_sjw=%u",
                 bitrate->btr.data.brp,
                 bitrate->btr.data.tseg1,
                 bitrate->btr.data.tseg2,
@@ -661,23 +666,26 @@ static void verbose(BYTE op_mode, const can_bitrate_t *bitrate)
     }
     else {
         fprintf(stdout, "Baudrate: %sbps (CiA index %li)\n",
-                bitrate->index == CANBDR_1000 ? "1000000" :
-                bitrate->index == -CANBDR_800 ?  "800000" :
-                bitrate->index == -CANBDR_500 ?  "500000" :
-                bitrate->index == -CANBDR_250 ?  "250000" :
-                bitrate->index == -CANBDR_125 ?  "125000" :
-                bitrate->index == -CANBDR_100 ?  "100000" :
-                bitrate->index == -CANBDR_50  ?   "50000" :
-                bitrate->index == -CANBDR_20  ?   "20000" :
-                bitrate->index == -CANBDR_10  ?   "10000" : "?", -bitrate->index);
+            bitrate->index == CANBDR_1000 ? "1000000" :
+            bitrate->index == -CANBDR_800 ? "800000" :
+            bitrate->index == -CANBDR_500 ? "500000" :
+            bitrate->index == -CANBDR_250 ? "250000" :
+            bitrate->index == -CANBDR_125 ? "125000" :
+            bitrate->index == -CANBDR_100 ? "100000" :
+            bitrate->index == -CANBDR_50 ? "50000" :
+            bitrate->index == -CANBDR_20 ? "20000" :
+            bitrate->index == -CANBDR_10 ? "10000" : "?", -bitrate->index);
     }
 }
 
 static void sigterm(int signo)
 {
-    /*printf("got signal %d\n", signo);*/
+    //printf("%s: got signal %d\n", __FILE__, signo);
     running = 0;
     (void)signo;
+#if defined(_WIN32) || defined(_WIN64)
+	(void)can_kill(CANKILL_ALL);
+#endif
 }
 
 /*  ----------------------------------------------------------------------

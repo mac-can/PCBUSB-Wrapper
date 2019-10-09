@@ -32,7 +32,7 @@
  *  @{
  */
 
-#define VERSION "0.1"
+#define VERSION "0.2.dev"
 #ifdef _DEBUG
 static char _id[] = "CAN API V3 for PEAK PCAN-USB Interfaces, Version "VERSION" (macOS) _DEBUG";
 #else
@@ -99,6 +99,7 @@ typedef struct {
     int   reset;                        // re-initialization flag (a helper)
     can_mode_t mode;                    // operation mode of the CAN channel
     can_status_t status;                // 8-bit status register
+    can_bitrate_t bitrate;              // bit-rate setting
 #ifndef _WIN32
     int   fdes;                         // file descriptor (for blocking read)
 #else
@@ -176,6 +177,10 @@ int can_test(int board, unsigned char mode, const void *param, int *result)
             can[i].brd_type = 0;
             can[i].brd_port = 0;
             can[i].brd_irq = 0;
+            can[i].reset = 0;
+            can[i].mode.byte = CANMODE_DEFAULT;
+            can[i].status.byte = CANSTAT_RESET;
+            can[i].bitrate.index = -CANBDR_250;
         }
         init = 1;                       //   set initialization flag
     }
@@ -209,6 +214,10 @@ int can_init(int board, unsigned char mode, const void *param)
             can[i].brd_type = 0;
             can[i].brd_port = 0;
             can[i].brd_irq = 0;
+            can[i].reset = 0;
+            can[i].mode.byte = CANMODE_DEFAULT;
+            can[i].status.byte = CANSTAT_RESET;
+            can[i].bitrate.index = -CANBDR_250;
         }
         init = 1;                       // set initialization flag
     }
@@ -241,7 +250,7 @@ int can_init(int board, unsigned char mode, const void *param)
     can[i].mode.byte = mode;            // store selected operation mode
     can[i].status.byte = CANSTAT_RESET; // CAN controller not started yet!
 
-    return i;							// return the handle
+    return i;                           // return the handle
 }
 
 EXPORT
@@ -268,8 +277,8 @@ int can_exit(int handle)
 EXPORT
 int can_start(int handle, const can_bitrate_t *bitrate)
 {
-    TPCANBaudrate baudrate = 0;         // btr0btr1 value
-    char string[256] = "";              // bit-rate string
+    TPCANBaudrate baudrate;             // btr0btr1 value
+    char string[256];                   // bit-rate string
     DWORD value;                        // parameter value
     TPCANStatus rc;                     // return value
 
@@ -360,6 +369,7 @@ int can_start(int handle, const can_bitrate_t *bitrate)
         }
 #endif
     }
+    memcpy(&can[handle].bitrate, bitrate, sizeof(can_bitrate_t));
     can[handle].status.byte = 0x00;     // clear old status bits
     can[handle].status.b.can_stopped = 0;// CAN controller started!
 
@@ -495,18 +505,18 @@ retry:
         can[handle].status.b.receiver_empty = 1;
         return CANERR_RX_EMPTY;         //   receiver empty!
     }
-    else if(rc != PCAN_ERROR_OK) {
+    if(rc != PCAN_ERROR_OK) {
         return pcan_error(rc);          //   something�s wrong!
     }
-    else if((can_msg.MSGTYPE == PCAN_MESSAGE_STATUS) ||
-            (can_msg_fd.MSGTYPE == PCAN_MESSAGE_STATUS)) {
+    if((can_msg.MSGTYPE == PCAN_MESSAGE_STATUS) ||
+       (can_msg_fd.MSGTYPE == PCAN_MESSAGE_STATUS)) {
         can[handle].status.b.bus_off = (can_msg.DATA[3] & PCAN_ERROR_BUSOFF) != PCAN_ERROR_OK;
-        can[handle].status.b.bus_error = (can_msg.DATA[3] & PCAN_ERROR_BUSPASSIVE) != PCAN_ERROR_OK;
-        can[handle].status.b.warning_level = (can_msg.DATA[3] & PCAN_ERROR_BUSWARNING) != PCAN_ERROR_OK;
+        can[handle].status.b.bus_error = (can_msg.DATA[3] & PCAN_ERROR_BUSLIGHT) != PCAN_ERROR_OK;
+        can[handle].status.b.warning_level = (can_msg.DATA[3] & PCAN_ERROR_BUSHEAVY) != PCAN_ERROR_OK;
         can[handle].status.b.message_lost |= (can_msg.DATA[3] & PCAN_ERROR_OVERRUN) != PCAN_ERROR_OK;
         return CANERR_RX_EMPTY;         //   receiver empty!
     }
-    if(!can[handle].mode.b.fdoe) {
+    if(!can[handle].mode.b.fdoe) {      // CAN 2.0 message:
         msg->id = can_msg.ID;
         msg->ext = can_msg.MSGTYPE & PCAN_MESSAGE_EXTENDED;
         msg->rtr = can_msg.MSGTYPE & PCAN_MESSAGE_RTR;
@@ -519,7 +529,7 @@ retry:
         msg->timestamp.sec = (long)(msec / 1000ull);
         msg->timestamp.usec = (((long)(msec % 1000ull)) * 1000L) + (long)timestamp.micros;
     }
-    else {
+    else {                              // CAN FD message:
         msg->id = can_msg_fd.ID;
         msg->ext = can_msg_fd.MSGTYPE & PCAN_MESSAGE_EXTENDED;
         msg->rtr = can_msg_fd.MSGTYPE & PCAN_MESSAGE_RTR;
@@ -550,8 +560,8 @@ int can_status(int handle, unsigned char *status)
         if((rc = CAN_GetStatus(can[handle].board)) > 255)
             return pcan_error(rc);
         can[handle].status.b.bus_off = (rc & PCAN_ERROR_BUSOFF) != PCAN_ERROR_OK;
-        can[handle].status.b.bus_error = (rc & PCAN_ERROR_BUSPASSIVE) != PCAN_ERROR_OK;
-        can[handle].status.b.warning_level = (rc & PCAN_ERROR_BUSWARNING) != PCAN_ERROR_OK;
+        can[handle].status.b.bus_error = (rc & (PCAN_ERROR_BUSLIGHT | PCAN_ERROR_BUSPASSIVE)) != PCAN_ERROR_OK;
+        can[handle].status.b.warning_level = (rc & (PCAN_ERROR_BUSHEAVY | PCAN_ERROR_BUSWARNING)) != PCAN_ERROR_OK;
         can[handle].status.b.message_lost |= (rc & (PCAN_ERROR_OVERRUN | PCAN_ERROR_QOVERRUN)) != PCAN_ERROR_OK;
         can[handle].status.b.transmitter_busy |= (rc & (PCAN_ERROR_XMTFULL | PCAN_ERROR_QXMTFULL)) != PCAN_ERROR_OK;
     }
@@ -564,28 +574,30 @@ int can_status(int handle, unsigned char *status)
 EXPORT
 int can_busload(int handle, unsigned char *load, unsigned char *status)
 {
-    TPCANStatus rc;                     // return value
-
     if(!init)                           // must be initialized!
         return CANERR_NOTINIT;
     if(!IS_HANDLE_VALID(handle))        // must be a valid handle!
         return CANERR_HANDLE;
 
-    if(!can[handle].status.b.can_stopped)   {   // must be running:
-        if((rc = CAN_GetStatus(can[handle].board)) > 255)
-            return pcan_error(rc);
-        can[handle].status.b.bus_off = (rc & PCAN_ERROR_BUSOFF) != PCAN_ERROR_OK;
-        can[handle].status.b.bus_error = (rc & PCAN_ERROR_BUSPASSIVE) != PCAN_ERROR_OK;
-        can[handle].status.b.warning_level = (rc & PCAN_ERROR_BUSWARNING) != PCAN_ERROR_OK;
-        can[handle].status.b.message_lost |= (rc & (PCAN_ERROR_OVERRUN | PCAN_ERROR_QOVERRUN)) != PCAN_ERROR_OK;
-        can[handle].status.b.transmitter_busy |= (rc & (PCAN_ERROR_XMTFULL | PCAN_ERROR_QXMTFULL)) != PCAN_ERROR_OK;
+    if(!can[handle].status.b.can_stopped) { // must be running:
+        if(load)
+            *load = 0;                  //   TODO: bus-load [percent]
     }
-    if(status)                          // status-register
-      *status = can[handle].status.byte;
-    if(load)                            // bus-load
-      *load = 255;
+    return can_status(handle, status);  // status-register
+}
 
-    return CANERR_NOERROR;
+int can_bitrate(int handle, can_bitrate_t *bitrate, unsigned char *status)
+{
+    if(!init)                           // must be initialized!
+        return CANERR_NOTINIT;
+    if(!IS_HANDLE_VALID(handle))        // must be a valid handle!
+        return CANERR_HANDLE;
+
+    if(!can[handle].status.b.can_stopped) { // must be running:
+        if(bitrate)
+            memcpy(bitrate, &can[handle].bitrate, sizeof(can_bitrate_t));
+    }
+    return can_status(handle, status);  // status-register
 }
 
 EXPORT
@@ -600,7 +612,7 @@ int can_interface(int handle, int *board, unsigned char *mode, void *param)
         return CANERR_NULLPTR;
 
     *board = can[handle].board;         // handle of the CAN channel
-    *mode  = can[handle].mode.byte;     // current operation mode
+    *mode  = can[handle].mode.byte;     // current opperation mode
     if(param) {                         // non-plug'n'play devices:
         ((struct _pcan_param*)param)->type = can[handle].brd_type;
         ((struct _pcan_param*)param)->port = can[handle].brd_port;
@@ -683,24 +695,31 @@ int can_library(int *library)
 
 static int pcan_error(TPCANStatus status)
 {
-    if((status & PCAN_ERROR_REGTEST)      == PCAN_ERROR_REGTEST)        return PCAN_ERR_REGTEST;
-    if((status & PCAN_ERROR_NODRIVER)     == PCAN_ERROR_NODRIVER)       return PCAN_ERR_NODRIVER;
-    if((status & PCAN_ERROR_ILLHANDLE)    == PCAN_ERROR_HWINUSE)        return PCAN_ERR_HWINUSE;
-    if((status & PCAN_ERROR_ILLHANDLE)    == PCAN_ERROR_NETINUSE)       return PCAN_ERR_NETINUSE;
-    if((status & PCAN_ERROR_ILLHANDLE)    == PCAN_ERROR_ILLCLIENT)      return PCAN_ERR_ILLCLIENT;
-    if((status & PCAN_ERROR_ILLHANDLE)    == PCAN_ERROR_ILLNET)         return PCAN_ERR_ILLNET;
-    if((status & PCAN_ERROR_ILLHANDLE)    == PCAN_ERROR_ILLHW)          return PCAN_ERR_ILLHW;
-    if((status & PCAN_ERROR_RESOURCE)     == PCAN_ERROR_RESOURCE)       return PCAN_ERR_RESOURCE;
-    if((status & PCAN_ERROR_ILLPARAMTYPE) == PCAN_ERROR_ILLPARAMTYPE)   return PCAN_ERR_ILLPARAMTYPE;
-    if((status & PCAN_ERROR_ILLPARAMVAL)  == PCAN_ERROR_ILLPARAMVAL)    return PCAN_ERR_ILLPARAMVAL;
-    if((status & PCAN_ERROR_ILLDATA)      == PCAN_ERROR_ILLDATA)        return PCAN_ERR_ILLDATA;
-    if((status & PCAN_ERROR_ILLOPERATION) == PCAN_ERROR_ILLOPERATION)   return PCAN_ERR_ILLOPERATION;
-    if((status & PCAN_ERROR_CAUTION)      == PCAN_ERROR_CAUTION)        return PCAN_ERR_CAUTION;
-    if((status & PCAN_ERROR_INITIALIZE)   == PCAN_ERROR_INITIALIZE)     return CANERR_NOTINIT;
-    if((status & 0xFFFFFF00))
-        return PCAN_ERR_UNKNOWN;
-    else
-        return CANERR_NOERROR;
+    if((status & PCAN_ERROR_XMTFULL)      == PCAN_ERROR_XMTFULL)       return CANERR_TX_BUSY;
+    if((status & PCAN_ERROR_OVERRUN)      == PCAN_ERROR_OVERRUN)       return CANERR_MSG_LST;
+    if((status & PCAN_ERROR_BUSOFF)       == PCAN_ERROR_BUSOFF)        return CANERR_BOFF;
+    if((status & PCAN_ERROR_BUSPASSIVE)   == PCAN_ERROR_BUSPASSIVE)    return CANERR_EWRN;
+    if((status & PCAN_ERROR_BUSHEAVY)     == PCAN_ERROR_BUSHEAVY)      return CANERR_BERR;
+    if((status & PCAN_ERROR_BUSLIGHT)     == PCAN_ERROR_BUSLIGHT)      return CANERR_BERR;
+    if((status & PCAN_ERROR_QRCVEMPTY)    == PCAN_ERROR_QRCVEMPTY)     return CANERR_RX_EMPTY;
+    if((status & PCAN_ERROR_QOVERRUN)     == PCAN_ERROR_QOVERRUN)      return CANERR_MSG_LST;
+    if((status & PCAN_ERROR_QXMTFULL)     == PCAN_ERROR_QXMTFULL)      return CANERR_TX_BUSY;
+    if((status & PCAN_ERROR_REGTEST)      == PCAN_ERROR_REGTEST)       return PCAN_ERR_REGTEST;
+    if((status & PCAN_ERROR_NODRIVER)     == PCAN_ERROR_NODRIVER)      return PCAN_ERR_NODRIVER;
+    if((status & PCAN_ERROR_HWINUSE)      == PCAN_ERROR_HWINUSE)       return PCAN_ERR_HWINUSE;
+    if((status & PCAN_ERROR_NETINUSE)     == PCAN_ERROR_NETINUSE)      return PCAN_ERR_NETINUSE;
+    if((status & PCAN_ERROR_ILLHW)        == PCAN_ERROR_ILLHW)         return PCAN_ERR_ILLHW;
+    if((status & PCAN_ERROR_ILLNET)       == PCAN_ERROR_ILLNET)        return PCAN_ERR_ILLNET;
+    if((status & PCAN_ERROR_ILLCLIENT)    == PCAN_ERROR_ILLCLIENT)     return PCAN_ERR_ILLCLIENT;
+    if((status & PCAN_ERROR_RESOURCE)     == PCAN_ERROR_RESOURCE)      return PCAN_ERR_RESOURCE;
+    if((status & PCAN_ERROR_ILLPARAMTYPE) == PCAN_ERROR_ILLPARAMTYPE)  return PCAN_ERR_ILLPARAMTYPE;
+    if((status & PCAN_ERROR_ILLPARAMVAL)  == PCAN_ERROR_ILLPARAMVAL)   return PCAN_ERR_ILLPARAMVAL;
+    if((status & PCAN_ERROR_ILLDATA)      == PCAN_ERROR_ILLDATA)       return PCAN_ERR_ILLDATA;
+    if((status & PCAN_ERROR_CAUTION)      == PCAN_ERROR_CAUTION)       return PCAN_ERR_CAUTION;
+    if((status & PCAN_ERROR_INITIALIZE)   == PCAN_ERROR_INITIALIZE)    return CANERR_NOTINIT;
+    if((status & PCAN_ERROR_ILLOPERATION) == PCAN_ERROR_ILLOPERATION)  return PCAN_ERR_ILLOPERATION;
+
+    return PCAN_ERR_UNKNOWN;
 }
 
 /*  -----------  revision control  ---------------------------------------

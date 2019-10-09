@@ -39,7 +39,6 @@
 #ifndef __CAN_DEFS_H
 #define __CAN_DEFS_H
 
-
 /*  -----------  options  ------------------------------------------------
  */
 
@@ -91,7 +90,7 @@
  #define PCAN_ERR_OFFSET           -200 //   offset for PCANBasic-specific errors
  #define PCAN_ERR_UNKNOWN          -299 //   unknown error
 
- #define PCAN_LIB_ID                400 //   library ID (CAN/COP API V1 compatible)
+ #define PCAN_LIB_ID                400 //   library ID (CAN/COP API V1 compatible) 
 #ifndef __APPLE__
  #define PCAN_LIB_BASIC            "PCANBasic.DLL"
 #else
@@ -104,8 +103,6 @@
     unsigned short irq;                 //     interrupt number (parallel device)
  };
 #endif
-
-
 #endif /* __CAN_DEFS_H */
 /** @}
  */

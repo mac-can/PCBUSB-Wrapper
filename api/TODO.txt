@@ -1,4 +1,0 @@
-ToDo:
-- replace macros for BYTE, WORD, DWORD, QWORD by appropriated types
-- remove or comment out the _pcan_param (or at least think about it)
-- 

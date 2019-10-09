@@ -1,4 +1,4 @@
-/*  -- $HeadURL$ --
+/*  -- $HeadURL: https://svn.uv-software.net/projects/uv-software/CAN/I386/DRV/trunk/API/misc/bitrates.h $ --
  *
  *  project   :  CAN - Controller Area Network
  *
@@ -6,8 +6,9 @@
  *
  *  copyright :  (C) 2017-20xx, UV Software, Berlin
  *
- *  compiler  :  Microsoft Visual C/C++ Compiler (Version 19.15)
- *               Apple LLVM version (clang)
+ *  compiler  :  Microsoft Visual C/C++ Compiler
+ *               Apple LLVM (clang) Compiler
+ *               GNU C/C++ Compiler
  *
  *  export    :  int btr_string_to_bit_timing(const char *bit_rate,
  *                                            unsigned long *frequency, 
@@ -27,9 +28,9 @@
  *
  *  @brief       CAN FD Bit-rates (Converter)
  *
- *  @author      $Author$
+ *  @author      $Author: haumea $
  *
- *  @version     $Rev$
+ *  @version     $Rev: 592 $
  *
  *  @defgroup    bit_rate CAN FD Bit-rates (Converter)
  *  @{
@@ -51,11 +52,22 @@
 #define BTR_FREQUENCY_24MHz     (24000000u)
 #define BTR_FREQUENCY_20MHz     (20000000u)
 
-#define BTR_FREQUENCY_SJA1000   (8000000u)
-
 #define BTR_OPTION_TQ_MASK      (0x00000001u)
 #define BTR_OPTION_TQ_MANY      (0x00000001u)
 #define BTR_OPTION_TQ_FEW       (0x00000000u)
+
+#define BTR_FREQUENCY_SJA1000   (8000000u)
+
+#define BTR_INDEX_1M            (0)
+#define BTR_INDEX_800K          (-1)
+#define BTR_INDEX_500K          (-2)
+#define BTR_INDEX_250K          (-3)
+#define BTR_INDEX_125K          (-4)
+#define BTR_INDEX_100K          (-5)
+#define BTR_INDEX_50K           (-6)
+#define BTR_INDEX_20K           (-7)
+#define BTR_INDEX_10K           (-8)
+#define BTR_INDEX_5K            (-9)
 
 
 /*  -----------  types  --------------------------------------------------
@@ -82,23 +94,11 @@ struct btr_bit_timing
 
 /** @brief       TBD
  */
-int btr_string_to_bit_timing(const char *bit_rate, 
-                             unsigned long *frequency, 
-                             struct btr_bit_timing *btr_nominal, 
-                             struct btr_bit_timing *btr_data);
+int btr_string_to_bit_timing(const char *bit_rate,
+	                         unsigned long *frequency,
+	                         struct btr_bit_timing *btr_nominal,
+	                         struct btr_bit_timing *btr_data);
 
-/** @brief       TBD
- */
-unsigned long btr_calc_bit_rate_sja1000(unsigned short btr0btr1);
-
-/** @brief       TBD
- */
-float btr_calc_sample_point_sja1000(unsigned short btr0btr1);
-/** @brief       TBD
- */
-int btr_find_bit_timing_sja1000(unsigned long bit_rate, 
-                                float sample_point, 
-                                struct btr_bit_timing *bit_timing);
 
 /** @brief       TBD
  */
@@ -133,6 +133,30 @@ int btr_find_bit_timing_data(unsigned long bit_rate,
                              struct btr_bit_timing *bit_timing, 
                              unsigned long options);
 
+
+/** @brief       TBD
+ */
+int btr_index_to_bit_rate_sja1000(long index, unsigned short *btr0btr1);
+
+/** @brief       TBD
+ */
+int btr_index_to_bit_timing_sja1000(long index, 
+	                                unsigned long *frequency,
+	                                struct btr_bit_timing *btr_timing);
+
+/** @brief       TBD
+ */
+unsigned long btr_calc_bit_rate_sja1000(unsigned short btr0btr1);
+ 
+/** @brief       TBD
+ */
+float btr_calc_sample_point_sja1000(unsigned short btr0btr1);
+
+/** @brief       TBD
+ */
+int btr_find_bit_timing_sja1000(unsigned long bit_rate,
+	                            float sample_point,
+	                            struct btr_bit_timing *bit_timing);
 
 #endif /* BITRATES_H_INCLUDED */
 /** @}
