@@ -518,8 +518,8 @@ retry:
     }
     if(!can[handle].mode.b.fdoe) {      // CAN 2.0 message:
         msg->id = can_msg.ID;
-        msg->ext = can_msg.MSGTYPE & PCAN_MESSAGE_EXTENDED;
-        msg->rtr = can_msg.MSGTYPE & PCAN_MESSAGE_RTR;
+        msg->ext = (can_msg.MSGTYPE & PCAN_MESSAGE_EXTENDED) ? 1 : 0;
+        msg->rtr = (can_msg.MSGTYPE & PCAN_MESSAGE_RTR) ? 1 : 0;
         msg->fdf = 0;
         msg->brs = 0;
         msg->esi = 0;
@@ -531,11 +531,11 @@ retry:
     }
     else {                              // CAN FD message:
         msg->id = can_msg_fd.ID;
-        msg->ext = can_msg_fd.MSGTYPE & PCAN_MESSAGE_EXTENDED;
-        msg->rtr = can_msg_fd.MSGTYPE & PCAN_MESSAGE_RTR;
-        msg->fdf = can_msg_fd.MSGTYPE & PCAN_MESSAGE_FD;
-        msg->brs = can_msg_fd.MSGTYPE & PCAN_MESSAGE_BRS;
-        msg->esi = can_msg_fd.MSGTYPE & PCAN_MESSAGE_ESI;
+        msg->ext = (can_msg_fd.MSGTYPE & PCAN_MESSAGE_EXTENDED) ? 1 : 0;
+        msg->rtr = (can_msg_fd.MSGTYPE & PCAN_MESSAGE_RTR) ? 1 : 0;
+        msg->fdf = (can_msg_fd.MSGTYPE & PCAN_MESSAGE_FD) ? 1 : 0;
+        msg->brs = (can_msg_fd.MSGTYPE & PCAN_MESSAGE_BRS) ? 1 : 0;
+        msg->esi = (can_msg_fd.MSGTYPE & PCAN_MESSAGE_ESI) ? 1 : 0;
         msg->dlc = can_msg_fd.DLC;
         memcpy(msg->data, can_msg_fd.DATA, CANFD_MAX_LEN);
         msg->timestamp.sec = (long)(timestamp_fd / 1000000ull);
