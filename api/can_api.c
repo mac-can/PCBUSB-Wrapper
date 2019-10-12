@@ -32,11 +32,15 @@
  *  @{
  */
 
-#define VERSION "0.2.dev"
+#define VERSION_MAJOR    0
+#define VERSION_MINOR    2
+#define VERSION_REVISION 0
+#define VERSION_STRING   TOSTRING(VERSION_MAJOR)"." TOSTRING(VERSION_MINOR)"."TOSTRING(VERSION_REVISION)
+#include "can_vers.h"
 #ifdef _DEBUG
-static char _id[] = "CAN API V3 for PEAK PCAN-USB Interfaces, Version "VERSION" (macOS) _DEBUG";
+    static char _id[] = "CAN API V3 for PEAK PCAN-Basic Interfaces, Version "VERSION_STRING"-"TOSTRING(BUILD_NO)" (macOS) _DEBUG";
 #else
-static char _id[] = "CAN API V3 for PEAK PCAN-USB Interfaces, Version "VERSION" (macOS)";
+    static char _id[] = "CAN API V3 for PEAK PCAN-Basic Interfaces, Version "VERSION_STRING"-"TOSTRING(BUILD_NO)" (macOS)";
 #endif
 
 /*  -----------  includes  -------------------------------------------------
@@ -708,16 +712,16 @@ char *can_software(int handle)
 }
 
 EXPORT
-int can_library(int *library)
+int can_library(unsigned short *version, unsigned char *revision, unsigned long *build)
 {
-    //if(!init)                         // must be initialized!
-    //  return CANERR_NOTINIT;
-    if(library == NULL)                 // null-pointer assignment!
-        return CANERR_NULLPTR;
+    if(version)
+        *version = ((unsigned short)VERSION_MAJOR << 8) | ((unsigned short)VERSION_MINOR & 0x00FFu);
+    if(revision)
+        *revision = (unsigned char)VERSION_REVISION;
+    if(build)
+        *build = (unsigned long)BUILD_NO;
 
-    *library = PCAN_LIB_ID;             // library ID
-
-    return CANERR_NOERROR;
+    return PCAN_LIB_ID;                 // library ID
 }
 
 /*  -----------  local functions  ----------------------------------------
