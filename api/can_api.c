@@ -271,7 +271,7 @@ int can_exit(int handle)
     if(can[handle].board == PCAN_NONEBUS) // must be an opened handle!
         return CANERR_HANDLE;
 
-    /*if(!can[handle].status.b.can_stopped) // release the CAN interface!*/
+    /*if(!can[handle].status.b.can_stopped) // release the CAN interface: */
     {
         CAN_Uninitialize(can[handle].board);
 #ifndef _WIN32
@@ -614,7 +614,7 @@ int can_busload(int handle, unsigned char *load, unsigned char *status)
 }
 
 EXPORT
-int can_bitrate(int handle, can_bitrate_t *bitrate, unsigned char *status)
+int can_bitrate(int handle, can_bitrate_t *bitrate, can_speed_t *speed)
 {
     if(!init)                           // must be initialized!
         return CANERR_NOTINIT;
@@ -626,8 +626,10 @@ int can_bitrate(int handle, can_bitrate_t *bitrate, unsigned char *status)
     if(!can[handle].status.b.can_stopped) { // must be running:
         if(bitrate)
             memcpy(bitrate, &can[handle].bitrate, sizeof(can_bitrate_t));
+        if (speed)
+            memset(speed, 0, sizeof(can_speed_t)); // TODO: calculate this!
     }
-    return can_status(handle, status);  // status-register
+    return can_status(handle, NULL);    // current status
 }
 
 EXPORT
