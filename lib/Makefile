@@ -70,7 +70,7 @@ endif
 
 OBJECTS = $(OUTDIR)/can_api.o
 
-CAN_API_DEPS = $(DRV)/can_api.h $(DRV)/can_defs.h
+CAN_API_DEPS = $(DRV)/can_api.h $(DRV)/can_defs.h $(DRV)/can_vers.h
 
 CC = gcc
 LD = gcc

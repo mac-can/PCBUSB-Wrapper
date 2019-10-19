@@ -23,7 +23,7 @@ OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/can_api.o $(OUTDIR)/bitrates.o $(OUTDIR)/pr
 
 MAIN_DEPS = $(DRV)/can_api.h $(DRV)/can_defs.h bitrates.h printmsg.h
 
-CAN_API_DEPS = $(DRV)/can_api.h $(DRV)/can_defs.h
+CAN_API_DEPS = $(DRV)/can_api.h $(DRV)/can_defs.h $(DRV)/can_vers.h
 
 BITRATES_DEPS = bitrates.h
 
