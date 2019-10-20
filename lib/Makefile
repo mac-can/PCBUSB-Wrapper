@@ -23,29 +23,6 @@ current_OS := $(patsubst MSYS%,MinGW,$(current_OS))
 
 DRV	= ../api
 
-ifeq ($(current_OS),Linux) # linux - libuvcanpcb.so.X - - - - - - - - - - - - -
-
-VERSION = 0.1
-
-LIBRARY = libuvcanpcb
-
-INSTALL = /usr/local/lib
-
-SONAME = $(LIBRARY).so.1
-
-TARGET  = $(SONAME).$(VERSION)
-
-CFLAGS	= -fPIC -Wall -Wno-parentheses \
- 	-fno-strict-aliasing \
- 	-D_CANAPI_EXTERN \
- 	-I$(DRV)
-
-LIBRARIES = -lXYZ...
-
-LDFLAGS = --shared -Wl,-soname,$(SONAME) -lc
-
-endif
-
 ifeq ($(current_OS),Darwin) # MacOS - libUVCANPCB.dylib - - - - - - - - - - - -
 
 VERSION = 0.2.dev
@@ -56,7 +33,7 @@ INSTALL = /usr/local/lib
 
 TARGET  = $(LIBRARY).$(VERSION).dylib
 
-CFLAGS	= -Wall -Wno-parentheses \
+CFLAGS += -Wall -Wno-parentheses \
 	-fno-strict-aliasing \
 	-D_CANAPI_SHARED_LIBRARY \
 	-D_CANAPI_EXTERN \
@@ -64,7 +41,7 @@ CFLAGS	= -Wall -Wno-parentheses \
 
 LIBRARIES = -lPCBUSB
 
-LDFLAGS = -nostartfiles -dynamiclib
+LDFLAGS  += -nostartfiles -dynamiclib
 
 endif
 

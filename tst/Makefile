@@ -15,9 +15,33 @@
 #
 # #############################################################################
 
+current_OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown OS')
+current_OS := $(patsubst CYGWIN%,Cygwin,$(current_OS))
+current_OS := $(patsubst MINGW%,MinGW,$(current_OS))
+current_OS := $(patsubst MSYS%,MinGW,$(current_OS))
+
+# #############################################################################
+
 DRV	= ../api
 
+ifeq ($(current_OS),Darwin) # MacOS - libUVCANPCB.dylib - - - - - - - - - - - -
+
+VERSION = 0
+
+INSTALL = ~/bin
+
 TARGET	= pcb_test
+
+CFLAGS += -O2 -Wall -Wno-parentheses \
+	-fno-strict-aliasing \
+	-D_CANAPI_EXTERN \
+	-I$(DRV)
+
+LIBRARIES = -lPCBUSB
+
+LDFLAGS  +=
+
+endif
 
 OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/can_api.o $(OUTDIR)/bitrates.o $(OUTDIR)/printmsg.o
 
@@ -29,15 +53,6 @@ BITRATES_DEPS = bitrates.h
 
 PRINTMSG_DEPS = printmsg.h
 
-CFLAGS	= -O2 -Wall -Wno-parentheses \
-	-fno-strict-aliasing \
-	-D_CANAPI_EXTERN \
-	-I$(DRV)
-
-LIBRARIES = -lPCBUSB
-
-LDFLAGS =
-
 CC = gcc
 LD = gcc
 RM = rm -f
@@ -46,10 +61,15 @@ CP = cp -f
 OUTDIR = .objects
 
 
-.PHONY: outdir
+.PHONY: outdir info
 
 
-all: outdir $(TARGET)
+all: info outdir $(TARGET)
+
+info:
+	@echo $(CC)" on "$(current_OS)
+	@echo "Target: "$(TARGET)
+	@echo "install: "$(INSTALL)
 
 outdir:
 	@mkdir -p $(OUTDIR)
@@ -58,7 +78,7 @@ clean:
 	$(RM) $(TARGET) $(OUTDIR)/*.o
 
 install:
-	$(CP) $(TARGET) ~/bin
+	$(CP) $(TARGET) $(INSTALL)
 
 distclean:
 	$(RM) $(TARGET) $(OUTDIR)/*.o $(DRV)/*~ *~
