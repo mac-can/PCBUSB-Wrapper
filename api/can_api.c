@@ -468,7 +468,7 @@ int can_write(int handle, const can_msg_t *msg)
         return CANERR_HANDLE;
     if(msg == NULL)                     // check for null-pointer
         return CANERR_NULLPTR;
-    if(can[handle].status.b.can_stopped)// must be running
+    if(can[handle].status.b.can_stopped) // must be running
         return CANERR_OFFLINE;
 
     if(!can[handle].mode.b.fdoe) {
@@ -539,7 +539,7 @@ int can_read(int handle, can_msg_t *msg, unsigned short timeout)
         return CANERR_HANDLE;
     if(msg == NULL)                     // check for null-pointer
         return CANERR_NULLPTR;
-    if(can[handle].status.b.can_stopped)// must be running
+    if(can[handle].status.b.can_stopped) // must be running
         return CANERR_OFFLINE;
 
     // blocking read
@@ -623,7 +623,7 @@ int can_status(int handle, unsigned char *status)
     if(can[handle].board == PCAN_NONEBUS) // must be an opened handle
         return CANERR_HANDLE;
 
-    if(!can[handle].status.b.can_stopped)   {   // must be running:
+    if(!can[handle].status.b.can_stopped) { // only when running:
         if((rc = CAN_GetStatus(can[handle].board)) > 255) // FIXME: mask it out!
             return pcan_error(rc);
         can[handle].status.b.bus_off = (rc & PCAN_ERROR_BUSOFF) != PCAN_ERROR_OK;
@@ -648,7 +648,7 @@ int can_busload(int handle, unsigned char *load, unsigned char *status)
     if(can[handle].board == PCAN_NONEBUS) // must be an opened handle
         return CANERR_HANDLE;
 
-    if(!can[handle].status.b.can_stopped) { // must be running:
+    if(!can[handle].status.b.can_stopped) { // only when running:
         if(load)
             *load = 0;                  //   TODO: bus-load [percent]
     }
@@ -664,14 +664,15 @@ int can_bitrate(int handle, can_bitrate_t *bitrate, can_speed_t *speed)
         return CANERR_HANDLE;
     if(can[handle].board == PCAN_NONEBUS) // must be an opened handle
         return CANERR_HANDLE;
+    if(can[handle].status.b.can_stopped) // must be running
+        return CANERR_OFFLINE;
 
-    if(!can[handle].status.b.can_stopped) { // must be running:
-        if(bitrate)
-            memcpy(bitrate, &can[handle].bitrate, sizeof(can_bitrate_t));
-        if (speed)
-            memset(speed, 0, sizeof(can_speed_t)); // TODO: calculate this!
-    }
-    return can_status(handle, NULL);    // current status
+    if(bitrate)
+        memcpy(bitrate, &can[handle].bitrate, sizeof(can_bitrate_t));
+    if (speed)
+        memset(speed, 0, sizeof(can_speed_t)); // TODO: calculate this!
+
+    return CANERR_NOERROR;
 }
 
 EXPORT
