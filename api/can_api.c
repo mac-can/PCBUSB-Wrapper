@@ -65,20 +65,22 @@
 /*  -----------  includes  -------------------------------------------------
  */
 
-#include "can_api.h"                    // Interface prototypes
+#include "can_api.h"
 
-#include <stdio.h>                      // Standard I/O routines
-#include <string.h>                     // String manipulation functions
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
 #ifdef _WIN32
-#include <windows.h>                    // Master include file for Windows
-#include "PCANBasic.h"                  // PEAK PCAN-Basic device(s)
+#include <windows.h>
+#include "PCANBasic.h"
 #else
-#include <unistd.h>                     // Posix: standard symbolic constants and types
-#include <sys/select.h>                 // Posix: select types
-#include "PCBUSB.h"                     // PEAK PCAN-USB interface(s)
+#include <unistd.h>
+#include <sys/select.h>
+#include "PCBUSB.h"
 #endif
 
-/*  -----------  defines  ------------------------------------------------
+
+/*  -----------  options  ------------------------------------------------
  */
 
 #ifdef _CANAPI_SHARED_LIBRARY
@@ -98,21 +100,22 @@
 #ifndef DLC2LEN
 #define DLC2LEN(x)              dlc_table[x & 0xF]
 #endif
+#ifdef _CiA_BIT_TIMING
+#undef  PCAN_BAUD_100K
+#define PCAN_BAUD_100K          0x441Cu
+#undef  PCAN_BAUD_50K
+#define PCAN_BAUD_50K           0x491Cu
+#undef  PCAN_BAUD_20K
+#define PCAN_BAUD_20K           0x581Cu
+#undef  PCAN_BAUD_10K
+#define PCAN_BAUD_10K           0x711Cu
+#endif
+#ifndef QWORD
+#define QWORD                   unsigned long long
+#endif
 
 /*  -----------  types  --------------------------------------------------
  */
-
-typedef union {
-    BYTE byte;                          // byte access
-    struct {                            // bit access:
-        BYTE mon : 1;                   //   monitor mode enable/disable
-        BYTE : 3;                       //   (reserved)
-        BYTE niso : 1;                  //   Non-ISO CAN FD enable
-        BYTE : 1;                       //   (reserved)
-        BYTE brse : 1;                  //   bit-rate switch enable
-        BYTE fdoe : 1;                  //   CAN FD operation enable
-    }   b;
-}   can_mode_t;
 
 typedef struct {
     TPCANHandle board;                  // board hardware channel handle
@@ -134,6 +137,16 @@ typedef struct {
  */
 
 static int pcan_error(TPCANStatus);     // PCAN specific errors
+
+static int bitrate2register(const can_bitrate_t *bitrate, TPCANBaudrate *btr0btr1);
+static int register2bitrate(const TPCANBaudrate btr0btr1, can_bitrate_t *bitrate);
+static int bitrate2string(const can_bitrate_t *bitrate, TPCANBitrateFD string, int brse);
+static int string2bitrate(const TPCANBitrateFD string, can_bitrate_t *bitrate, int brse);
+
+static int lib_parameter(int param, void *value, size_t nbytes);
+static int drv_parameter(int handle, int param, void *value, size_t nbytes);
+
+static int calc_speed(can_bitrate_t *bitrate, can_speed_t *speed, int modify);
 
 
 /*  -----------  variables  ----------------------------------------------
@@ -164,10 +177,8 @@ can_board_t can_board[PCAN_BOARDS] =    // list of CAN Interface boards:
 static const BYTE dlc_table[16] = {     // DLC to length
     0,1,2,3,4,5,6,7,8,12,16,20,24,32,48,64
 };
-static can_interface_t can[PCAN_MAX_HANDLES];   // interface handles
-static char hardware[256] = "";         // hardware version of the CAN interface board
-static char software[256] = "";         // software version of the CAN interface driver
-static int  init = 0;                   // initialization flag
+static can_interface_t can[PCAN_MAX_HANDLES]; // interface handles
+static int init = 0;                    // initialization flag
 
 
 /*  -----------  functions  ----------------------------------------------
@@ -205,7 +216,6 @@ int can_test(int board, unsigned char mode, const void *param, int *result)
             can[i].initialized = 0;
             can[i].mode.byte = CANMODE_DEFAULT;
             can[i].status.byte = CANSTAT_RESET;
-            can[i].bitrate.index = -CANBDR_250;
         }
         init = 1;                       //   set initialization flag
     }
@@ -239,8 +249,17 @@ int can_test(int board, unsigned char mode, const void *param, int *result)
             return CANERR_ILLPARA; // CAN FD operation requested, but not supported
         if((mode & CANMODE_BRSE) && !(mode & CANMODE_FDOE))
             return CANERR_ILLPARA; // bit-rate switching requested, but CAN FD not enabled
-        // TODO: mode NISO?
-        // TODO: mode MON?
+        /*if((mode & CANMODE_NISO)) {} // This can not be determined (FIXME) */
+#if (0)
+        /*if((mode & CANMODE_NXTD)) {} // PCAN_ACCEPTANCE_FILTER_29BIT available since version 0.9 */
+        /*if((mode & CANMODE_NRTR)) {} // PCAN_ALLOW_RTR_FRAMES available since version 0.9 */
+        /*if((mode & CANMODE_ERR)) {}  // PCAN_ALLOW_ERROR_FRAMES available since version 0.9 */
+#else
+        if((mode & CANMODE_NXTD)) return CANERR_ILLPARA; // PCAN_ACCEPTANCE_FILTER_29BIT not implemented yet! */
+        if((mode & CANMODE_NRTR)) return CANERR_ILLPARA; // PCAN_ALLOW_RTR_FRAMES not implemented yet! */
+        if((mode & CANMODE_ERR)) return CANERR_ILLPARA;  // PCAN_ALLOW_ERROR_FRAMES not implemented yet! */
+#endif
+        /*if((mode & CANMODE_MON)) {}  // PCAN_LISTEN_ONLY available since version 0.4 */
     }
     (void)param;
     return CANERR_NOERROR;
@@ -262,7 +281,6 @@ int can_init(int board, unsigned char mode, const void *param)
             can[i].initialized = 0;
             can[i].mode.byte = CANMODE_DEFAULT;
             can[i].status.byte = CANSTAT_RESET;
-            can[i].bitrate.index = -CANBDR_250;
         }
         init = 1;                       //   set initialization flag
     }
@@ -305,32 +323,55 @@ int can_init(int board, unsigned char mode, const void *param)
 EXPORT
 int can_exit(int handle)
 {
+    int i;
+
     if(!init)                           // must be initialized
         return CANERR_NOTINIT;
-    if(!IS_HANDLE_VALID(handle))        // must be a valid handle
-        return CANERR_HANDLE;
-    if(can[handle].board == PCAN_NONEBUS) // must be an opened handle
-        return CANERR_HANDLE;
-
-    /*if(!can[handle].status.b.can_stopped) // release the CAN interface: */
-    {
-        CAN_Uninitialize(can[handle].board);
+    if(handle != CANEXIT_ALL) {
+        if(!IS_HANDLE_VALID(handle))   // must be a valid handle
+            return CANERR_HANDLE;
+        if(can[handle].board == PCAN_NONEBUS) // must be an opened handle
+            return CANERR_HANDLE;
+        /*if(!can[handle].status.b.can_stopped) // release the CAN interface: */
+        if(can[handle].initialized)  // FIXME: due to deffered initialzation!
+        {
+            CAN_Uninitialize(can[handle].board); // resistance is futile!
 #ifndef _WIN32
-        close(can[handle].fdes);
+            close(can[handle].fdes);
 #endif
+            can[handle].initialized = 0;
+        }
+        can[handle].status.byte |= CANSTAT_RESET;// CAN controller in INIT state
+        can[handle].board = PCAN_NONEBUS; // handle can be used again
     }
-    can[handle].status.byte |= CANSTAT_RESET;// CAN controller in INIT state
-    can[handle].board = PCAN_NONEBUS;   // handle can be used again
-
+    else {
+        for(i = 0; i < PCAN_MAX_HANDLES; i++) {
+            if(can[i].board != PCAN_NONEBUS) // must be an opened handle
+            {
+                /*if(!can[i].status.b.can_stopped) // release the CAN interface: */
+                if(can[i].initialized)  // FIXME: due to deffered initialzation!
+                {
+                    CAN_Uninitialize(can[i].board); // resistance is futile!
+#ifndef _WIN32
+                    close(can[handle].fdes);
+#endif
+                    can[i].initialized = 0;
+                }
+                can[i].status.byte |= CANSTAT_RESET;// CAN controller in INIT state
+                can[i].board = PCAN_NONEBUS; // handle can be used again
+            }
+        }
+    }
     return CANERR_NOERROR;
 }
 
 EXPORT
 int can_start(int handle, const can_bitrate_t *bitrate)
 {
-    TPCANBaudrate baudrate;             // btr0btr1 value
-    char string[256];                   // bit-rate string
+    TPCANBaudrate btr0btr1;             // btr0btr1 value
+    char string[PCAN_BUF_SIZE];         // bit-rate string
     DWORD value;                        // parameter value
+//    QWORD filter;                       // for 29-bit filter
     TPCANStatus rc;                     // return value
 
     if(!init)                           // must be initialized
@@ -345,81 +386,70 @@ int can_start(int handle, const can_bitrate_t *bitrate)
         return CANERR_ONLINE;
 
     if(bitrate->index <= 0) {           // btr0btr1 from index
-        switch(bitrate->index * (-1)) {
-        case CANBDR_1000: baudrate = PCAN_BAUD_1M; break;
-        case CANBDR_800: baudrate = PCAN_BAUD_800K; break;
-        case CANBDR_500: baudrate = PCAN_BAUD_500K; break;
-        case CANBDR_250: baudrate = PCAN_BAUD_250K; break;
-        case CANBDR_125: baudrate = PCAN_BAUD_125K; break;
-        case CANBDR_100: baudrate = PCAN_BAUD_100K; break;
-        case CANBDR_50: baudrate = PCAN_BAUD_50K; break;
-        case CANBDR_20: baudrate = PCAN_BAUD_20K; break;
-        case CANBDR_10: baudrate = PCAN_BAUD_10K; break;
+        switch(bitrate->index) {
+        case CANBTR_INDEX_1M: btr0btr1 = PCAN_BAUD_1M; break;
+        case CANBTR_INDEX_800K: btr0btr1 = PCAN_BAUD_800K; break;
+        case CANBTR_INDEX_500K: btr0btr1 = PCAN_BAUD_500K; break;
+        case CANBTR_INDEX_250K: btr0btr1 = PCAN_BAUD_250K; break;
+        case CANBTR_INDEX_125K: btr0btr1 = PCAN_BAUD_125K; break;
+        case CANBTR_INDEX_100K: btr0btr1 = PCAN_BAUD_100K; break;
+        case CANBTR_INDEX_50K: btr0btr1 = PCAN_BAUD_50K; break;
+        case CANBTR_INDEX_20K: btr0btr1 = PCAN_BAUD_20K; break;
+        case CANBTR_INDEX_10K: btr0btr1 = PCAN_BAUD_10K; break;
         default: return CANERR_BAUDRATE;
         }
     }
     else if(!can[handle].mode.b.fdoe) { // btr0btr1 for CAN 2.0
-        if(bitrate->btr.frequency != 8000000) return CANERR_BAUDRATE;   // SJA1000 @ 8MHz
-        if((bitrate->btr.nominal.brp < 1) || (64 < bitrate->btr.nominal.brp)) return CANERR_BAUDRATE;
-        if((bitrate->btr.nominal.tseg1 < 1) || (16 < bitrate->btr.nominal.tseg1)) return CANERR_BAUDRATE;
-        if((bitrate->btr.nominal.tseg2 < 1) || (8 < bitrate->btr.nominal.tseg2)) return CANERR_BAUDRATE;
-        if((bitrate->btr.nominal.sjw < 1) || (4 < bitrate->btr.nominal.sjw)) return CANERR_BAUDRATE;
-        if((bitrate->btr.nominal.sam > 1)) return CANERR_BAUDRATE;
-        /* +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+ */
-        /* |  SJW  |          BRP          |SAM|   TSEG2   |     TSEG1     | */
-        /* +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+ */
-        baudrate = ((((TPCANBaudrate)(bitrate->btr.nominal.sjw - 1) & 0x0003) << 14)  | \
-                    (((TPCANBaudrate)(bitrate->btr.nominal.brp - 1) & 0x003F) << 8)   | \
-                    (((TPCANBaudrate)(bitrate->btr.nominal.sam - 1) & 0x0001) << 7)   | \
-                    (((TPCANBaudrate)(bitrate->btr.nominal.tseg2 - 1) & 0x0007) << 4) | \
-                    (((TPCANBaudrate)(bitrate->btr.nominal.tseg1 - 1) & 0x000F) << 0));
+        if((rc = bitrate2register(bitrate, &btr0btr1)) != CANERR_NOERROR)
+            return CANERR_BAUDRATE;
     }
     else {                              // a string for CAN FD
-        if(can[handle].mode.b.brse)     //   long frames and fast frames
-            snprintf(string, 256, "f_clock=%li,nom_brp=%u,nom_tseg1=%u,nom_tseg2=%u,nom_sjw=%u,nom_sam=%u," \
-                                  "data_brp=%u,data_tseg1=%u,data_tseg2=%u,data_sjw=%u",
-                     bitrate->btr.frequency,
-                     bitrate->btr.nominal.brp,
-                     bitrate->btr.nominal.tseg1,
-                     bitrate->btr.nominal.tseg2,
-                     bitrate->btr.nominal.sjw,
-                     bitrate->btr.nominal.sam,
-                     bitrate->btr.data.brp,
-                     bitrate->btr.data.tseg1,
-                     bitrate->btr.data.tseg2,
-                     bitrate->btr.data.sjw);
-        else                            //   long frames or CAN 2.0
-            snprintf(string, 256, "f_clock=%li,nom_brp=%u,nom_tseg1=%u,nom_tseg2=%u,nom_sjw=%u,nom_sam=%u",
-                     bitrate->btr.frequency,
-                     bitrate->btr.nominal.brp,
-                     bitrate->btr.nominal.tseg1,
-                     bitrate->btr.nominal.tseg2,
-                     bitrate->btr.nominal.sjw,
-                     bitrate->btr.nominal.sam);
+        if((rc = bitrate2string(bitrate, string, can[handle].mode.b.brse)) != CANERR_NOERROR)
+            return CANERR_BAUDRATE;
     }
-    if(can[handle].initialized) {       // re-initialize CAN controller
+    if(can[handle].initialized) {       // re-initialize CAN controller (FIXME)
         if((rc = CAN_Reset(can[handle].board)) !=  PCAN_ERROR_OK)
             return pcan_error(rc);
         if((rc = CAN_Uninitialize(can[handle].board)) !=  PCAN_ERROR_OK)
             return pcan_error(rc);
         can[handle].initialized = 0;
     }
-    if(can[handle].mode.b.mon) {        // set listen-only mode?
-        value = PCAN_PARAMETER_ON;
-        if((rc = CAN_SetValue(can[handle].board, PCAN_LISTEN_ONLY,
-                              (void*)&value, sizeof(value))) != PCAN_ERROR_OK)
-            return pcan_error(rc);
-    }
     if(can[handle].mode.b.fdoe) {       // CAN FD operation mode?
         if((rc = CAN_InitializeFD(can[handle].board, string)) != PCAN_ERROR_OK)
             return pcan_error(rc);
     }
     else {                              // CAN 2.0 operation mode!
-        if((rc = CAN_Initialize(can[handle].board, baudrate,
+        if((rc = CAN_Initialize(can[handle].board, btr0btr1,
                                 can[handle].brd_type, can[handle].brd_port,
                                 can[handle].brd_irq)) != PCAN_ERROR_OK)
             return pcan_error(rc);
     }
+    value = (can[handle].mode.b.mon) ? PCAN_PARAMETER_ON : PCAN_PARAMETER_OFF;
+    if((rc = CAN_SetValue(can[handle].board, PCAN_LISTEN_ONLY,
+                   (void*)&value, sizeof(value))) != PCAN_ERROR_OK) {
+        CAN_Uninitialize(can[handle].board);
+        return pcan_error(rc);
+    }
+#if (0)
+    value = (can[handle].mode.b.err) ? PCAN_PARAMETER_ON : PCAN_PARAMETER_OFF;
+    if((rc = CAN_SetValue(can[handle].board, PCAN_ALLOW_ERROR_FRAMES,
+                     (void*)&value, sizeof(value))) != PCAN_ERROR_OK) {
+        CAN_Uninitialize(can[handle].board);
+        return pcan_error(rc);
+    }
+    value = (can[handle].mode.b.nrtr) ? PCAN_PARAMETER_OFF : PCAN_PARAMETER_ON;
+    if((rc = CAN_SetValue(can[handle].board, PCAN_ALLOW_RTR_FRAMES, // TODO: fdoe?
+                  (void*)&value, sizeof(value))) != PCAN_ERROR_OK) {
+        CAN_Uninitialize(can[handle].board);
+        return pcan_error(rc);
+    }
+    filter = (can[handle].mode.b.nxtd) ? 0x1FFFFFFF1FFFFFFFull : 0x000000001FFFFFFFull;
+    if((rc = CAN_SetValue(can[handle].board, PCAN_ACCEPTANCE_FILTER_29BIT,
+                          (void*)&filter, sizeof(filter))) != PCAN_ERROR_OK) {
+        CAN_Uninitialize(can[handle].board);
+        return pcan_error(rc);
+    }
+#endif
 #ifndef _WIN32
     if((rc = CAN_GetValue(can[handle].board, PCAN_RECEIVE_EVENT,
                          &can[handle].fdes, sizeof(int))) != PCAN_ERROR_OK) {
@@ -427,7 +457,6 @@ int can_start(int handle, const can_bitrate_t *bitrate)
         return pcan_error(rc);
     }
 #endif
-    memcpy(&can[handle].bitrate, bitrate, sizeof(can_bitrate_t));
     can[handle].status.byte = 0x00;     // clear old status bits
     can[handle].status.b.can_stopped = 0;// CAN controller started
     can[handle].initialized = 1;
@@ -487,7 +516,7 @@ int can_write(int handle, const can_msg_t *msg)
         rc = CAN_Write(can[handle].board, &can_msg);
     }
     else {
-        if(msg->dlc > CANFD_MAX_LEN)    //   data length 0 .. 64!
+        if(msg->dlc > CANFD_MAX_DLC)    //   data length 0 .. 0Fh!
             return CANERR_ILLPARA;
         if(msg->ext)                    //   29-bit identifier
             can_msg_fd.MSGTYPE = PCAN_MESSAGE_EXTENDED;
@@ -510,13 +539,13 @@ int can_write(int handle, const can_msg_t *msg)
             can[handle].status.b.transmitter_busy = 1;
             return CANERR_TX_BUSY;      //     transmitter busy
         }
-        else if((rc & PCAN_ERROR_XMTFULL)){//transmission pending?
+        if((rc & PCAN_ERROR_XMTFULL)) { //   transmission pending?
             can[handle].status.b.transmitter_busy = 1;
             return CANERR_TX_BUSY;      //     transmitter busy
         }
         return pcan_error(rc);          //   PCAN specific error?
     }
-    can[handle].status.b.transmitter_busy = 0;  // message transmitted
+    can[handle].status.b.transmitter_busy = 0; // message transmitted
 
     return CANERR_NOERROR;
 }
@@ -570,18 +599,25 @@ retry:
         can[handle].status.b.receiver_empty = 1;
         return CANERR_RX_EMPTY;         //   receiver empty!
     }
-    if(rc != PCAN_ERROR_OK) {
+    /*if(rc != PCAN_ERROR_OK) { // Is this a good idea? */
+    if((rc & ~(PCAN_ERROR_ANYBUSERR |
+               PCAN_ERROR_OVERRUN | PCAN_ERROR_QOVERRUN |
+               PCAN_ERROR_XMTFULL | PCAN_ERROR_QXMTFULL))) {
         return pcan_error(rc);          //   something's wrong
     }
-    if((can_msg.MSGTYPE == PCAN_MESSAGE_STATUS) ||
-       (can_msg_fd.MSGTYPE == PCAN_MESSAGE_STATUS)) {
-        can[handle].status.b.bus_off = (can_msg.DATA[3] & PCAN_ERROR_BUSOFF) != PCAN_ERROR_OK;
-        can[handle].status.b.bus_error = (can_msg.DATA[3] & PCAN_ERROR_BUSLIGHT) != PCAN_ERROR_OK;
-        can[handle].status.b.warning_level = (can_msg.DATA[3] & PCAN_ERROR_BUSHEAVY) != PCAN_ERROR_OK;
-        can[handle].status.b.message_lost |= (can_msg.DATA[3] & PCAN_ERROR_OVERRUN) != PCAN_ERROR_OK;
-        return CANERR_RX_EMPTY;         //   receiver empty
-    }
     if(!can[handle].mode.b.fdoe) {      // CAN 2.0 message:
+        if((can_msg.MSGTYPE & PCAN_MESSAGE_STATUS)) {
+            can[handle].status.b.bus_off = (can_msg.DATA[3] & PCAN_ERROR_BUSOFF) != PCAN_ERROR_OK;
+            can[handle].status.b.bus_error = (can_msg.DATA[3] & PCAN_ERROR_BUSPASSIVE) != PCAN_ERROR_OK;
+            can[handle].status.b.warning_level = (can_msg.DATA[3] & PCAN_ERROR_BUSWARNING) != PCAN_ERROR_OK;
+            can[handle].status.b.message_lost |= (can_msg.DATA[3] & PCAN_ERROR_OVERRUN) != PCAN_ERROR_OK;
+            can[handle].status.b.receiver_empty = 1;
+            return CANERR_RX_EMPTY;     //   receiver empty
+        }
+        if((can_msg.MSGTYPE & PCAN_MESSAGE_ERRFRAME))  {
+            can[handle].status.b.receiver_empty = 1;
+            return CANERR_ERR_FRAME;    //   error frame received
+        }
         msg->id = can_msg.ID;
         msg->ext = (can_msg.MSGTYPE & PCAN_MESSAGE_EXTENDED) ? 1 : 0;
         msg->rtr = (can_msg.MSGTYPE & PCAN_MESSAGE_RTR) ? 1 : 0;
@@ -595,6 +631,18 @@ retry:
         msg->timestamp.usec = (((long)(msec % 1000ull)) * 1000L) + (long)timestamp.micros;
     }
     else {                              // CAN FD message:
+        if((can_msg_fd.MSGTYPE & PCAN_MESSAGE_STATUS)) {
+            can[handle].status.b.bus_off = (can_msg_fd.DATA[3] & PCAN_ERROR_BUSOFF) != PCAN_ERROR_OK;
+            can[handle].status.b.bus_error = (can_msg_fd.DATA[3] & PCAN_ERROR_BUSPASSIVE) != PCAN_ERROR_OK;
+            can[handle].status.b.warning_level = (can_msg_fd.DATA[3] & PCAN_ERROR_BUSWARNING) != PCAN_ERROR_OK;
+            can[handle].status.b.message_lost |= (can_msg_fd.DATA[3] & PCAN_ERROR_OVERRUN) != PCAN_ERROR_OK;
+            can[handle].status.b.receiver_empty = 1;
+            return CANERR_RX_EMPTY;     //   receiver empty
+        }
+        if((can_msg_fd.MSGTYPE & PCAN_MESSAGE_ERRFRAME)) {
+            can[handle].status.b.receiver_empty = 1;
+            return CANERR_ERR_FRAME;    //   error frame received
+        }
         msg->id = can_msg_fd.ID;
         msg->ext = (can_msg_fd.MSGTYPE & PCAN_MESSAGE_EXTENDED) ? 1 : 0;
         msg->rtr = (can_msg_fd.MSGTYPE & PCAN_MESSAGE_RTR) ? 1 : 0;
@@ -606,7 +654,7 @@ retry:
         msg->timestamp.sec = (long)(timestamp_fd / 1000000ull);
         msg->timestamp.usec = (long)(timestamp_fd % 1000000ull);
     }
-    can[handle].status.b.receiver_empty = 0;        // message read
+    can[handle].status.b.receiver_empty = 0; // message read
 
     return CANERR_NOERROR;
 }
@@ -614,7 +662,7 @@ retry:
 EXPORT
 int can_status(int handle, unsigned char *status)
 {
-    TPCANStatus rc;                     // return value
+    TPCANStatus rc;                     // represents a status
 
     if(!init)                           // must be initialized
         return CANERR_NOTINIT;
@@ -623,12 +671,16 @@ int can_status(int handle, unsigned char *status)
     if(can[handle].board == PCAN_NONEBUS) // must be an opened handle
         return CANERR_HANDLE;
 
-    if(!can[handle].status.b.can_stopped) { // only when running:
-        if((rc = CAN_GetStatus(can[handle].board)) > 255) // FIXME: mask it out!
+    if(can[handle].initialized)  // FIXME: due to deffered initialzation!
+    {
+        rc = CAN_GetStatus(can[handle].board);
+        if((rc & ~(PCAN_ERROR_ANYBUSERR |
+                   PCAN_ERROR_OVERRUN | PCAN_ERROR_QOVERRUN |
+                   PCAN_ERROR_XMTFULL | PCAN_ERROR_QXMTFULL)))
             return pcan_error(rc);
         can[handle].status.b.bus_off = (rc & PCAN_ERROR_BUSOFF) != PCAN_ERROR_OK;
-        can[handle].status.b.bus_error = (rc & (PCAN_ERROR_BUSLIGHT | PCAN_ERROR_BUSPASSIVE)) != PCAN_ERROR_OK;
-        can[handle].status.b.warning_level = (rc & (PCAN_ERROR_BUSHEAVY | PCAN_ERROR_BUSWARNING)) != PCAN_ERROR_OK;
+        can[handle].status.b.bus_error = (rc & PCAN_ERROR_BUSPASSIVE) != PCAN_ERROR_OK;
+        can[handle].status.b.warning_level = (rc & PCAN_ERROR_BUSWARNING) != PCAN_ERROR_OK;
         can[handle].status.b.message_lost |= (rc & (PCAN_ERROR_OVERRUN | PCAN_ERROR_QOVERRUN)) != PCAN_ERROR_OK;
         can[handle].status.b.transmitter_busy |= (rc & (PCAN_ERROR_XMTFULL | PCAN_ERROR_QXMTFULL)) != PCAN_ERROR_OK;
     }
@@ -648,7 +700,8 @@ int can_busload(int handle, unsigned char *load, unsigned char *status)
     if(can[handle].board == PCAN_NONEBUS) // must be an opened handle
         return CANERR_HANDLE;
 
-    if(!can[handle].status.b.can_stopped) { // only when running:
+    if(can[handle].initialized)  // FIXME: due to deffered initialzation!
+    {
         if(load)
             *load = 0;                  //   TODO: bus-load [percent]
     }
@@ -658,49 +711,68 @@ int can_busload(int handle, unsigned char *load, unsigned char *status)
 EXPORT
 int can_bitrate(int handle, can_bitrate_t *bitrate, can_speed_t *speed)
 {
+    TPCANBaudrate btr0btr1;             // btr0btr1 value
+    char string[PCAN_BUF_SIZE];         // bit-rate string
+    can_bitrate_t temporary;            // bit-rate settings
+    int rc;                             // return value
+
+    memset(&temporary, 0, sizeof(can_bitrate_t));
+
     if(!init)                           // must be initialized
         return CANERR_NOTINIT;
     if(!IS_HANDLE_VALID(handle))        // must be a valid handle
         return CANERR_HANDLE;
     if(can[handle].board == PCAN_NONEBUS) // must be an opened handle
         return CANERR_HANDLE;
-    if(can[handle].status.b.can_stopped) // must be running
-        return CANERR_OFFLINE;
 
-    if(bitrate)
-        memcpy(bitrate, &can[handle].bitrate, sizeof(can_bitrate_t));
-    if (speed)
-        memset(speed, 0, sizeof(can_speed_t)); // TODO: calculate this!
-
-    return CANERR_NOERROR;
+    if(!can[handle].mode.b.fdoe) {      // CAN 2.0
+        if((rc = CAN_GetValue(can[handle].board, PCAN_BITRATE_INFO,
+                             (void*)&btr0btr1, sizeof(TPCANBaudrate))) != PCAN_ERROR_OK)
+            return pcan_error(rc);
+        if((rc = register2bitrate(btr0btr1, &temporary)) != CANERR_NOERROR)
+            return rc;
+    }
+    else {                              // CAN FD
+        if((rc = CAN_GetValue(can[handle].board, PCAN_BITRATE_INFO_FD,
+                             (void*)string, PCAN_BUF_SIZE)) != PCAN_ERROR_OK)
+            return pcan_error(rc);
+        if((rc = string2bitrate(string, &temporary, can[handle].mode.b.brse)) != CANERR_NOERROR)
+            return rc;
+    }
+    if(bitrate) {
+        memcpy(bitrate, &temporary, sizeof(can_bitrate_t));
+    }
+    if(speed) {
+        if((rc = calc_speed(&temporary, speed, 0)) != CANERR_NOERROR)
+            return rc;
+        speed->nominal.fdoe = can[handle].mode.b.fdoe;
+        speed->data.brse = can[handle].mode.b.brse;
+    }
+    if(!can[handle].status.b.can_stopped)
+        rc = CANERR_NOERROR;
+    else
+        rc = CANERR_OFFLINE;
+    return rc;
 }
 
 EXPORT
-int can_interface(int handle, int *board, unsigned char *mode, void *param)
+int can_property(int handle, int param, void *value, int nbytes)
 {
-
+    if(!init || !IS_HANDLE_VALID(handle)) {
+        return lib_parameter(param, value, (size_t)nbytes);
+    }
     if(!init)                           // must be initialized
         return CANERR_NOTINIT;
     if(!IS_HANDLE_VALID(handle))        // must be a valid handle
         return CANERR_HANDLE;
-    if(can[handle].board == PCAN_NONEBUS) // must be an opened handle
-        return CANERR_HANDLE;
 
-    if(board)                           // handle of the CAN channel
-        *board = can[handle].board;
-    if(mode)                            // current opperation mode
-        *mode  = can[handle].mode.byte;
-    if(param) {                         // non-plug'n'play devices:
-        ((struct _pcan_param*)param)->type = can[handle].brd_type;
-        ((struct _pcan_param*)param)->port = can[handle].brd_port;
-        ((struct _pcan_param*)param)->irq  = can[handle].brd_irq;
-    }
-    return CANERR_NOERROR;
+    return drv_parameter(handle, param, value, (size_t)nbytes);
 }
 
 EXPORT
 char *can_hardware(int handle)
 {
+    static char hardware[256] = "";     // hardware version
     char  str[256], *ptr;               // info string
     DWORD dev = 0x0000UL;               // device number
 
@@ -738,6 +810,7 @@ char *can_hardware(int handle)
 EXPORT
 char *can_software(int handle)
 {
+    static char software[256] = "";     // software version
     char  str[256] = "PCAN-Basic API "; // info string
 
     if(!init)                           // must be initialized
@@ -754,19 +827,6 @@ char *can_software(int handle)
     strncpy(software, str, 256);
 
     return (char*)software;             // software version
-}
-
-EXPORT
-int can_library(unsigned short *version, unsigned char *revision, unsigned long *build)
-{
-    if(version)
-        *version = ((unsigned short)VERSION_MAJOR << 8) | ((unsigned short)VERSION_MINOR & 0x00FFu);
-    if(revision)
-        *revision = (unsigned char)VERSION_REVISION;
-    if(build)
-        *build = (unsigned long)BUILD_NO;
-
-    return PCAN_LIB_ID;                 // library ID
 }
 
 /*  -----------  local functions  ----------------------------------------
@@ -799,6 +859,303 @@ static int pcan_error(TPCANStatus status)
     if((status & PCAN_ERROR_ILLOPERATION) == PCAN_ERROR_ILLOPERATION)  return PCAN_ERR_ILLOPERATION;
 
     return PCAN_ERR_UNKNOWN;
+}
+
+static int index2bitrate(int index, can_bitrate_t *bitrate)
+{
+    TPCANBaudrate btr0btr1 = 0x0000u;
+
+    switch (index) {
+    case CANBTR_INDEX_1M: btr0btr1 = PCAN_BAUD_1M; break;
+    case CANBTR_INDEX_800K: btr0btr1 = PCAN_BAUD_800K; break;
+    case CANBTR_INDEX_500K: btr0btr1 = PCAN_BAUD_500K; break;
+    case CANBTR_INDEX_250K: btr0btr1 = PCAN_BAUD_250K; break;
+    case CANBTR_INDEX_125K: btr0btr1 = PCAN_BAUD_125K; break;
+    case CANBTR_INDEX_100K: btr0btr1 = PCAN_BAUD_100K; break;
+    case CANBTR_INDEX_50K: btr0btr1 = PCAN_BAUD_50K; break;
+    case CANBTR_INDEX_20K: btr0btr1 = PCAN_BAUD_20K; break;
+    case CANBTR_INDEX_10K: btr0btr1 = PCAN_BAUD_10K; break;
+    /*default: return CANERR_BAUDRATE;  // take it easy! */
+    }
+    return register2bitrate(btr0btr1, bitrate);
+}
+
+static int bitrate2register(const can_bitrate_t *bitrate, TPCANBaudrate *btr0btr1)
+{
+    if(bitrate->btr.frequency != (long)CANBTR_FREQ_SJA1000) // SJA1000 @ 8MHz
+        return CANERR_BAUDRATE;
+    if((bitrate->btr.nominal.brp < CANBTR_SJA1000_BRP_MIN) || (CANBTR_SJA1000_BRP_MAX < bitrate->btr.nominal.brp))
+        return CANERR_BAUDRATE;
+    if((bitrate->btr.nominal.tseg1 < CANBTR_SJA1000_TSEG1_MIN) || (CANBTR_SJA1000_TSEG1_MAX < bitrate->btr.nominal.tseg1))
+        return CANERR_BAUDRATE;
+    if((bitrate->btr.nominal.tseg2 < CANBTR_SJA1000_TSEG2_MIN) || (CANBTR_SJA1000_TSEG2_MAX < bitrate->btr.nominal.tseg2))
+        return CANERR_BAUDRATE;
+    if((bitrate->btr.nominal.sjw < CANBTR_SJA1000_SJW_MIN) || (CANBTR_SJA1000_SJW_MAX < bitrate->btr.nominal.sjw))
+        return CANERR_BAUDRATE;
+    if(/*(bitrate->btr.nominal.sam < CANBTR_SJA1000_SAM_MIN) ||*/ (CANBTR_SJA1000_SAM_MAX < bitrate->btr.nominal.sam))
+        return CANERR_BAUDRATE;
+    /* +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+ */
+    /* |  SJW  |          BRP          |SAM|   TSEG2   |     TSEG1     | */
+    /* +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+ */
+    *btr0btr1 = ((((TPCANBaudrate)(bitrate->btr.nominal.sjw - 1u) & 0x0003u) << 14) | \
+                 (((TPCANBaudrate)(bitrate->btr.nominal.brp - 1u) & 0x003Fu) << 8) | \
+                 (((TPCANBaudrate)(bitrate->btr.nominal.sam - 0u) & 0x0001u) << 7) | \
+                 (((TPCANBaudrate)(bitrate->btr.nominal.tseg2 - 1u) & 0x0007u) << 4) | \
+                 (((TPCANBaudrate)(bitrate->btr.nominal.tseg1 - 1u) & 0x000Fu) << 0));
+    return CANERR_NOERROR;
+}
+
+static int register2bitrate(const TPCANBaudrate btr0btr1, can_bitrate_t *bitrate)
+{
+    bitrate->btr.frequency = (long)CANBTR_FREQ_SJA1000;     // SJA1000 @ 8MHz
+    bitrate->btr.nominal.sjw = (unsigned short)((btr0btr1 & 0xC000u) >> 14) + 1u;
+    bitrate->btr.nominal.brp = (unsigned short)((btr0btr1 & 0x3F00u) >> 8) + 1u;
+    bitrate->btr.nominal.sam = (unsigned short)((btr0btr1 & 0x0080u) >> 7) + 0u;
+    bitrate->btr.nominal.tseg2 = (unsigned short)((btr0btr1 & 0x0070u) >> 4) + 1u;
+    bitrate->btr.nominal.tseg1 = (unsigned short)((btr0btr1 & 0x000Fu) >> 0) + 1u;
+    bitrate->btr.data.brp = 0;
+    bitrate->btr.data.tseg1 = 0;
+    bitrate->btr.data.tseg2 = 0;
+    bitrate->btr.data.sjw = 0;
+    return CANERR_NOERROR;
+}
+
+static int bitrate2string(const can_bitrate_t *bitrate, TPCANBitrateFD string, int brse)
+{
+    if((bitrate->btr.nominal.brp < CANBTR_NOMINAL_BRP_MIN) || (CANBTR_NOMINAL_BRP_MAX < bitrate->btr.nominal.brp))
+        return CANERR_BAUDRATE;
+    if((bitrate->btr.nominal.tseg1 < CANBTR_NOMINAL_TSEG1_MIN) || (CANBTR_NOMINAL_TSEG1_MAX < bitrate->btr.nominal.tseg1))
+        return CANERR_BAUDRATE;
+    if((bitrate->btr.nominal.tseg2 < CANBTR_NOMINAL_TSEG2_MIN) || (CANBTR_NOMINAL_TSEG2_MAX < bitrate->btr.nominal.tseg2))
+        return CANERR_BAUDRATE;
+    if((bitrate->btr.nominal.sjw < CANBTR_NOMINAL_SJW_MIN) || (CANBTR_NOMINAL_SJW_MAX < bitrate->btr.nominal.sjw))
+        return CANERR_BAUDRATE;
+    if(!brse) {     // long frames only
+        if(sprintf(string, "f_clock=%li,nom_brp=%u,nom_tseg1=%u,nom_tseg2=%u,nom_sjw=%u,nom_sam=%u",
+                            bitrate->btr.frequency,
+                            bitrate->btr.nominal.brp,
+                            bitrate->btr.nominal.tseg1,
+                            bitrate->btr.nominal.tseg2,
+                            bitrate->btr.nominal.sjw,
+                            bitrate->btr.nominal.sam) < 0)
+            return CANERR_BAUDRATE;
+    }
+    else {          // long and fast frames
+        if((bitrate->btr.data.brp < CANBTR_DATA_BRP_MIN) || (CANBTR_DATA_BRP_MAX < bitrate->btr.data.brp))
+            return CANERR_BAUDRATE;
+        if((bitrate->btr.data.tseg1 < CANBTR_DATA_TSEG1_MIN) || (CANBTR_DATA_TSEG1_MAX < bitrate->btr.data.tseg1))
+            return CANERR_BAUDRATE;
+        if((bitrate->btr.data.tseg2 < CANBTR_DATA_TSEG2_MIN) || (CANBTR_DATA_TSEG2_MAX < bitrate->btr.data.tseg2))
+            return CANERR_BAUDRATE;
+        if((bitrate->btr.data.sjw < CANBTR_DATA_SJW_MIN) || (CANBTR_DATA_SJW_MAX < bitrate->btr.data.sjw))
+            return CANERR_BAUDRATE;
+        if(sprintf(string, "f_clock=%li,nom_brp=%u,nom_tseg1=%u,nom_tseg2=%u,nom_sjw=%u,nom_sam=%u,"
+                                      "data_brp=%u,data_tseg1=%u,data_tseg2=%u,data_sjw=%u",
+                            bitrate->btr.frequency,
+                            bitrate->btr.nominal.brp,
+                            bitrate->btr.nominal.tseg1,
+                            bitrate->btr.nominal.tseg2,
+                            bitrate->btr.nominal.sjw,
+                            bitrate->btr.nominal.sam,
+                            bitrate->btr.data.brp,
+                            bitrate->btr.data.tseg1,
+                            bitrate->btr.data.tseg2,
+                            bitrate->btr.data.sjw) < 0)
+            return CANERR_BAUDRATE;
+    }
+    return CANERR_NOERROR;
+}
+
+static int string2bitrate(const TPCANBitrateFD string, can_bitrate_t *bitrate, int brse)
+{
+    long unsigned freq = 0;
+    int unsigned nom_brp = 0, nom_tseg1 = 0, nom_tseg2 = 0, nom_sjw = 0/*, nom_sam = 0*/;
+    int unsigned data_brp = 0, data_tseg1 = 0, data_tseg2 = 0, data_sjw = 0/*, data_ssp_offset = 0*/;
+
+    // TODO: rework this!
+    if(sscanf(string, "f_clock=%lu,nom_brp=%u,nom_tseg1=%u,nom_tseg2=%u,nom_sjw=%u,"
+                                 "data_brp=%u,data_tseg1=%u,data_tseg2=%u,data_sjw=%u",
+                           &freq, &nom_brp, &nom_tseg1, &nom_tseg2, &nom_sjw,
+                                 &data_brp, &data_tseg1, &data_tseg2, &data_sjw) != 9)
+        return CANERR_BAUDRATE;
+    bitrate->btr.frequency = (long)freq;
+    bitrate->btr.nominal.brp = (unsigned short)nom_brp;
+    bitrate->btr.nominal.tseg1 = (unsigned short)nom_tseg1;
+    bitrate->btr.nominal.tseg2 = (unsigned short)nom_tseg2;
+    bitrate->btr.nominal.sjw = (unsigned short)nom_sjw;
+    if(brse) {
+        bitrate->btr.data.brp = (unsigned short)data_brp;
+        bitrate->btr.data.tseg1 = (unsigned short)data_tseg1;
+        bitrate->btr.data.tseg2 = (unsigned short)data_tseg2;
+        bitrate->btr.data.sjw = (unsigned short)data_sjw;
+    }
+    else {
+        bitrate->btr.data.brp = (unsigned short)0;
+        bitrate->btr.data.tseg1 = (unsigned short)0;
+        bitrate->btr.data.tseg2 = (unsigned short)0;
+        bitrate->btr.data.sjw = (unsigned short)0;
+    }
+    return CANERR_NOERROR;
+}
+
+/*  - - - - - -  CAN API V3 properties  - - - - - - - - - - - - - - - - -
+    */
+static int lib_parameter(int param, void *value, size_t nbytes)
+{
+    int rc = CANERR_ILLPARA;            // suppose an invalid parameter
+
+    if(value == NULL)                   // check for null-pointer
+        return CANERR_NULLPTR;
+
+    /* CAN library properties */
+    switch(param) {
+    case CANPROP_GET_SPEC:              // version of the wrapper specification (USHORT)
+        if(nbytes == sizeof(unsigned short)) {
+            *(unsigned short*)value = (unsigned short)CAN_API_SPEC;
+            rc = CANERR_NOERROR;
+        }
+        break;
+    case CANPROP_GET_VERSION:           // version number of the library (USHORT)
+        if(nbytes == sizeof(unsigned short)) {
+            *(unsigned short*)value = ((unsigned short)VERSION_MAJOR << 8)
+                | ((unsigned short)VERSION_MINOR & 0xFu);
+            rc = CANERR_NOERROR;
+        }
+        break;
+    case CANPROP_GET_REVISION:          // revision number of the library (UCHAR)
+        if(nbytes == sizeof(unsigned char)) {
+            *(unsigned char*)value = (unsigned char)VERSION_REVISION;
+            rc = CANERR_NOERROR;
+        }
+        break;
+    case CANPROP_GET_BUILD_NO:          // build number of the library (ULONG)
+        if(nbytes == sizeof(unsigned long)) {
+            *(unsigned long*)value = (unsigned long)BUILD_NO;
+            rc = CANERR_NOERROR;
+        }
+        break;
+    case CANPROP_GET_LIBRARY_ID:        // library id of the library (int)
+        if(nbytes == sizeof(int)) {
+            *(int*)value = (int)PCAN_LIB_ID;
+            rc = CANERR_NOERROR;
+        }
+        break;
+    case CANPROP_GET_LIBRARY_DLL:       // filename of the library (CHAR[256])
+        if((nbytes > strlen(PCAN_LIB_BASIC)) && (nbytes <= CANPROP_BUF_MAX_SIZE)) {
+            strcpy((char*)value, PCAN_LIB_BASIC);
+            rc = CANERR_NOERROR;
+        }
+        break;
+    case CANPROP_GET_VENDOR_NAME:       // vendor name of the interface (CHAR[256])
+        if((nbytes > strlen(PCAN_LIB_VENDOR)) && (nbytes <= CANPROP_BUF_MAX_SIZE)) {
+            strcpy((char*)value, PCAN_LIB_VENDOR);
+            rc = CANERR_NOERROR;
+        }
+        break;
+    default:
+        rc = CANERR_NOTSUPP;
+        break;
+    }
+    return rc;
+}
+
+static int drv_parameter(int handle, int param, void *value, size_t nbytes)
+{
+    int rc = CANERR_ILLPARA;            // suppose an invalid parameter
+
+    assert(IS_HANDLE_VALID(handle));    // just to make sure
+
+    if(value == NULL)                   // check for null-pointer
+        return CANERR_NULLPTR;
+
+    /* CAN interface properties */
+    switch(param) {
+    case CANPROP_GET_BOARD_TYPE:        // board type of the interface (int)
+    case CANPROP_GET_BOARD_NAME:        // board name of the interface (CHAR[256])
+    case CANPROP_GET_BOARD_PARAM:       // board parameter of the interface (CHAR[256])
+    case CANPROP_GET_OP_CAPABILITY:     // supported operation modes of the interface (UCHAR)
+    case CANPROP_GET_OP_MODE:           // active operation mode of the interface (UCHAR)
+    case CANPROP_GET_BITRATE:           // active bit-rate of the interface (can_bitrate_t)
+    case CANPROP_GET_SPEED:             // active bus speed of the interface (can_speed_t)
+    case CANPROP_GET_STATUS:            // current status register of the interface (UCHAR)
+    case CANPROP_GET_BUSLOAD:           // current bus load of the interface (UCHAR)
+    case CANPROP_GET_TX_COUNTER:        // total number of sent messages (ULONGONG)
+    case CANPROP_GET_RX_COUNTER:        // total number of reveice messages (ULONGONG)
+    case CANPROP_GET_ERR_COUNTER:       // total number of reveice error frames (ULONGONG)
+    default:                            // or general library properties (see lib_parameter)
+        rc = lib_parameter(param, value, nbytes);
+        break;
+    }
+    return rc;
+}
+
+/*  - - - - - -  Bus-speed calculator  - - - - - - - - - - - - - - - - - -
+ */
+static int calc_speed(can_bitrate_t *bitrate, can_speed_t *speed, int modify)
+{
+    can_bitrate_t temporary;            // bit-rate settings
+    int rc;
+
+    memset(&temporary, 0, sizeof(can_bitrate_t));
+
+    if(bitrate->index <= 0) {
+        if((rc = index2bitrate(bitrate->index, &temporary)) != CANERR_NOERROR)
+            return rc;
+        if(modify)                      // translate index to bit-rate
+            memcpy(bitrate, &temporary, sizeof(can_bitrate_t));
+
+        speed->nominal.fdoe = 0;
+        speed->data.brse = 0;
+    }
+    else {
+        memcpy(&temporary, bitrate, sizeof(can_bitrate_t));
+
+        speed->data.brse = temporary.btr.data.brp ? 1 : 0;
+    }
+    /* nominal bit-rate:
+     *
+     * (1) speed = freq / (brp * (1 + tseg1 +tseg2))
+     *
+     * (2) sp = (1 + tseg1) / (1 + tseg1 +tseg2)
+     */
+    if((temporary.btr.nominal.brp < CANBTR_NOMINAL_BRP_MIN) || (CANBTR_NOMINAL_BRP_MAX < temporary.btr.nominal.brp))
+        return CANERR_BAUDRATE;
+    if((temporary.btr.nominal.tseg1 < CANBTR_NOMINAL_TSEG1_MIN) || (CANBTR_NOMINAL_TSEG1_MAX < temporary.btr.nominal.tseg1))
+        return CANERR_BAUDRATE;
+    if((temporary.btr.nominal.tseg2 < CANBTR_NOMINAL_TSEG2_MIN) || (CANBTR_NOMINAL_TSEG2_MAX < temporary.btr.nominal.tseg2))
+        return CANERR_BAUDRATE;
+    if((temporary.btr.nominal.sjw < CANBTR_NOMINAL_SJW_MIN) || (CANBTR_NOMINAL_SJW_MAX < temporary.btr.nominal.sjw))
+        return CANERR_BAUDRATE;
+    speed->nominal.speed = (float)(temporary.btr.frequency)
+                         / (float)(temporary.btr.nominal.brp * (1u + temporary.btr.nominal.tseg1 + temporary.btr.nominal.tseg2));
+    speed->nominal.samplepoint = (float)(1u + temporary.btr.nominal.tseg1)
+                               / (float)(1u + temporary.btr.nominal.tseg1 + temporary.btr.nominal.tseg2);
+
+    /* data bit-rate (CAN FD only):
+     *
+     * (1) speed = freq / (brp * (1 + tseg1 +tseg2))
+     *
+     * (2) sp = (1 + tseg1) / (1 + tseg1 +tseg2)
+     */
+    if(speed->data.brse) {
+        if((temporary.btr.data.brp < CANBTR_DATA_BRP_MIN) || (CANBTR_DATA_BRP_MAX < temporary.btr.data.brp))
+            return CANERR_BAUDRATE;
+        if((temporary.btr.data.tseg1 < CANBTR_DATA_TSEG1_MIN) || (CANBTR_DATA_TSEG1_MAX < temporary.btr.data.tseg1))
+            return CANERR_BAUDRATE;
+        if((temporary.btr.data.tseg2 < CANBTR_DATA_TSEG2_MIN) || (CANBTR_DATA_TSEG2_MAX < temporary.btr.data.tseg2))
+            return CANERR_BAUDRATE;
+        if((temporary.btr.data.sjw < CANBTR_DATA_SJW_MIN) || (CANBTR_DATA_SJW_MAX < temporary.btr.data.sjw))
+            return CANERR_BAUDRATE;
+        speed->data.speed = (float)(temporary.btr.frequency)
+                          / (float)(temporary.btr.data.brp * (1u + temporary.btr.data.tseg1 + temporary.btr.data.tseg2));
+        speed->data.samplepoint = (float)(1u + temporary.btr.data.tseg1)
+                                / (float)(1u + temporary.btr.data.tseg1 + temporary.btr.data.tseg2);
+    }
+    else {
+        speed->data.speed = 0.0;
+        speed->data.samplepoint = 0.0;
+    }
+    return CANERR_NOERROR;
 }
 
 /*  -----------  revision control  ---------------------------------------

@@ -42,6 +42,9 @@
 /*  -----------  options  ------------------------------------------------
  */
 
+#define _BLOCKING_READ                  // blocking read via wait event
+#define _CiA_BIT_TIMING                 // CiA bit-timing (from CANopen spec.)
+
 
 /*  -----------  defines  ------------------------------------------------
  */
@@ -90,13 +93,17 @@
  #define PCAN_ERR_OFFSET           -200 //   offset for PCANBasic-specific errors
  #define PCAN_ERR_UNKNOWN          -299 //   unknown error
 
+ #define PCAN_BUF_SIZE              256 //   max. buffer size for CAN_SetValue/CAN_GetValue
+
  #define PCAN_LIB_ID                400 //   library ID (CAN/COP API V1 compatible) 
 #ifndef __APPLE__
- #define PCAN_LIB_BASIC            "PCANBasic.DLL"
+ #define PCAN_LIB_BASIC                     "PCANBasic.DLL"
 #else
- #define PCAN_LIB_BASIC            "libPCBUSB.dylib"
+ #define PCAN_LIB_BASIC                     "libPCBUSB.dylib"
 #endif
- struct _pcan_param                     //   installation parameter:
+ #define PCAN_LIB_VENDOR                    "PEAK-System"
+
+ struct _pcan_param                     //   installation parameters:
  {
     unsigned char  type;                //     operation mode (non-plug'n'play devices)
     unsigned long  port;                //     I/O port address (parallel device)

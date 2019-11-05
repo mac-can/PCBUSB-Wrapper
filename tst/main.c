@@ -13,9 +13,9 @@
  *                 -h, --help     display this help and exit
  *                     --version  show version information and exit
  *
- *  libraries :  (none)
+ *  libraries :  libPCBUSB.dylib
  *
- *  includes  :  can_api.h (can_defs.h), bitrates.h, printmsg.h
+ *  includes  :  can_api.h (can_defs.h), printmsg.h
  *
  *  author    :  Uwe Vogt, UV Software
  *
@@ -34,9 +34,7 @@
 
 /*  -----------  includes  -----------------------------------------------
  */
-
 #include "can_api.h"
-#include "bitrates.h"
 #include "printmsg.h"
 
 #include <stdio.h>
@@ -89,20 +87,20 @@
 
 #define DLC2DLEN(dlc)       dtab[(dlc) & 0xFu]
 
-#define BITRATE_DEFAULT     "f_clock_mhz=80,nom_brp=20,nom_tseg1=12,nom_tseg2=3,nom_sjw=1,data_brp=4,data_tseg1=7,data_tseg2=2,data_sjw=1"
-#define BITRATE_125K1M      "f_clock_mhz=80,nom_brp=2,nom_tseg1=255,nom_tseg2=64,nom_sjw=64,data_brp=2,data_tseg1=31,data_tseg2=8,data_sjw=8"
-#define BITRATE_250K2M      "f_clock_mhz=80,nom_brp=2,nom_tseg1=127,nom_tseg2=32,nom_sjw=32,data_brp=2,data_tseg1=15,data_tseg2=4,data_sjw=4"
-#define BITRATE_500K4M      "f_clock_mhz=80,nom_brp=2,nom_tseg1=63,nom_tseg2=16,nom_sjw=16,data_brp=2,data_tseg1=7,data_tseg2=2,data_sjw=2"
-#define BITRATE_1M8M        "f_clock_mhz=80,nom_brp=2,nom_tseg1=31,nom_tseg2=8,nom_sjw=8,data_brp=2,data_tseg1=3,data_tseg2=1,data_sjw=1"
-#define BITRATE_125K        "f_clock_mhz=80,nom_brp=2,nom_tseg1=255,nom_tseg2=64,nom_sjw=64"
-#define BITRATE_250K        "f_clock_mhz=80,nom_brp=2,nom_tseg1=127,nom_tseg2=32,nom_sjw=32"
-#define BITRATE_500K        "f_clock_mhz=80,nom_brp=2,nom_tseg1=63,nom_tseg2=16,nom_sjw=16"
-#define BITRATE_1M          "f_clock_mhz=80,nom_brp=2,nom_tseg1=31,nom_tseg2=8,nom_sjw=8"
+#define BITRATE_DEFAULT(x)  do{ x.btr.frequency=80000000; x.btr.nominal.brp=20; x.btr.nominal.tseg1= 12; x.btr.nominal.tseg2= 3; x.btr.nominal.sjw= 1; x.btr.data.brp=4; x.btr.data.tseg1= 7; x.btr.data.tseg2=2; x.btr.data.sjw=1; } while(0)
+#define BITRATE_125K1M(x)   do{ x.btr.frequency=80000000; x.btr.nominal.brp= 2; x.btr.nominal.tseg1=255; x.btr.nominal.tseg2=64; x.btr.nominal.sjw=64; x.btr.data.brp=2; x.btr.data.tseg1=31; x.btr.data.tseg2=8; x.btr.data.sjw=8; } while(0)
+#define BITRATE_250K2M(x)   do{ x.btr.frequency=80000000; x.btr.nominal.brp= 2; x.btr.nominal.tseg1=127; x.btr.nominal.tseg2=32; x.btr.nominal.sjw=32; x.btr.data.brp=2; x.btr.data.tseg1=15; x.btr.data.tseg2=4; x.btr.data.sjw=4; } while(0)
+#define BITRATE_500K4M(x)   do{ x.btr.frequency=80000000; x.btr.nominal.brp= 2; x.btr.nominal.tseg1= 63; x.btr.nominal.tseg2=16; x.btr.nominal.sjw=16; x.btr.data.brp=2; x.btr.data.tseg1= 7; x.btr.data.tseg2=2; x.btr.data.sjw=2; } while(0)
+#define BITRATE_1M8M(x)     do{ x.btr.frequency=80000000; x.btr.nominal.brp= 2; x.btr.nominal.tseg1= 31; x.btr.nominal.tseg2= 8; x.btr.nominal.sjw= 8; x.btr.data.brp=2; x.btr.data.tseg1= 3; x.btr.data.tseg2=1; x.btr.data.sjw=1; } while(0)
+#define BITRATE_125K(x)     do{ x.btr.frequency=80000000; x.btr.nominal.brp= 2; x.btr.nominal.tseg1=255; x.btr.nominal.tseg2=64; x.btr.nominal.sjw=64; } while(0)
+#define BITRATE_250K(x)     do{ x.btr.frequency=80000000; x.btr.nominal.brp= 2; x.btr.nominal.tseg1=127; x.btr.nominal.tseg2=32; x.btr.nominal.sjw=32; } while(0)
+#define BITRATE_500K(x)     do{ x.btr.frequency=80000000; x.btr.nominal.brp= 2; x.btr.nominal.tseg1= 63; x.btr.nominal.tseg2=16; x.btr.nominal.sjw=16; } while(0)
+#define BITRATE_1M(x)       do{ x.btr.frequency=80000000; x.btr.nominal.brp= 2; x.btr.nominal.tseg1= 31; x.btr.nominal.tseg2= 8; x.btr.nominal.sjw= 8; } while(0)
 
-#define BR_CiA_125K2M       "f_clock_mhz=80,nom_brp=4,nom_tseg1=127,nom_tseg2=32,nom_sjw=32,data_brp=4,data_tseg1=6,data_tseg2=3,data_sjw=3"
-#define BR_CiA_250K2M       "f_clock_mhz=80,nom_brp=4,nom_tseg1=63,nom_tseg2=16,nom_sjw=16,data_brp=4,data_tseg1=6,data_tseg2=3,data_sjw=3"
-#define BR_CiA_500K2M       "f_clock_mhz=80,nom_brp=2,nom_tseg1=63,nom_tseg2=16,nom_sjw=16,data_brp=2,data_tseg1=14,data_tseg2=5,data_sjw=5"
-#define BR_CiA_1M5M         "f_clock_mhz=80,nom_brp=2,nom_tseg1=31,nom_tseg2=8,nom_sjw=8,data_brp=2,data_tseg1=5,data_tseg2=2,data_sjw=2"
+#define BR_CiA_125K2M(x)    do{ x.btr.frequency=80000000; x.btr.nominal.brp= 4; x.btr.nominal.tseg1=127; x.btr.nominal.tseg2=32; x.btr.nominal.sjw=32; x.btr.data.brp=4; x.btr.data.tseg1= 6; x.btr.data.tseg2=3; x.btr.data.sjw=3; } while(0)
+#define BR_CiA_250K2M(x)    do{ x.btr.frequency=80000000; x.btr.nominal.brp= 4; x.btr.nominal.tseg1= 63; x.btr.nominal.tseg2=16; x.btr.nominal.sjw=16; x.btr.data.brp=4; x.btr.data.tseg1= 6; x.btr.data.tseg2=3; x.btr.data.sjw=3; } while(0)
+#define BR_CiA_500K2M(x)    do{ x.btr.frequency=80000000; x.btr.nominal.brp= 2; x.btr.nominal.tseg1= 63; x.btr.nominal.tseg2=16; x.btr.nominal.sjw=16; x.btr.data.brp=2; x.btr.data.tseg1=14; x.btr.data.tseg2=5; x.btr.data.sjw=5; } while(0)
+#define BR_CiA_1M5M(x)      do{ x.btr.frequency=80000000; x.btr.nominal.brp= 2; x.btr.nominal.tseg1= 31; x.btr.nominal.tseg2= 8; x.btr.nominal.sjw =8; x.btr.data.brp=2; x.btr.data.tseg1= 5; x.btr.data.tseg2=2; x.btr.data.sjw=2; } while(0)
 
 
 /*  -----------  types  --------------------------------------------------
@@ -116,8 +114,7 @@ static int transmit(int handle, int frames, DWORD delay);
 static int receive(int handle);
 static int transmit_fd(int handle, int frames, DWORD delay);
 static int receive_fd(int handle);
-static int convert(const char *string, can_bitrate_t *bitrate);
-static void verbose(BYTE op_mode, const can_bitrate_t *bitrate);
+static void verbose(const can_bitrate_t *bitrate, const can_speed_t *speed);
 
 
 static void sigterm(int signo);
@@ -173,7 +170,14 @@ int main(int argc, char *argv[])
     BYTE op_mode = CANMODE_DEFAULT;
     DWORD delay = 0;
     can_bitrate_t bitrate = { -CANBDR_250 };
+    can_speed_t speed;
+    can_status_t status;
     char *device, *firmware, *software;
+
+    unsigned char  uchar;
+    unsigned short ushort;
+    unsigned long  ulong;
+    char string[CANPROP_BUF_MAX_SIZE];
 
     //struct option long_options[] = {
     //  {"help", no_argument, 0, 'h'},
@@ -265,61 +269,118 @@ int main(int argc, char *argv[])
         if(!strcmp(argv[i], "FDF")) { option_fdf = OPTION_YES; option_mode = OPTION_MODE_CAN_FD; op_mode = CANMODE_FDOE; }
         if(!strcmp(argv[i], "BRS")) { option_brs = OPTION_YES; option_fdf = OPTION_YES; option_mode = OPTION_MODE_CAN_FD; op_mode = CANMODE_FDOE | CANMODE_BRSE; }
         /* bit rate (CAN FD) */
-        if(!strcmp(argv[i], "BR:125K1M")) convert(BITRATE_125K1M, &bitrate);
-        if(!strcmp(argv[i], "BR:250K2M")) convert(BITRATE_250K2M, &bitrate);
-        if(!strcmp(argv[i], "BR:500K4M")) convert(BITRATE_500K4M, &bitrate);
-        if(!strcmp(argv[i], "BR:1M8M")) convert(BITRATE_1M8M, &bitrate);
-        if(!strcmp(argv[i], "BR:125K")) convert(BITRATE_125K, &bitrate);
-        if(!strcmp(argv[i], "BR:250K")) convert(BITRATE_250K, &bitrate);
-        if(!strcmp(argv[i], "BR:500K")) convert(BITRATE_500K, &bitrate);
-        if(!strcmp(argv[i], "BR:1M")) convert(BITRATE_1M, &bitrate);
-        if(!strcmp(argv[i], "BR:CiA125K2M")) convert(BR_CiA_125K2M, &bitrate);
-        if(!strcmp(argv[i], "BR:CiA250K2M")) convert(BR_CiA_250K2M, &bitrate);
-        if(!strcmp(argv[i], "BR:CiA5002M")) convert(BR_CiA_500K2M, &bitrate);
-        if(!strcmp(argv[i], "BR:CiA1M5M")) convert(BR_CiA_1M5M, &bitrate);
+        if(!strcmp(argv[i], "BR:125K1M")) BITRATE_125K1M(bitrate);
+        if(!strcmp(argv[i], "BR:250K2M")) BITRATE_250K2M(bitrate);
+        if(!strcmp(argv[i], "BR:500K4M")) BITRATE_500K4M(bitrate);
+        if(!strcmp(argv[i], "BR:1M8M")) BITRATE_1M8M(bitrate);
+        if(!strcmp(argv[i], "BR:125K")) BITRATE_125K(bitrate);
+        if(!strcmp(argv[i], "BR:250K")) BITRATE_250K(bitrate);
+        if(!strcmp(argv[i], "BR:500K")) BITRATE_500K(bitrate);
+        if(!strcmp(argv[i], "BR:1M")) BITRATE_1M(bitrate);
+        if(!strcmp(argv[i], "BR:CiA125K2M")) BR_CiA_125K2M(bitrate);
+        if(!strcmp(argv[i], "BR:CiA250K2M")) BR_CiA_250K2M(bitrate);
+        if(!strcmp(argv[i], "BR:CiA5002M")) BR_CiA_500K2M(bitrate);
+        if(!strcmp(argv[i], "BR:CiA1M5M")) BR_CiA_1M5M(bitrate);
+        /* additional operation modes */
+        //if(!strcmp(argv[i], "SHARED")) op_mode |= CANMODE_SHRD;
+        if(!strcmp(argv[i], "MONITOR")) op_mode |= CANMODE_MON;
+        if(!strcmp(argv[i], "ERR:ON")) op_mode |= CANMODE_ERR;
+        if(!strcmp(argv[i], "XTD:OFF")) op_mode |= CANMODE_NXTD;
+        if(!strcmp(argv[i], "RTR:OFF")) op_mode |= CANMODE_NRTR;
     }
-    fprintf(stdout, "can_test: "__DATE__" "__TIME__" (gcc "__VERSION__")\n");
-    /* channel tester */
-    if(option_test) {
-        for(i = 0; i < PCAN_BOARDS; i++) {
-            if((rc = can_test(can_board[i].type, op_mode, NULL, &opt)) == CANERR_NOERROR)
-                printf("Channel 0x%02lx: %s\n", can_board[i].type, opt == CANBRD_OCCUPIED ? "occuptied" : opt == CANBRD_PRESENT ? "available" : "unavailable");
-            else if(rc == CANERR_ILLPARA)
-                printf("Channel 0x%02lx: incompatible\n", can_board[i].type);
-            else
-                printf("Channel 0x%02lx: can_test failed (%i)\n", can_board[i].type, rc);
-        }
-    }
+    fprintf(stdout, "can_test: "__DATE__" "__TIME__" (macOS, x86_64)\n");
     /* offline informations */
     if(option_info) {
         if((software = can_version()) != NULL)
             fprintf(stdout, "Software: %s\n", software);
+        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_SPEC, (void*)&ushort, sizeof(ushort))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_SPEC=%u.%u\n", (ushort >> 8), (ushort & 0xFFu));
+        else
+            printf("+++ error(%i): can_property(CANPROP_GET_SPEC) failed\n", rc);
+        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_VERSION, (void*)&ushort, sizeof(ushort))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_VERSION=%u.%u\n", (ushort >> 8), (ushort & 0xFFu));
+        else
+            printf("+++ error(%i): can_property(CANPROP_GET_VERSION) failed\n", rc);
+        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_REVISION, (void*)&uchar, sizeof(uchar))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_REVISION=%u\n", uchar);
+        else
+            printf("+++ error(%i): can_property(CANPROP_GET_REVISION) failed\n", rc);
+        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_BUILD_NO, (void*)&ulong, sizeof(ulong))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_BUILD_NO=%lx\n", ulong);
+        else
+            printf("+++ error(%i): can_property(CANPROP_GET_BUILD_NO) failed\n", rc);
+        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_LIBRARY_ID, (void*)&i, sizeof(i))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_LIBRARY_ID=%d\n", i);
+        else
+            printf("+++ error(%i): can_property(CANPROP_GET_LIBRARY_ID) failed\n", rc);
+        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_LIBRARY_DLL, (void*)string, CANPROP_BUF_MAX_SIZE)) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_LIBRARY_DLL=%s\n", string);
+        else
+            printf("+++ error(%i): can_property(CANPROP_GET_LIBRARY_DLL) failed\n", rc);
+        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_VENDOR_NAME, (void*)string, CANPROP_BUF_MAX_SIZE)) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_VENDOR_NAME=%s\n", string);
+        else
+            printf("+++ error(%i): can_property(CANPROP_GET_VENDOR_NAME) failed\n", rc);
+    }
+    /* channel tester */
+    if(option_test) {
+        for(i = 0; i < PCAN_BOARDS; i++) {
+            if((rc = can_test(can_board[i].type, op_mode, NULL, &opt)) == CANERR_NOERROR)
+                printf("Testing...BoardType=0x%02lx: %s\n", can_board[i].type, opt == CANBRD_OCCUPIED ? "occupied" : opt == CANBRD_PRESENT ? "available" : "unavailable");
+            else if(rc == CANERR_ILLPARA)
+                printf("Testing...BoardType=0x%02lx: incompatible\n", can_board[i].type);
+            else if(rc == CANERR_NOTSUPP)
+                printf("Testing...BoardType=0x%02lx: not testable\n", can_board[i].type);
+            else
+                printf("Testing...BoardType=0x%02lx: FAILED\n+++ error(%i) can_test failed\n", can_board[i].type, rc);
+        }
+    }
+    /* selected hardware */
+    if(option_info) {
         for(i = 0; i < PCAN_BOARDS; i++) {
             if(channel == can_board[i].type) {
                 fprintf(stdout, "Hardware: %s (0x%lx)\n", can_board[i].name, can_board[i].type);
             }
         }
-        verbose(op_mode, &bitrate);
     }
     /* initialization */
-    if((rc = can_init(channel, op_mode, NULL)) < 0) {
-        printf("+++ error(%i): can_init failed\n", rc);
+    if((handle = can_init(channel, op_mode, NULL)) < 0) {
+        printf("+++ error(%i): can_init failed\n", handle);
         goto end;
     }
-    handle = rc;
+    if((rc = can_status(handle, &status.byte)) != CANERR_NOERROR) {
+        printf("+++ error(%i): can_status failed\n", rc);
+        goto end;
+    }
+	if(option_info) {
+        // TODO: ...
+    }
     /* channel status */
     if(option_test) {
         if((rc = can_test(channel, op_mode, NULL, &opt)) == CANERR_NOERROR)
-            printf("Channel 0x%02x: %s\n", channel, opt == CANBRD_OCCUPIED ? "now occuptied" : opt == CANBRD_PRESENT ? "available" : "unavailable");
+            printf("Testing...BoardType=0x%02x: %s\n", channel, opt == CANBRD_OCCUPIED ? "now occupied" : opt == CANBRD_PRESENT ? "available" : "unavailable");
         else if(rc == CANERR_ILLPARA)
-            printf("Channel 0x%02x: incompatible\n", channel);
+            printf("Testing...BoardType=0x%02x: incompatible\n", channel);
+        else if(rc == CANERR_NOTSUPP)
+            printf("Testing...BoardType=0x%02x: not testable\n", channel);
         else
-            printf("Channel 0x%02x: can_test failed (%i)\n", channel, rc);
+            printf("Testing...BoardType=0x%02x: FAILED\n+++ error(%i) can_test failed\n", channel, rc);
     }
     /* start communication */
     if((rc = can_start(handle, &bitrate)) != CANERR_NOERROR) {
         printf("+++ error(%i): can_start failed\n", rc);
         goto end;
+    }
+    if((rc = can_status(handle, &status.byte)) != CANERR_NOERROR) {
+        printf("+++ error(%i): can_status failed\n", rc);
+        goto end;
+    }
+    if((rc = can_bitrate(handle, &bitrate, &speed)) != CANERR_NOERROR) {
+        printf("+++ error(%i): can_bitrate failed\n", rc);
+        goto end;
+    }
+	if(option_info) {
+        verbose(&bitrate, &speed);
     }
     /* transmit messages */
     if(option_transmit > 0) {
@@ -350,7 +411,7 @@ int main(int argc, char *argv[])
     }
 end:
     printf("Teardown.."); fflush(stdout);
-    if((rc = can_exit(handle)) != CANERR_NOERROR) {
+    if((rc = can_exit(CANEXIT_ALL)) != CANERR_NOERROR) {
         printf("FAILED\n");
         printf("+++ error(%i): can_exit failed\n", rc);
         return 1;
@@ -617,57 +678,22 @@ static int receive_fd(int handle)
     return 0;
 }
 
-static int convert(const char *string, can_bitrate_t *bitrate)
+static void verbose(const can_bitrate_t *bitrate, const can_speed_t *speed)
 {
-    unsigned long freq = 0; struct btr_bit_timing slow, fast;
-
-    if(!btr_string_to_bit_timing(string, &freq, &slow, &fast)) {
-        fprintf(stderr, "+++ error: illegal argument in option /BITRATE!\n\n");
-        return 0;
-    }
-    bitrate->btr.frequency = (long)freq;
-    bitrate->btr.nominal.brp = (unsigned short)slow.brp;
-    bitrate->btr.nominal.tseg1 = (unsigned short)slow.tseg1;
-    bitrate->btr.nominal.tseg2 = (unsigned short)slow.tseg2;
-    bitrate->btr.nominal.sjw = (unsigned short)slow.sjw;
-    bitrate->btr.nominal.sam = (unsigned char)slow.sam;
-    bitrate->btr.data.brp = (unsigned short)fast.brp;
-    bitrate->btr.data.tseg1 = (unsigned short)fast.tseg1;
-    bitrate->btr.data.tseg2 = (unsigned short)fast.tseg2;
-    bitrate->btr.data.sjw = (unsigned short)fast.sjw;
-    return 1;
-}
-
-static void verbose(BYTE op_mode, const can_bitrate_t *bitrate)
-{
-    unsigned long freq; struct btr_bit_timing slow, fast;
-
-    freq = bitrate->btr.frequency;
-    slow.brp = bitrate->btr.nominal.brp;
-    slow.tseg1 = bitrate->btr.nominal.tseg1;
-    slow.tseg2 = bitrate->btr.nominal.tseg2;
-    slow.sjw = bitrate->btr.nominal.sjw;
-    fast.brp = bitrate->btr.data.brp;
-    fast.tseg1 = bitrate->btr.data.tseg1;
-    fast.tseg2 = bitrate->btr.data.tseg2;
-    fast.sjw = bitrate->btr.data.sjw;
-
-
     if(bitrate->btr.frequency > 0) {
-        fprintf(stdout, "Baudrate: %lubps@%.2f%%",
-            btr_calc_bit_rate_nominal(&slow, freq),
-            btr_calc_sample_point_nominal(&slow) * 100.);
-        if((op_mode & (CANMODE_FDOE | CANMODE_BRSE)) == (CANMODE_FDOE | CANMODE_BRSE))
-            fprintf(stdout, ":%lubps@%.2f%%",
-                btr_calc_bit_rate_data(&fast, freq),
-                btr_calc_sample_point_data(&fast) * 100.);
-        fprintf(stdout, " (f_clock=%lu,nom_brp=%u,nom_tseg1=%u,nom_tseg2=%u,nom_sjw=%u",
+        fprintf(stdout, "Baudrate: %.0fkbps@%.1f%%",
+            speed->nominal.speed / 1000., speed->nominal.samplepoint * 100.);
+        if(speed->data.brse)
+            fprintf(stdout, ":%.0fkbps@%.1f%%",
+                speed->data.speed / 1000., speed->data.samplepoint * 100.);
+        fprintf(stdout, " (f_clock=%lu,nom_brp=%u,nom_tseg1=%u,nom_tseg2=%u,nom_sjw=%u,nom_sam=%u",
             bitrate->btr.frequency,
             bitrate->btr.nominal.brp,
             bitrate->btr.nominal.tseg1,
             bitrate->btr.nominal.tseg2,
-            bitrate->btr.nominal.sjw);
-        if((op_mode & (CANMODE_FDOE | CANMODE_BRSE)) == (CANMODE_FDOE | CANMODE_BRSE))
+            bitrate->btr.nominal.sjw,
+            bitrate->btr.nominal.sam);
+        if(speed->data.brse)
             fprintf(stdout, ",data_brp=%u,data_tseg1=%u,data_tseg2=%u,data_sjw=%u",
                 bitrate->btr.data.brp,
                 bitrate->btr.data.tseg1,
@@ -676,16 +702,16 @@ static void verbose(BYTE op_mode, const can_bitrate_t *bitrate)
         fprintf(stdout, ")\n");
     }
     else {
-        fprintf(stdout, "Baudrate: %sbps (CiA index %li)\n",
-            bitrate->index == CANBDR_1000 ? "1000000" :
-            bitrate->index == -CANBDR_800 ? "800000" :
-            bitrate->index == -CANBDR_500 ? "500000" :
-            bitrate->index == -CANBDR_250 ? "250000" :
-            bitrate->index == -CANBDR_125 ? "125000" :
-            bitrate->index == -CANBDR_100 ? "100000" :
-            bitrate->index == -CANBDR_50 ? "50000" :
-            bitrate->index == -CANBDR_20 ? "20000" :
-            bitrate->index == -CANBDR_10 ? "10000" : "?", -bitrate->index);
+        fprintf(stdout, "Baudrate: %skbps (CiA index %li)\n",
+            bitrate->index == CANBDR_1000 ? "1000" :
+            bitrate->index == -CANBDR_800 ? "800" :
+            bitrate->index == -CANBDR_500 ? "500" :
+            bitrate->index == -CANBDR_250 ? "250" :
+            bitrate->index == -CANBDR_125 ? "125" :
+            bitrate->index == -CANBDR_100 ? "100" :
+            bitrate->index == -CANBDR_50 ? "50" :
+            bitrate->index == -CANBDR_20 ? "20" :
+            bitrate->index == -CANBDR_10 ? "10" : "?", -bitrate->index);
     }
 }
 
@@ -694,8 +720,8 @@ static void sigterm(int signo)
     //printf("%s: got signal %d\n", __FILE__, signo);
     running = 0;
     (void)signo;
-#if defined(_WIN32) || defined(_WIN64)
-	(void)can_kill(CANKILL_ALL);
+#ifdef _WIN32
+    (void)can_kill(CANKILL_ALL);
 #endif
 }
 

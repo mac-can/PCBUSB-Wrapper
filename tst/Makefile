@@ -43,13 +43,11 @@ LDFLAGS  +=
 
 endif
 
-OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/can_api.o $(OUTDIR)/bitrates.o $(OUTDIR)/printmsg.o
+OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/can_api.o $(OUTDIR)/printmsg.o
 
-MAIN_DEPS = $(DRV)/can_api.h $(DRV)/can_defs.h bitrates.h printmsg.h
+MAIN_DEPS = $(DRV)/can_api.h $(DRV)/can_defs.h printmsg.h
 
 CAN_API_DEPS = $(DRV)/can_api.h $(DRV)/can_defs.h $(DRV)/can_vers.h
-
-BITRATES_DEPS = bitrates.h
 
 PRINTMSG_DEPS = printmsg.h
 
@@ -85,9 +83,6 @@ distclean:
 
 
 $(OUTDIR)/main.o: main.c $(MAIN_DEPS)
-	$(CC) $(CFLAGS) -o $@ -c $<
-
-$(OUTDIR)/bitrates.o: bitrates.c $(BITRATES_DEPS)
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 $(OUTDIR)/printmsg.o: printmsg.c $(PRINTMSG_DEPS)
