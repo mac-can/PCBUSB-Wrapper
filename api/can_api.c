@@ -123,13 +123,13 @@ typedef struct {
     DWORD brd_port;                     // board parameter: I/O port address
     WORD  brd_irq;                      // board parameter: interrupt number
     int   initialized;                  // flag for deferred initialization (ICA)
-    can_mode_t mode;                    // operation mode of the CAN channel
-    can_status_t status;                // 8-bit status register
-    can_bitrate_t bitrate;              // bit-rate setting
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(_WIN64)
     int   fdes;                         // file descriptor (for blocking read)
 #else
 #endif
+    can_mode_t mode;                    // operation mode of the CAN channel
+    can_status_t status;                // 8-bit status register
+    can_bitrate_t bitrate;              // bit-rate setting
 }   can_interface_t;
 
 
@@ -214,6 +214,9 @@ int can_test(int board, unsigned char mode, const void *param, int *result)
             can[i].brd_port = 0;
             can[i].brd_irq = 0;
             can[i].initialized = 0;
+#if !defined(_WIN32) && !defined(_WIN64)
+            can[i].fdes = -1;
+#endif
             can[i].mode.byte = CANMODE_DEFAULT;
             can[i].status.byte = CANSTAT_RESET;
         }
@@ -279,6 +282,9 @@ int can_init(int board, unsigned char mode, const void *param)
             can[i].brd_port = 0;
             can[i].brd_irq = 0;
             can[i].initialized = 0;
+#if !defined(_WIN32) && !defined(_WIN64)
+            can[i].fdes = -1;
+#endif
             can[i].mode.byte = CANMODE_DEFAULT;
             can[i].status.byte = CANSTAT_RESET;
         }
@@ -310,9 +316,6 @@ int can_init(int board, unsigned char mode, const void *param)
         can[i].brd_port = ((struct _pcan_param*)param)->port;
         can[i].brd_irq  = ((struct _pcan_param*)param)->irq;
     }
-#ifndef _WIN32
-    can[i].fdes = -1;                   // clear file descriptor
-#endif
     can[i].initialized = 0;             // clear re-initialization flag
     can[i].mode.byte = mode;            // store selected operation mode
     can[i].status.byte = CANSTAT_RESET; // CAN controller not started yet
@@ -336,9 +339,6 @@ int can_exit(int handle)
         if(can[handle].initialized)  // FIXME: due to deffered initialzation!
         {
             CAN_Uninitialize(can[handle].board); // resistance is futile!
-#ifndef _WIN32
-            close(can[handle].fdes);
-#endif
             can[handle].initialized = 0;
         }
         can[handle].status.byte |= CANSTAT_RESET;// CAN controller in INIT state
@@ -352,9 +352,6 @@ int can_exit(int handle)
                 if(can[i].initialized)  // FIXME: due to deffered initialzation!
                 {
                     CAN_Uninitialize(can[i].board); // resistance is futile!
-#ifndef _WIN32
-                    close(can[handle].fdes);
-#endif
                     can[i].initialized = 0;
                 }
                 can[i].status.byte |= CANSTAT_RESET;// CAN controller in INIT state
@@ -424,6 +421,13 @@ int can_start(int handle, const can_bitrate_t *bitrate)
                                 can[handle].brd_irq)) != PCAN_ERROR_OK)
             return pcan_error(rc);
     }
+#if !defined(_WIN32) && !defined(_WIN64)
+    if((rc = CAN_GetValue(can[handle].board, PCAN_RECEIVE_EVENT,
+                         &can[handle].fdes, sizeof(int))) != PCAN_ERROR_OK) {
+        CAN_Uninitialize(can[handle].board);
+        return pcan_error(rc);
+    }
+#endif
     value = (can[handle].mode.b.mon) ? PCAN_PARAMETER_ON : PCAN_PARAMETER_OFF;
     if((rc = CAN_SetValue(can[handle].board, PCAN_LISTEN_ONLY,
                    (void*)&value, sizeof(value))) != PCAN_ERROR_OK) {
@@ -446,13 +450,6 @@ int can_start(int handle, const can_bitrate_t *bitrate)
     filter = (can[handle].mode.b.nxtd) ? 0x1FFFFFFF1FFFFFFFull : 0x000000001FFFFFFFull;
     if((rc = CAN_SetValue(can[handle].board, PCAN_ACCEPTANCE_FILTER_29BIT,
                           (void*)&filter, sizeof(filter))) != PCAN_ERROR_OK) {
-        CAN_Uninitialize(can[handle].board);
-        return pcan_error(rc);
-    }
-#endif
-#ifndef _WIN32
-    if((rc = CAN_GetValue(can[handle].board, PCAN_RECEIVE_EVENT,
-                         &can[handle].fdes, sizeof(int))) != PCAN_ERROR_OK) {
         CAN_Uninitialize(can[handle].board);
         return pcan_error(rc);
     }
@@ -572,7 +569,7 @@ int can_read(int handle, can_msg_t *msg, unsigned short timeout)
         return CANERR_OFFLINE;
 
     // blocking read
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(_WIN64)
     fd_set rdfs;
     FD_ZERO(&rdfs);
     FD_SET(can[handle].fdes, &rdfs);
@@ -580,13 +577,11 @@ int can_read(int handle, can_msg_t *msg, unsigned short timeout)
     tv.tv_sec = (time_t)(timeout / 1000u);
     tv.tv_usec = (suseconds_t)(timeout % 1000u) * (suseconds_t)1000;
 retry:
-#endif
     if(!can[handle].mode.b.fdoe)
         rc = CAN_Read(can[handle].board, &can_msg, &timestamp);
     else
         rc = CAN_ReadFD(can[handle].board, &can_msg_fd, &timestamp_fd);
     if(rc == PCAN_ERROR_QRCVEMPTY) {
-#ifndef _WIN32
         if(timeout == 65535u) {
             if(select(can[handle].fdes+1, &rdfs, NULL, NULL, NULL) > 0)
                 goto retry;
@@ -595,10 +590,10 @@ retry:
             if(select(can[handle].fdes+1, &rdfs, NULL, NULL, &tv) > 0)
                 goto retry;
         }
-#endif
         can[handle].status.b.receiver_empty = 1;
         return CANERR_RX_EMPTY;         //   receiver empty!
     }
+#endif
     /*if(rc != PCAN_ERROR_OK) { // Is this a good idea? */
     if((rc & ~(PCAN_ERROR_ANYBUSERR |
                PCAN_ERROR_OVERRUN | PCAN_ERROR_QOVERRUN |
