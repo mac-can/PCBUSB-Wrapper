@@ -34,10 +34,12 @@ TARGET	= pcb_test
 
 CFLAGS += -O2 -Wall -Wno-parentheses \
 	-fno-strict-aliasing \
+	-D_PCBUSB_SHARED_LIBRARY \
 	-D_CANAPI_EXTERN \
 	-I$(DRV)
 
-LIBRARIES = -lPCBUSB
+#LIBRARIES = -lPCBUSB
+LIBRARIES = 
 
 LDFLAGS  +=
 

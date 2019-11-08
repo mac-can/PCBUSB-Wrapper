@@ -35,11 +35,13 @@ TARGET  = $(LIBRARY).$(VERSION).dylib
 
 CFLAGS += -Wall -Wno-parentheses \
 	-fno-strict-aliasing \
+	-D_PCBUSB_SHARED_LIBRARY \
 	-D_CANAPI_SHARED_LIBRARY \
 	-D_CANAPI_EXTERN \
 	-I$(DRV)
 
-LIBRARIES = -lPCBUSB
+#LIBRARIES = -lPCBUSB
+LIBRARIES =
 
 LDFLAGS  += -nostartfiles -dynamiclib
 

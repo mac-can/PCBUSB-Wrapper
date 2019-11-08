@@ -3,14 +3,6 @@
   <project name="PCANBasic Tester"
              path="." />
     <dependencies>
-    <item name="bit-rates (header)"
-              target="bitrates.h"
-              source="/Users/neptune/Projects/SVN/CAN/DRV/API/misc/bitrates.h"
-              version="file:latest" />
-    <item name="bit-rates (c-file)"
-              target="bitrates.c"
-              source="/Users/neptune/Projects/SVN/CAN/DRV/API/misc/bitrates.c"
-              version="file:latest" />
     <item name="msg printer (header)"
               target="printmsg.h"
               source="/Users/neptune/Projects/SVN/CAN/DRV/API/misc/printmsg.h"
@@ -19,13 +11,5 @@
               target="printmsg.c"
               source="/Users/neptune/Projects/SVN/CAN/DRV/API/misc/printmsg.c"
               version="file:latest" />
-    <!-- item name="timer (header)"
-          target="timer.h"
-          source="/Users/neptune/Projects/SVN/Library/c/timer.h"
-          version="file:latest" / -->
-    <!-- item name="timer (c-file)"
-          target="timer.c"
-          source="/Users/neptune/Projects/SVN/Library/c/timer.c"
-          version="file:latest" / -->
     </dependencies>
 </depman>
