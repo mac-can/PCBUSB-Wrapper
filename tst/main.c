@@ -177,7 +177,8 @@ int main(int argc, char *argv[])
     unsigned char  uchar;
     unsigned short ushort;
     unsigned long  ulong;
-    char string[CANPROP_BUF_MAX_SIZE];
+    unsigned long long rx, tx, err;
+    char string[CANPROP_BUFFER_SIZE];
 
     //struct option long_options[] = {
     //  {"help", no_argument, 0, 'h'},
@@ -294,45 +295,49 @@ int main(int argc, char *argv[])
         if((software = can_version()) != NULL)
             fprintf(stdout, "Software: %s\n", software);
         if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_SPEC, (void*)&ushort, sizeof(ushort))) == CANERR_NOERROR)
-            fprintf(stdout, "Property: CANPROP_GET_SPEC=%u.%u\n", (ushort >> 8), (ushort & 0xFFu));
+            fprintf(stdout, "Property: CANPROP_GET_SPEC=%u.%u\n", (ushort >> 8), (ushort & 0x0FFu));
         else
-            printf("+++ error(%i): can_property(CANPROP_GET_SPEC) failed\n", rc);
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_SPEC) failed\n", rc);
         if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_VERSION, (void*)&ushort, sizeof(ushort))) == CANERR_NOERROR)
-            fprintf(stdout, "Property: CANPROP_GET_VERSION=%u.%u\n", (ushort >> 8), (ushort & 0xFFu));
+            fprintf(stdout, "Property: CANPROP_GET_VERSION=%u.%u\n", (ushort >> 8), (ushort & 0x0FFu));
         else
-            printf("+++ error(%i): can_property(CANPROP_GET_VERSION) failed\n", rc);
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_VERSION) failed\n", rc);
         if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_REVISION, (void*)&uchar, sizeof(uchar))) == CANERR_NOERROR)
             fprintf(stdout, "Property: CANPROP_GET_REVISION=%u\n", uchar);
         else
-            printf("+++ error(%i): can_property(CANPROP_GET_REVISION) failed\n", rc);
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_REVISION) failed\n", rc);
         if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_BUILD_NO, (void*)&ulong, sizeof(ulong))) == CANERR_NOERROR)
-            fprintf(stdout, "Property: CANPROP_GET_BUILD_NO=%lx\n", ulong);
+            fprintf(stdout, "Property: CANPROP_GET_BUILD_NO=%lxh\n", ulong);
         else
-            printf("+++ error(%i): can_property(CANPROP_GET_BUILD_NO) failed\n", rc);
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_BUILD_NO) failed\n", rc);
         if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_LIBRARY_ID, (void*)&i, sizeof(i))) == CANERR_NOERROR)
-            fprintf(stdout, "Property: CANPROP_GET_LIBRARY_ID=%d\n", i);
+            fprintf(stdout, "Property: CANPROP_GET_LIBRARY_ID=(%d)\n", i);
         else
-            printf("+++ error(%i): can_property(CANPROP_GET_LIBRARY_ID) failed\n", rc);
-        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_LIBRARY_DLL, (void*)string, CANPROP_BUF_MAX_SIZE)) == CANERR_NOERROR)
-            fprintf(stdout, "Property: CANPROP_GET_LIBRARY_DLL=%s\n", string);
-        else
-            printf("+++ error(%i): can_property(CANPROP_GET_LIBRARY_DLL) failed\n", rc);
-        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_VENDOR_NAME, (void*)string, CANPROP_BUF_MAX_SIZE)) == CANERR_NOERROR)
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_LIBRARY_ID) failed\n", rc);
+        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_VENDOR_NAME, (void*)string, CANPROP_BUFFER_SIZE)) == CANERR_NOERROR)
             fprintf(stdout, "Property: CANPROP_GET_VENDOR_NAME=%s\n", string);
         else
-            printf("+++ error(%i): can_property(CANPROP_GET_VENDOR_NAME) failed\n", rc);
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_VENDOR_NAME) failed\n", rc);
+        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_VENDOR_DLLNAME, (void*)string, CANPROP_BUFFER_SIZE)) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_VENDOR_DLLNAME=%s\n", string);
+        else
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_VENDOR_DLLNAME) failed\n", rc);
+        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_VENDOR_PROP + 5, (void*)string, CANPROP_BUFFER_SIZE)) == CANERR_NOERROR)
+            fprintf(stdout, "Property: PCAN_API_VERSION=%s\n", string);
+        else
+            fprintf(stderr, "+++ error(%i): can_property(PCAN_API_VERSION) failed\n", rc);
     }
     /* channel tester */
     if(option_test) {
         for(i = 0; i < PCAN_BOARDS; i++) {
             if((rc = can_test(can_board[i].type, op_mode, NULL, &opt)) == CANERR_NOERROR)
-                printf("Testing...BoardType=0x%02lx: %s\n", can_board[i].type, opt == CANBRD_OCCUPIED ? "occupied" : opt == CANBRD_PRESENT ? "available" : "unavailable");
+                fprintf(stdout, "Testing...BoardType=0x%02lx: %s\n", can_board[i].type, opt == CANBRD_OCCUPIED ? "occupied" : opt == CANBRD_PRESENT ? "available" : "unavailable");
             else if(rc == CANERR_ILLPARA)
-                printf("Testing...BoardType=0x%02lx: incompatible\n", can_board[i].type);
+                fprintf(stdout, "Testing...BoardType=0x%02lx: incompatible\n", can_board[i].type);
             else if(rc == CANERR_NOTSUPP)
-                printf("Testing...BoardType=0x%02lx: not testable\n", can_board[i].type);
+                fprintf(stdout, "Testing...BoardType=0x%02lx: not testable\n", can_board[i].type);
             else
-                printf("Testing...BoardType=0x%02lx: FAILED\n+++ error(%i) can_test failed\n", can_board[i].type, rc);
+                fprintf(stdout, "Testing...BoardType=0x%02lx: FAILED\n+++ error(%i) can_test failed\n", can_board[i].type, rc);
         }
     }
     /* selected hardware */
@@ -345,42 +350,74 @@ int main(int argc, char *argv[])
     }
     /* initialization */
     if((handle = can_init(channel, op_mode, NULL)) < 0) {
-        printf("+++ error(%i): can_init failed\n", handle);
+        fprintf(stderr, "+++ error(%i): can_init failed\n", handle);
         goto end;
     }
     if((rc = can_status(handle, &status.byte)) != CANERR_NOERROR) {
-        printf("+++ error(%i): can_status failed\n", rc);
+        fprintf(stderr, "+++ error(%i): can_status failed\n", rc);
         goto end;
     }
 	if(option_info) {
-        // TODO: ...
+        if((rc = can_property(handle, CANPROP_GET_VENDOR_PROP + 6, (void*)string, CANPROP_BUFFER_SIZE)) == CANERR_NOERROR)
+            fprintf(stdout, "Property: PCAN_CHANNEL_VERSION=%s\n", string);
+        else
+            fprintf(stderr, "+++ error(%i): can_property(PCAN_CHANNEL_VERSION) failed\n", rc);
+        if((rc = can_property(handle, CANPROP_GET_BOARD_TYPE, (void*)&i, sizeof(i))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_BOARD_TYPE=%02xh\n", i);
+        else
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_BOARD_TYPE) failed\n", rc);
+        if((rc = can_property(handle, CANPROP_GET_BOARD_NAME, (void*)string, CANPROP_BUFFER_SIZE)) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_BOARD_NAME=%s\n", string);
+        else
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_BOARD_NAME) failed\n", rc);
+        if((rc = can_property(handle, CANPROP_GET_OP_CAPABILITY, (void*)&uchar, sizeof(uchar))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_OP_CAPABILITY=%02xh\n", uchar);
+        else
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_OP_CAPABILITY) failed\n", rc);
+        if((rc = can_property(handle, CANPROP_GET_OP_MODE, (void*)&uchar, sizeof(uchar))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_OP_MODE=%02xh\n", uchar);
+        else
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_OP_MODE) failed\n", rc);
+        if((rc = can_property(handle, CANPROP_GET_STATUS, (void*)&uchar, sizeof(uchar))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_STATUS=%02xh\n", uchar);
+        else
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_STATUS) failed\n", rc);
     }
     /* channel status */
     if(option_test) {
         if((rc = can_test(channel, op_mode, NULL, &opt)) == CANERR_NOERROR)
-            printf("Testing...BoardType=0x%02x: %s\n", channel, opt == CANBRD_OCCUPIED ? "now occupied" : opt == CANBRD_PRESENT ? "available" : "unavailable");
+            fprintf(stdout, "Testing...BoardType=0x%02x: %s\n", channel, opt == CANBRD_OCCUPIED ? "now occupied" : opt == CANBRD_PRESENT ? "available" : "unavailable");
         else if(rc == CANERR_ILLPARA)
-            printf("Testing...BoardType=0x%02x: incompatible\n", channel);
+            fprintf(stdout, "Testing...BoardType=0x%02x: incompatible\n", channel);
         else if(rc == CANERR_NOTSUPP)
-            printf("Testing...BoardType=0x%02x: not testable\n", channel);
+            fprintf(stdout, "Testing...BoardType=0x%02x: not testable\n", channel);
         else
-            printf("Testing...BoardType=0x%02x: FAILED\n+++ error(%i) can_test failed\n", channel, rc);
+            fprintf(stdout, "Testing...BoardType=0x%02x: FAILED\n+++ error(%i) can_test failed\n", channel, rc);
     }
     /* start communication */
     if((rc = can_start(handle, &bitrate)) != CANERR_NOERROR) {
-        printf("+++ error(%i): can_start failed\n", rc);
+        fprintf(stderr, "+++ error(%i): can_start failed\n", rc);
         goto end;
     }
     if((rc = can_status(handle, &status.byte)) != CANERR_NOERROR) {
-        printf("+++ error(%i): can_status failed\n", rc);
+        fprintf(stderr, "+++ error(%i): can_status failed\n", rc);
         goto end;
     }
     if((rc = can_bitrate(handle, &bitrate, &speed)) != CANERR_NOERROR) {
-        printf("+++ error(%i): can_bitrate failed\n", rc);
+        fprintf(stderr, "+++ error(%i): can_bitrate failed\n", rc);
         goto end;
     }
 	if(option_info) {
-        verbose(&bitrate, &speed);
+        if((rc = can_property(handle, CANPROP_GET_BITRATE, (void*)&bitrate, sizeof(bitrate))) != CANERR_NOERROR)
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_BITRATE) failed\n", rc);
+        else if((rc = can_property(handle, CANPROP_GET_SPEED, (void*)&speed, sizeof(speed))) != CANERR_NOERROR)
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_SPEED) failed\n", rc);
+        else
+            verbose(&bitrate, &speed);
+        if((rc = can_property(handle, CANPROP_GET_STATUS, (void*)&uchar, sizeof(uchar))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_STATUS=%02xh\n", uchar);
+        else
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_STATUS) failed\n", rc);
     }
     /* transmit messages */
     if(option_transmit > 0) {
@@ -404,19 +441,27 @@ int main(int argc, char *argv[])
     }
     /* online information */
     if(option_info) {
+        if((rc = can_property(handle, CANPROP_GET_TX_COUNTER, (void*)&tx, sizeof(tx))) != CANERR_NOERROR)
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_TX_COUNTER) failed\n", rc);
+        else if((rc = can_property(handle, CANPROP_GET_RX_COUNTER, (void*)&rx, sizeof(rx))) != CANERR_NOERROR)
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_rX_COUNTER) failed\n", rc);
+        else if((rc = can_property(handle, CANPROP_GET_ERR_COUNTER, (void*)&err, sizeof(err))) != CANERR_NOERROR)
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_ERR_COUNTER) failed\n", rc);
+        else
+            fprintf(stdout, "Counters: tx=%llu, rx=%llu, err=%llu\n", tx, rx, err);
         if((device = can_hardware(handle)) != NULL)
             fprintf(stdout, "Hardware: %s\n", device);
         if((firmware = can_software(handle)) != NULL)
             fprintf(stdout, "Firmware: %s\n", firmware);
     }
 end:
-    printf("Teardown.."); fflush(stdout);
+    fprintf(stdout, "Teardown.."); fflush(stdout);
     if((rc = can_exit(CANEXIT_ALL)) != CANERR_NOERROR) {
-        printf("FAILED\n");
-        printf("+++ error(%i): can_exit failed\n", rc);
+        fprintf(stdout, "FAILED\n");
+        fprintf(stderr, "+++ error(%i): can_exit failed\n", rc);
         return 1;
     }
-    printf("Bye!\n");
+    fprintf(stdout, "Bye!\n");
     return 0;
 }
 
@@ -425,7 +470,7 @@ static int transmit(int handle, int frames, DWORD delay)
     can_msg_t message;
     int rc = -1, i;
 
-    printf("Transmit CAN 2.0 messages");
+    fprintf(stdout, "Transmit CAN 2.0 messages");
     memset(&message, 0, sizeof(can_msg_t));
 
     for(i = 0; i < frames; i++) {
@@ -440,32 +485,26 @@ static int transmit(int handle, int frames, DWORD delay)
         message.data[6] = (BYTE)(((QWORD)i & 0x00FF000000000000) >> 48);
         message.data[7] = (BYTE)(((QWORD)i & 0xFF00000000000000) >> 56);
 
-        //start_timer(delay);
-    repeat:
+repeat:
         if((rc = can_write(handle, &message)) != CANERR_NOERROR) {
             if(rc == CANERR_TX_BUSY && running)
                 goto repeat;
-            printf("+++ error(%i): can_write failed\n", rc);
+            fprintf(stderr, "+++ error(%i): can_write failed\n", rc);
             if(option_stop)
                 return -1;
         }
         usleep(delay);
-        //while(!is_timeout()) {
-        //    if(!running) {
-        //        printf("%i\n", frames);
-        //        return i;
-        //    }
-        //}
+
         if(!(i % 2048)) {
             fprintf(stdout, ".");
             fflush(stdout);
         }
         if(!running) {
-            printf("%i\n", frames);
+            fprintf(stdout, "%i\n", frames);
             return i;
         }
     }
-    printf("%i\n", frames);
+    fprintf(stdout, "%i\n", frames);
     return i;
 }
 
@@ -474,7 +513,7 @@ static int transmit_fd(int handle, int frames, DWORD delay)
     can_msg_t message;
     int rc = -1, i; BYTE j;
 
-    printf("Transmit CAN FD messages");
+    fprintf(stdout, "Transmit CAN FD messages");
     memset(&message, 0, sizeof(can_msg_t));
     if(option_brs)
         message.brs = 1;
@@ -495,32 +534,26 @@ static int transmit_fd(int handle, int frames, DWORD delay)
         message.data[6] = (BYTE)(((QWORD)i & 0x00FF000000000000) >> 48);
         message.data[7] = (BYTE)(((QWORD)i & 0xFF00000000000000) >> 56);
 
-        //start_timer(delay);
 repeat_fd:
         if((rc = can_write(handle, &message)) != CANERR_NOERROR) {
             if(rc == CANERR_TX_BUSY && running)
                 goto repeat_fd;
-            printf("+++ error(%i): can_write failed\n", rc);
+            fprintf(stderr, "+++ error(%i): can_write failed\n", rc);
             if(option_stop)
                 return -1;
         }
         usleep(delay);
-        //while(!is_timeout()) {
-        //    if(!running) {
-        //        printf("%i\n", frames);
-        //        return i;
-        //    }
-        //}
+
         if(!(i % 2048)) {
             fprintf(stdout, ".");
             fflush(stdout);
         }
         if(!running) {
-            printf("%i\n", frames);
+            fprintf(stdout, "%i\n", frames);
             return i;
         }
     }
-    printf("%i\n", frames);
+    fprintf(stdout, "%i\n", frames);
     return i;
 }
 
@@ -537,20 +570,20 @@ static int receive(int handle)
     char symbol[] = ">!?";
     int prompt = 0;
 
-    printf("Receiving CAN 2.0 messages (%s)", (option_io == OPTION_IO_BLOCKING) ? "blocking" : "polling");
+    fprintf(stdout, "Receiving CAN 2.0 messages (%s)", (option_io == OPTION_IO_BLOCKING) ? "blocking" : "polling");
     if(option_echo)
-        printf(":\n");
+        fprintf(stdout, ":\n");
     else
         fflush(stdout);
     while(running) {
         if((rc = can_read(handle, &message, (option_io == OPTION_IO_BLOCKING) ? TIME_IO_BLOCKING : TIME_IO_POLLING)) == CANERR_NOERROR) {
             if(option_echo) {
-                printf("%c %"PRIu64"\t", symbol[prompt], frames++);
+                fprintf(stdout, "%c %"PRIu64"\t", symbol[prompt], frames++);
                 msg_print_time(stdout, (struct msg_timestamp*)&message.timestamp, option_time);  // an evil cast!
                 msg_print_id(stdout, message.id, message.ext, message.rtr, message.dlc, MSG_MODE_HEX);
                 for(i = 0; i < message.dlc; i++)
                     msg_print_data(stdout, message.data[i], ((i+1) == message.dlc), MSG_MODE_HEX);
-                printf("\n");
+                fprintf(stdout, "\n");
             }
             else {
                 if(!(frames++ % 2048)) {
@@ -569,9 +602,9 @@ static int receive(int handle)
             if(message.dlc > 7) received |= (QWORD)message.data[7] << 56;
             if(received != expected) {
                 if(option_check != OPTION_NO) {
-                    printf("+++ error(X): received data is not equal to expected data (%"PRIu64" : %"PRIu64")\n", received, expected);
+                    fprintf(stderr, "+++ error(X): received data is not equal to expected data (%"PRIu64" : %"PRIu64")\n", received, expected);
                     if(expected > received) {
-                        printf("              issue #198: old messages on pipe #3 (offset -%"PRIu64")\a\n", expected - received);
+                        fprintf(stdout, "              issue #198: old messages on pipe #3 (offset -%"PRIu64")\a\n", expected - received);
 #if (STOP_FRAMES == 0)
                         if(option_stop)
                             return -1;
@@ -590,7 +623,7 @@ static int receive(int handle)
             expected = received + 1;
         }
         else if(rc != CANERR_RX_EMPTY) {
-            printf("+++ error(%i): can_read failed\n", rc);
+            fprintf(stderr, "+++ error(%i): can_read failed\n", rc);
             errors++;
         }
     }
@@ -614,20 +647,20 @@ static int receive_fd(int handle)
     char symbol[] = ">!?";
     int prompt = 0;
 
-    printf("Receiving CAN FD messages (%s)", (option_io == OPTION_IO_BLOCKING) ? "blocking" : "polling");
+    fprintf(stdout, "Receiving CAN FD messages (%s)", (option_io == OPTION_IO_BLOCKING) ? "blocking" : "polling");
     if(option_echo)
-        printf(":\n");
+        fprintf(stdout, ":\n");
     else
         fflush(stdout);
     while(running) {
         if((rc = can_read(handle, &message, (option_io == OPTION_IO_BLOCKING) ? TIME_IO_BLOCKING : TIME_IO_POLLING)) == CANERR_NOERROR) {
             if(option_echo) {
-                printf("%c %"PRIu64"\t", symbol[prompt], frames++);
+                fprintf(stdout, "%c %"PRIu64"\t", symbol[prompt], frames++);
                 msg_print_time(stdout, (struct msg_timestamp*)&message.timestamp, option_time);  // an evil cast!
                 msg_print_id_fd(stdout, message.id, message.ext, message.rtr, message.fdf, message.brs, message.esi, DLC2DLEN(message.dlc), MSG_MODE_HEX);
                 for(i = 0; i < DLC2DLEN(message.dlc); i++)
                     msg_print_data(stdout, message.data[i], ((i + 1) == DLC2DLEN(message.dlc)), MSG_MODE_HEX);
-                printf("\n");
+                fprintf(stdout, "\n");
             }
             else {
                 if(!(frames++ % 2048)) {
@@ -646,9 +679,9 @@ static int receive_fd(int handle)
             if(message.dlc > 7) received |= (QWORD)message.data[7] << 56;
             if(received != expected) {
                 if(option_check != OPTION_NO) {
-                    printf("+++ error(X): received data is not equal to expected data (%"PRIu64" : %"PRIu64")\n", received, expected);
+                    fprintf(stderr, "+++ error(X): received data is not equal to expected data (%"PRIu64" : %"PRIu64")\n", received, expected);
                     if(expected > received) {
-                        printf("              issue #198: old messages on pipe #3 (offset -%"PRIu64")\a\n", expected - received);
+                        fprintf(stdout, "              issue #198: old messages on pipe #3 (offset -%"PRIu64")\a\n", expected - received);
 #if (STOP_FRAMES == 0)
                         if(option_stop)
                             return -1;
@@ -667,7 +700,7 @@ static int receive_fd(int handle)
             expected = received + 1;
         }
         else if(rc != CANERR_RX_EMPTY) {
-            printf("+++ error(%i): can_read failed\n", rc);
+            fprintf(stderr, "+++ error(%i): can_read failed\n", rc);
             errors++;
         }
     }
@@ -717,7 +750,7 @@ static void verbose(const can_bitrate_t *bitrate, const can_speed_t *speed)
 
 static void sigterm(int signo)
 {
-    //printf("%s: got signal %d\n", __FILE__, signo);
+    //fprintf(stderr, "%s: got signal %d\n", __FILE__, signo);
     running = 0;
     (void)signo;
 #ifdef _WIN32

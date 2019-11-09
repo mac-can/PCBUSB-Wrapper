@@ -35,15 +35,13 @@
  *  @defgroup    can_defs Options and Definitions
  *  @{
  */
-
-#ifndef __CAN_DEFS_H
-#define __CAN_DEFS_H
+#ifndef CAN_DEFS_H_INCLUDED
+#define CAN_DEFS_H_INCLUDED
 
 /*  -----------  options  ------------------------------------------------
  */
 
-#define _BLOCKING_READ                  // blocking read via wait event
-#define _CiA_BIT_TIMING                 // CiA bit-timing (from CANopen spec.)
+#define CANAPI_CiA_BIT_TIMING           // CiA bit-timing (from CANopen spec.)
 
 
 /*  -----------  defines  ------------------------------------------------
@@ -97,11 +95,11 @@
 
  #define PCAN_LIB_ID                400 //   library ID (CAN/COP API V1 compatible) 
 #ifndef __APPLE__
- #define PCAN_LIB_BASIC                     "PCANBasic.DLL"
+ #define PCAN_LIB_BASIC                     "PCANBasic.dll"
 #else
  #define PCAN_LIB_BASIC                     "libPCBUSB.dylib"
 #endif
- #define PCAN_LIB_VENDOR                    "PEAK-System"
+ #define PCAN_LIB_VENDOR                    "PEAK-System Technik GmbH, Darmstadt"
 
  struct _pcan_param                     //   installation parameters:
  {
@@ -110,7 +108,7 @@
     unsigned short irq;                 //     interrupt number (parallel device)
  };
 #endif
-#endif /* __CAN_DEFS_H */
+#endif /* CAN_DEFS_H_INCLUDED */
 /** @}
  */
 /*  ----------------------------------------------------------------------
