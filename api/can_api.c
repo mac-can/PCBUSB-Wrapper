@@ -31,17 +31,22 @@
  *  @addtogroup  can_api
  *  @{
  */
+/*  -----------  version  ------------------------------------------------
+ */
+
+#include "can_vers.h"
 
 #ifdef _MSC_VER
 #define VERSION_MAJOR     3
 #define VERSION_MINOR     3
-#define VERSION_REVISION  0
+#define VERSION_PATCH     0
 #else
 #define VERSION_MAJOR     0
 #define VERSION_MINOR     2
-#define VERSION_REVISION  0
+#define VERSION_PATCH     0
 #endif
-#define VERSION_STRING    TOSTRING(VERSION_MAJOR)"." TOSTRING(VERSION_MINOR)"."TOSTRING(VERSION_REVISION)
+#define VERSION_BUILD     BUILD_NO
+#define VERSION_STRING    TOSTRING(VERSION_MAJOR)"." TOSTRING(VERSION_MINOR)"."TOSTRING(VERSION_PATCH)"-"TOSTRING(BUILD_NO)
 #if defined(_WIN64)
 #define PLATFORM    "x64"
 #elif defined(_WIN32)
@@ -55,14 +60,13 @@
 #else
 #error Unsupported architecture
 #endif
-#include "can_vers.h"
 #ifdef _DEBUG
-    static char _id[] = "CAN API V3 for PEAK PCAN-Basic Interfaces, Version "VERSION_STRING"-"TOSTRING(BUILD_NO)" ("PLATFORM") _DEBUG";
+    static char _id[] = "CAN API V3 for PEAK PCAN-Basic Interfaces, Version "VERSION_STRING" ("PLATFORM") _DEBUG";
 #else
-    static char _id[] = "CAN API V3 for PEAK PCAN-Basic Interfaces, Version "VERSION_STRING"-"TOSTRING(BUILD_NO)" ("PLATFORM")";
+    static char _id[] = "CAN API V3 for PEAK PCAN-Basic Interfaces, Version "VERSION_STRING" ("PLATFORM")";
 #endif
 
-/*  -----------  includes  -------------------------------------------------
+/*  -----------  includes  -----------------------------------------------
  */
 
 #include "can_api.h"
@@ -359,6 +363,7 @@ int can_init(int board, unsigned char mode, const void *param)
 EXPORT
 int can_exit(int handle)
 {
+    TPCANStatus rc;                     // return value
     int i;
 
     if(!init)                           // must be initialized
@@ -373,8 +378,9 @@ int can_exit(int handle)
              *       but after CAN_Uninitialize we are really bus off! */
             (void)CAN_Reset(can[handle].board);
         }
-        (void)CAN_Uninitialize(can[handle].board); // resistance is futile!
-
+        if((rc = CAN_Uninitialize(can[handle].board)) != PCAN_ERROR_OK)
+            return pcan_error(rc);
+		
         can[handle].status.byte |= CANSTAT_RESET;  // CAN controller in INIT state
         can[handle].board = PCAN_NONEBUS; // handle can be used again
     }
@@ -388,7 +394,7 @@ int can_exit(int handle)
                     (void)CAN_Reset(can[i].board);
                 }
                 (void)CAN_Uninitialize(can[i].board); // resistance is futile!
-
+				
                 can[i].status.byte |= CANSTAT_RESET;  // CAN controller in INIT state
                 can[i].board = PCAN_NONEBUS; // handle can be used again
             }
@@ -403,7 +409,7 @@ int can_start(int handle, const can_bitrate_t *bitrate)
     TPCANBaudrate btr0btr1;             // btr0btr1 value
     char string[PCAN_BUF_SIZE];         // bit-rate string
     DWORD value;                        // parameter value
-//    QWORD filter;                       // for 29-bit filter
+    //QWORD filter;                       // for 29-bit filter
     TPCANStatus rc;                     // return value
 
     if(!init)                           // must be initialized
@@ -721,8 +727,8 @@ int can_status(int handle, unsigned char *status)
 
     if(!can[handle].status.b.can_stopped) { // when running get bus status
         rc = CAN_GetStatus(can[handle].board);
-        if((rc & ~(PCAN_ERROR_ANYBUSERR |
-                   PCAN_ERROR_OVERRUN | PCAN_ERROR_QOVERRUN |
+        if((rc & ~(PCAN_ERROR_ANYBUSERR | 
+                   PCAN_ERROR_OVERRUN | PCAN_ERROR_QOVERRUN | 
                    PCAN_ERROR_XMTFULL | PCAN_ERROR_QXMTFULL)))
             return pcan_error(rc);
         can[handle].status.b.bus_off = (rc & PCAN_ERROR_BUSOFF) != PCAN_ERROR_OK;
@@ -923,7 +929,7 @@ static int pcan_capability(WORD board, can_mode_t *capability)
 
     capability->b.fdoe = (features & FEATURE_FD_CAPABLE) ? 1 : 0;
     capability->b.brse = (features & FEATURE_FD_CAPABLE) ? 1 : 0;
-    capability->b.niso = 0; // This can not be determined (FIXME)
+    capability->b.niso = 0; // This can not be determined (FIXME) 
     capability->b.shrd = 0; // This feature is not supported (TODO: clarify)
 #if (0)
     capability->b.nxtd = 1; // PCAN_ACCEPTANCE_FILTER_29BIT available since version 0.x
@@ -1101,15 +1107,15 @@ static int lib_parameter(int param, void *value, size_t nbytes)
             rc = CANERR_NOERROR;
         }
         break;
-    case CANPROP_GET_REVISION:          // revision number of the library (UCHAR)
+    case CANPROP_GET_PATCH_NO:          // patch number of the library (UCHAR)
         if(nbytes == sizeof(unsigned char)) {
-            *(unsigned char*)value = (unsigned char)VERSION_REVISION;
+            *(unsigned char*)value = (unsigned char)VERSION_PATCH;
             rc = CANERR_NOERROR;
         }
         break;
     case CANPROP_GET_BUILD_NO:          // build number of the library (ULONG)
         if(nbytes == sizeof(unsigned long)) {
-            *(unsigned long*)value = (unsigned long)BUILD_NO;
+            *(unsigned long*)value = (unsigned long)VERSION_BUILD;
             rc = CANERR_NOERROR;
         }
         break;
@@ -1119,32 +1125,32 @@ static int lib_parameter(int param, void *value, size_t nbytes)
             rc = CANERR_NOERROR;
         }
         break;
-    case CANPROP_GET_LIBRARY_VENDOR:    // vendor name of the library (CHAR[256])
+    case CANPROP_GET_LIBRARY_VENDOR:    // vendor name of the library (char[256])
         if((nbytes > strlen(CAN_API_VENDOR)) && (nbytes <= CANPROP_BUFFER_SIZE)) {
             strcpy((char*)value, CAN_API_VENDOR);
             rc = CANERR_NOERROR;
         }
         break;
-    case CANPROP_GET_LIBRARY_DLLNAME:   // file name of the library (CHAR[256])
+    case CANPROP_GET_LIBRARY_DLLNAME:   // file name of the library (char[256])
         if ((nbytes > strlen(PCAN_LIB_WRAPPER)) && (nbytes <= CANPROP_BUFFER_SIZE)) {
             strcpy((char*)value, PCAN_LIB_WRAPPER);
             rc = CANERR_NOERROR;
         }
         break;
-    case CANPROP_GET_BOARD_VENDOR:      // vendor name of the CAN interface (CHAR[256])
+    case CANPROP_GET_BOARD_VENDOR:      // vendor name of the CAN interface (char[256])
         if((nbytes > strlen(PCAN_LIB_VENDOR)) && (nbytes <= CANPROP_BUFFER_SIZE)) {
             strcpy((char*)value, PCAN_LIB_VENDOR);
             rc = CANERR_NOERROR;
         }
         break;
-    case CANPROP_GET_BOARD_DLLNAME:     // file name of the CAN interface (CHAR[256])
+    case CANPROP_GET_BOARD_DLLNAME:     // file name of the CAN interface (char[256])
         if((nbytes > strlen(PCAN_LIB_BASIC)) && (nbytes <= CANPROP_BUFFER_SIZE)) {
             strcpy((char*)value, PCAN_LIB_BASIC);
             rc = CANERR_NOERROR;
         }
         break;
     default:
-        if((CANPROP_GET_VENDOR_PROP <= param) &&  // get a vendor-specific property value (VOID)
+        if((CANPROP_GET_VENDOR_PROP <= param) &&  // get a vendor-specific property value (void*)
             (param < (CANPROP_GET_VENDOR_PROP + CANPROP_VENDOR_PROP_RANGE))) {
             if((sts = CAN_GetValue(PCAN_NONEBUS, (BYTE)(param - CANPROP_GET_VENDOR_PROP),
                 (void*)value, (DWORD)nbytes)) == PCAN_ERROR_OK)
@@ -1152,7 +1158,7 @@ static int lib_parameter(int param, void *value, size_t nbytes)
             else
                 rc = pcan_error(sts);
         }
-        else if((CANPROP_SET_VENDOR_PROP <= param) &&  // set a vendor-specific property value (VOID)
+        else if((CANPROP_SET_VENDOR_PROP <= param) &&  // set a vendor-specific property value (void*)
             (param < (CANPROP_SET_VENDOR_PROP + CANPROP_VENDOR_PROP_RANGE))) {
             if((sts = CAN_SetValue(PCAN_NONEBUS, (BYTE)(param - CANPROP_SET_VENDOR_PROP),
                 (void*)value, (DWORD)nbytes)) == PCAN_ERROR_OK)
@@ -1191,7 +1197,7 @@ static int drv_parameter(int handle, int param, void *value, size_t nbytes)
             rc = CANERR_NOERROR;
         }
         break;
-    case CANPROP_GET_BOARD_NAME:        // board name of the CAN interface (CHAR[256])
+    case CANPROP_GET_BOARD_NAME:        // board name of the CAN interface (char[256])
         for(i = 0; i < PCAN_BOARDS; i++) {
             if(can_board[i].type == (unsigned long)can[handle].board) {
                 if((nbytes > strlen(can_board[i].name)) && (nbytes <= CANPROP_BUFFER_SIZE)) {
@@ -1204,7 +1210,7 @@ static int drv_parameter(int handle, int param, void *value, size_t nbytes)
         if((i == PCAN_BOARDS) || (rc = CANERR_NOERROR))
             rc = CANERR_FATAL;
         break;
-    case CANPROP_GET_BOARD_PARAM:       // board parameter of the CAN interface (CHAR[256])
+    case CANPROP_GET_BOARD_PARAM:       // board parameter of the CAN interface (char[256])
         if(nbytes == sizeof(struct _pcan_param)) {
             ((struct _pcan_param*)value)->type = (unsigned char)can[handle].brd_type;
             ((struct _pcan_param*)value)->port = (unsigned long)can[handle].brd_port;
@@ -1277,7 +1283,7 @@ static int drv_parameter(int handle, int param, void *value, size_t nbytes)
         }
         break;
     default:
-        if((CANPROP_GET_VENDOR_PROP <= param) &&  // get a vendor-specific property value (VOID)
+        if((CANPROP_GET_VENDOR_PROP <= param) &&  // get a vendor-specific property value (void*)
            (param < (CANPROP_GET_VENDOR_PROP + CANPROP_VENDOR_PROP_RANGE))) {
             if((sts = CAN_GetValue(can[handle].board, (BYTE)(param - CANPROP_GET_VENDOR_PROP),
                 (void*)value, (DWORD)nbytes)) == PCAN_ERROR_OK)
@@ -1285,7 +1291,7 @@ static int drv_parameter(int handle, int param, void *value, size_t nbytes)
             else
                 rc = pcan_error(sts);
         }
-        else if((CANPROP_SET_VENDOR_PROP <= param) &&  // set a vendor-specific property value (VOID)
+        else if((CANPROP_SET_VENDOR_PROP <= param) &&  // set a vendor-specific property value (void*)
                 (param < (CANPROP_SET_VENDOR_PROP + CANPROP_VENDOR_PROP_RANGE))) {
             if((sts = CAN_SetValue(can[handle].board, (BYTE)(param - CANPROP_SET_VENDOR_PROP),
                 (void*)value, (DWORD)nbytes)) == PCAN_ERROR_OK)

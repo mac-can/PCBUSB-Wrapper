@@ -283,7 +283,7 @@ int main(int argc, char *argv[])
         if(!strcmp(argv[i], "BR:CiA5002M")) BR_CiA_500K2M(bitrate);
         if(!strcmp(argv[i], "BR:CiA1M5M")) BR_CiA_1M5M(bitrate);
         /* additional operation modes */
-        //if(!strcmp(argv[i], "SHARED")) op_mode |= CANMODE_SHRD;
+        if(!strcmp(argv[i], "SHARED")) op_mode |= CANMODE_SHRD;
         if(!strcmp(argv[i], "MONITOR")) op_mode |= CANMODE_MON;
         if(!strcmp(argv[i], "ERR:ON")) op_mode |= CANMODE_ERR;
         if(!strcmp(argv[i], "XTD:OFF")) op_mode |= CANMODE_NXTD;
@@ -302,12 +302,12 @@ int main(int argc, char *argv[])
             fprintf(stdout, "Property: CANPROP_GET_VERSION=%u.%u\n", (ushort >> 8), (ushort & 0x0FFu));
         else
             fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_VERSION) failed\n", rc);
-        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_REVISION, (void*)&uchar, sizeof(uchar))) == CANERR_NOERROR)
-            fprintf(stdout, "Property: CANPROP_GET_REVISION=%u\n", uchar);
+        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_PATCH_NO, (void*)&uchar, sizeof(uchar))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_PATCH_NO=%u\n", uchar);
         else
-            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_REVISION) failed\n", rc);
+            fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_PATCH_NO) failed\n", rc);
         if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_BUILD_NO, (void*)&ulong, sizeof(ulong))) == CANERR_NOERROR)
-            fprintf(stdout, "Property: CANPROP_GET_BUILD_NO=%lu\n", ulong);
+            fprintf(stdout, "Property: CANPROP_GET_BUILD_NO=%lx\n", ulong);
         else
             fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_BUILD_NO) failed\n", rc);
         if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_LIBRARY_ID, (void*)&i, sizeof(i))) == CANERR_NOERROR)
@@ -456,7 +456,7 @@ int main(int argc, char *argv[])
         else if((rc = can_property(handle, CANPROP_GET_ERR_COUNTER, (void*)&err, sizeof(err))) != CANERR_NOERROR)
             fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_ERR_COUNTER) failed\n", rc);
         else
-            fprintf(stdout, "Counters: tx=%llu, rx=%llu, err=%llu\n", tx, rx, err);
+            fprintf(stdout, "Counters: TxCnt=%"PRIu64", RxCnt=%"PRIu64", ErrCnt=%"PRIu64"\n", tx, rx, err);
         if((device = can_hardware(handle)) != NULL)
             fprintf(stdout, "Hardware: %s\n", device);
         if((firmware = can_software(handle)) != NULL)
@@ -464,7 +464,7 @@ int main(int argc, char *argv[])
     }
 end:
     fprintf(stdout, "Teardown.."); fflush(stdout);
-    if((rc = can_exit(CANEXIT_ALL)) != CANERR_NOERROR) {
+    if((rc = can_exit(handle)) != CANERR_NOERROR) {
         fprintf(stdout, "FAILED\n");
         fprintf(stderr, "+++ error(%i): can_exit failed\n", rc);
         return 1;
