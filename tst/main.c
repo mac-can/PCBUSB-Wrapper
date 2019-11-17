@@ -55,7 +55,7 @@
 /*  -----------  options  ------------------------------------------------
  */
 
-#if !defined(__uvs_license) && !defined(__gpl_license)
+#if !defined(__uvs_license) && !defined(__gpl_license) && !defined(__mit_license)
     #define  __uvs_license
 #endif
 
@@ -73,9 +73,10 @@
 #define OPTION_MODE_CAN_20  (0)
 #define OPTION_MODE_CAN_FD  (1)
 
-#define OPTION_TIME_ZERO    (0)
-#define OPTION_TIME_ABS     (1)
-#define OPTION_TIME_REL     (2)
+#define OPTION_TIME_DRIVER  (0)
+#define OPTION_TIME_ZERO    (1)
+#define OPTION_TIME_ABS     (2)
+#define OPTION_TIME_REL     (3)
 
 #define OPTION_IO_POLLING   (0)
 #define OPTION_IO_BLOCKING  (1)
@@ -110,9 +111,9 @@
 /*  -----------  prototypes  ---------------------------------------------
  */
 
-static int transmit(int handle, int frames, DWORD delay);
+static int transmit(int handle, int frames, unsigned int delay);
 static int receive(int handle);
-static int transmit_fd(int handle, int frames, DWORD delay);
+static int transmit_fd(int handle, int frames, unsigned int delay);
 static int receive_fd(int handle);
 static void verbose(const can_bitrate_t *bitrate, const can_speed_t *speed);
 
@@ -126,7 +127,7 @@ static void sigterm(int signo);
  */
 
 static int option_io = OPTION_IO_BLOCKING;
-static int option_time = OPTION_TIME_ZERO;
+static int option_time = OPTION_TIME_DRIVER;
 static int option_test = OPTION_NO;
 static int option_info = OPTION_NO;
 static int option_stat = OPTION_NO;
@@ -168,7 +169,7 @@ int main(int argc, char *argv[])
 
     int channel = PCAN_USB1;
     BYTE op_mode = CANMODE_DEFAULT;
-    DWORD delay = 0;
+    unsigned int delay = 0;
     can_bitrate_t bitrate = { -CANBDR_250 };
     can_speed_t speed;
     can_status_t status;
@@ -179,7 +180,7 @@ int main(int argc, char *argv[])
     unsigned long  ulong;
     unsigned long long rx, tx, err;
     char string[CANPROP_BUFFER_SIZE];
-
+    
     //struct option long_options[] = {
     //  {"help", no_argument, 0, 'h'},
     //  {"version", no_argument, 0, 'v'},
@@ -473,7 +474,7 @@ end:
     return 0;
 }
 
-static int transmit(int handle, int frames, DWORD delay)
+static int transmit(int handle, int frames, unsigned int delay)
 {
     can_msg_t message;
     int rc = -1, i;
@@ -492,7 +493,6 @@ static int transmit(int handle, int frames, DWORD delay)
         message.data[5] = (BYTE)(((QWORD)i & 0x0000FF0000000000) >> 40);
         message.data[6] = (BYTE)(((QWORD)i & 0x00FF000000000000) >> 48);
         message.data[7] = (BYTE)(((QWORD)i & 0xFF00000000000000) >> 56);
-
 repeat:
         if((rc = can_write(handle, &message)) != CANERR_NOERROR) {
             if(rc == CANERR_TX_BUSY && running)
@@ -516,7 +516,7 @@ repeat:
     return i;
 }
 
-static int transmit_fd(int handle, int frames, DWORD delay)
+static int transmit_fd(int handle, int frames, unsigned int delay)
 {
     can_msg_t message;
     int rc = -1, i; BYTE j;
@@ -541,7 +541,6 @@ static int transmit_fd(int handle, int frames, DWORD delay)
         message.data[5] = (BYTE)(((QWORD)i & 0x0000FF0000000000) >> 40);
         message.data[6] = (BYTE)(((QWORD)i & 0x00FF000000000000) >> 48);
         message.data[7] = (BYTE)(((QWORD)i & 0xFF00000000000000) >> 56);
-
 repeat_fd:
         if((rc = can_write(handle, &message)) != CANERR_NOERROR) {
             if(rc == CANERR_TX_BUSY && running)
@@ -756,14 +755,42 @@ static void verbose(const can_bitrate_t *bitrate, const can_speed_t *speed)
     }
 }
 
+#if defined(_WIN32) || defined(_WIN64)
+ /* usleep(3) - Linux man page
+  *
+  * Notes
+  * The type useconds_t is an unsigned integer type capable of holding integers in the range [0,1000000].
+  * Programs will be more portable if they never mention this type explicitly. Use
+  *
+  *    #include <unistd.h>
+  *    ...
+  *        unsigned int usecs;
+  *    ...
+  *        usleep(usecs);
+  */
+ static void usleep(unsigned int usec)
+ {
+    HANDLE timer;
+    LARGE_INTEGER ft;
+
+    ft.QuadPart = -(10 * (LONGLONG)usec); // Convert to 100 nanosecond interval, negative value indicates relative time
+    if (usec >= 100) {
+        timer = CreateWaitableTimer(NULL, TRUE, NULL);
+        SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+        WaitForSingleObject(timer, INFINITE);
+        CloseHandle(timer);
+    }
+ }
+#endif
+
 static void sigterm(int signo)
 {
-    //fprintf(stderr, "%s: got signal %d\n", __FILE__, signo);
-    running = 0;
-    (void)signo;
-#ifdef _WIN32
-    (void)can_kill(CANKILL_ALL);
+     //fprintf(stderr, "%s: got signal %d\n", __FILE__, signo);
+#if defined(_WIN32) || defined(_WIN64)
+     (void)can_kill(CANKILL_ALL);
 #endif
+     running = 0;
+     (void)signo;
 }
 
 /*  ----------------------------------------------------------------------

@@ -327,12 +327,12 @@ int can_init(int board, unsigned char mode, const void *param)
     if(!IS_HANDLE_VALID(i))             // no free handle found
         return CANERR_HANDLE;
 
-    /* to start the CAN controller initially in reset state, we have switch off
+    /* to start the CAN controller initially in reset state, we have switch OFF
      * the receiver and the transmitter and then to call CAN_Initialize[FD]() */
-    value = PCAN_PARAMETER_OFF;         // receiver off
+    value = PCAN_PARAMETER_OFF;         // receiver OFF
     if((rc = CAN_SetValue((WORD)board, PCAN_RECEIVE_STATUS, (void*)&value, sizeof(value))) != PCAN_ERROR_OK)
         return pcan_error(rc);
-    value = PCAN_PARAMETER_ON;          // transmitter off
+    value = PCAN_PARAMETER_ON;          // transmitter OFF
     if((rc = CAN_SetValue((WORD)board, PCAN_LISTEN_ONLY, (void*)&value, sizeof(value))) != PCAN_ERROR_OK)
         return pcan_error(rc);
     if((mode & CANMODE_FDOE)) {         // CAN FD operation mode?
@@ -375,7 +375,7 @@ int can_exit(int handle)
             return CANERR_HANDLE;
         if(!can[handle].status.b.can_stopped) {// when running then go bus off
             /* note: here we should turn off the receiver and the transmitter,
-             *       but after CAN_Uninitialize we are really bus off! */
+             *       but after CAN_Uninitialize we are really (bus) OFF! */
             (void)CAN_Reset(can[handle].board);
         }
         if((rc = CAN_Uninitialize(can[handle].board)) != PCAN_ERROR_OK)
@@ -454,7 +454,7 @@ int can_start(int handle, const can_bitrate_t *bitrate)
         return pcan_error(rc);
     if((rc = CAN_Uninitialize(can[handle].board)) != PCAN_ERROR_OK)
         return pcan_error(rc);
-    /* note: the receiver is automatically switched on by CAN_Uninitialize() */
+    /* note: the receiver is automatically switched ON by CAN_Uninitialize() */
     if(can[handle].mode.b.fdoe) {       // CAN FD operation mode?
         if((rc = CAN_InitializeFD(can[handle].board, string)) != PCAN_ERROR_OK)
             return pcan_error(rc);
