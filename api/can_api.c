@@ -98,6 +98,8 @@
 #else
 #define EXPORT
 #endif
+#define ISSUE_303_WORKAROUND    // PCBUSB issue #303: first transmit message will be swallowed
+
 
 /*  -----------  defines  ------------------------------------------------
  */
@@ -380,7 +382,7 @@ int can_exit(int handle)
         }
         if((rc = CAN_Uninitialize(can[handle].board)) != PCAN_ERROR_OK)
             return pcan_error(rc);
-		
+
         can[handle].status.byte |= CANSTAT_RESET;  // CAN controller in INIT state
         can[handle].board = PCAN_NONEBUS; // handle can be used again
     }
@@ -394,7 +396,7 @@ int can_exit(int handle)
                     (void)CAN_Reset(can[i].board);
                 }
                 (void)CAN_Uninitialize(can[i].board); // resistance is futile!
-				
+
                 can[i].status.byte |= CANSTAT_RESET;  // CAN controller in INIT state
                 can[i].board = PCAN_NONEBUS; // handle can be used again
             }
@@ -446,14 +448,18 @@ int can_start(int handle, const can_bitrate_t *bitrate)
             return CANERR_BAUDRATE;
     }
     /* note: to (re-)start the CAN controller, we have to reinitialize it */
-#if defined(_WIN32) || defined(_WIN64)
-    if(can[handle].event != NULL)       // close event handle, if any
-        (void)CloseHandle(can[handle].event);
-#endif
     if((rc = CAN_Reset(can[handle].board)) != PCAN_ERROR_OK)
         return pcan_error(rc);
     if((rc = CAN_Uninitialize(can[handle].board)) != PCAN_ERROR_OK)
         return pcan_error(rc);
+#ifdef ISSUE_303_WORKAROUND
+    value = (can[handle].mode.b.mon) ? PCAN_PARAMETER_ON : PCAN_PARAMETER_OFF;
+    if((rc = CAN_SetValue(can[handle].board, PCAN_LISTEN_ONLY,
+                   (void*)&value, sizeof(value))) != PCAN_ERROR_OK) {
+        CAN_Uninitialize(can[handle].board);
+        return pcan_error(rc);
+    }
+#endif
     /* note: the receiver is automatically switched ON by CAN_Uninitialize() */
     if(can[handle].mode.b.fdoe) {       // CAN FD operation mode?
         if((rc = CAN_InitializeFD(can[handle].board, string)) != PCAN_ERROR_OK)
@@ -472,12 +478,14 @@ int can_start(int handle, const can_bitrate_t *bitrate)
         return pcan_error(rc);
     }
 #endif
+#ifndef ISSUE_303_WORKAROUND
     value = (can[handle].mode.b.mon) ? PCAN_PARAMETER_ON : PCAN_PARAMETER_OFF;
     if((rc = CAN_SetValue(can[handle].board, PCAN_LISTEN_ONLY,
                    (void*)&value, sizeof(value))) != PCAN_ERROR_OK) {
         CAN_Uninitialize(can[handle].board);
         return pcan_error(rc);
     }
+#endif
 #if (0)
     value = (can[handle].mode.b.err) ? PCAN_PARAMETER_ON : PCAN_PARAMETER_OFF;
     if((rc = CAN_SetValue(can[handle].board, PCAN_ALLOW_ERROR_FRAMES,
@@ -727,8 +735,8 @@ int can_status(int handle, unsigned char *status)
 
     if(!can[handle].status.b.can_stopped) { // when running get bus status
         rc = CAN_GetStatus(can[handle].board);
-        if((rc & ~(PCAN_ERROR_ANYBUSERR | 
-                   PCAN_ERROR_OVERRUN | PCAN_ERROR_QOVERRUN | 
+        if((rc & ~(PCAN_ERROR_ANYBUSERR |
+                   PCAN_ERROR_OVERRUN | PCAN_ERROR_QOVERRUN |
                    PCAN_ERROR_XMTFULL | PCAN_ERROR_QXMTFULL)))
             return pcan_error(rc);
         can[handle].status.b.bus_off = (rc & PCAN_ERROR_BUSOFF) != PCAN_ERROR_OK;
@@ -929,7 +937,7 @@ static int pcan_capability(WORD board, can_mode_t *capability)
 
     capability->b.fdoe = (features & FEATURE_FD_CAPABLE) ? 1 : 0;
     capability->b.brse = (features & FEATURE_FD_CAPABLE) ? 1 : 0;
-    capability->b.niso = 0; // This can not be determined (FIXME) 
+    capability->b.niso = 0; // This can not be determined (FIXME)
     capability->b.shrd = 0; // This feature is not supported (TODO: clarify)
 #if (0)
     capability->b.nxtd = 1; // PCAN_ACCEPTANCE_FILTER_29BIT available since version 0.x
