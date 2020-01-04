@@ -5,9 +5,9 @@ echo " *  project   :  CAN - Controller Area Network" >> can_vers.h
 echo " *" >> can_vers.h
 echo " *  purpose   :  CAN Interface API, Version 3 (PCBUSB)" >> can_vers.h
 echo " *" >> can_vers.h
-echo " *  copyright :  (C) 2019, UV Software, Berlin" >> can_vers.h
+echo " *  copyright :  (C) 2019-2020, UV Software, Berlin" >> can_vers.h
 echo " *" >> can_vers.h
-echo " *  compiler  :  Apple LLVM version 10.0.0 (clang-1000.11.45.5)" >> can_vers.h
+echo " *  compiler  :  Apple clang version 11.0.0 (clang-1100.0.33.16)" >> can_vers.h
 echo " *" >> can_vers.h
 echo " *  export    :  BUILD_NO" >> can_vers.h
 echo " *" >> can_vers.h

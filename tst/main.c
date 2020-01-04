@@ -4,9 +4,9 @@
  *
  *  purpose   :  CAN API V3 Tester (PCAN-Basic)
  *
- *  copyright :  (C) 2012-2019 by UV Software, Berlin
+ *  copyright :  (C) 2012-2020 by UV Software, Berlin
  *
- *  compiler  :  Apple LLVM version 10.0.0 (clang-1000.11.45.5)
+ *  compiler  :  Apple clang version 11.0.0 (clang-1100.0.33.16)
  *
  *  syntax    :  <program> [<option>...] <file>...
  *               Options:
@@ -27,7 +27,7 @@
  *  <description>
  */
 
-//static const char* __copyright__ = "Copyright (C) 2005-2019 by UV Software, Berlin";
+//static const char* __copyright__ = "Copyright (C) 2005-2020 by UV Software, Berlin";
 //static const char* __version__   = "0.x";
 //static const char* __revision__  = "$Rev$";
 
@@ -167,20 +167,21 @@ int main(int argc, char *argv[])
     int rc = -1;
     int opt, i;
 
-    int channel = PCAN_USB1;
-    BYTE op_mode = CANMODE_DEFAULT;
+    int32_t channel = PCAN_USB1;
+    uint8_t op_mode = CANMODE_DEFAULT;
     unsigned int delay = 0;
     can_bitrate_t bitrate = { -CANBDR_250 };
     can_speed_t speed;
     can_status_t status;
     char *device, *firmware, *software;
 
-    unsigned char  uchar;
-    unsigned short ushort;
-    unsigned long  ulong;
-    unsigned long long rx, tx, err;
+    int32_t  i32;
+    uint8_t  ui8;
+    uint16_t ui16;
+    uint32_t ui32;
+    uint64_t rx, tx, err;
     char string[CANPROP_BUFFER_SIZE];
-    
+
     //struct option long_options[] = {
     //  {"help", no_argument, 0, 'h'},
     //  {"version", no_argument, 0, 'v'},
@@ -295,24 +296,24 @@ int main(int argc, char *argv[])
     if(option_info) {
         if((software = can_version()) != NULL)
             fprintf(stdout, "Software: %s\n", software);
-        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_SPEC, (void*)&ushort, sizeof(ushort))) == CANERR_NOERROR)
-            fprintf(stdout, "Property: CANPROP_GET_SPEC=%u.%u\n", (ushort >> 8), (ushort & 0x0FFu));
+        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_SPEC, (void*)&ui16, sizeof(ui16))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_SPEC=%u.%u\n", (ui16 >> 8), (ui16 & 0x0FFu));
         else
             fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_SPEC) failed\n", rc);
-        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_VERSION, (void*)&ushort, sizeof(ushort))) == CANERR_NOERROR)
-            fprintf(stdout, "Property: CANPROP_GET_VERSION=%u.%u\n", (ushort >> 8), (ushort & 0x0FFu));
+        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_VERSION, (void*)&ui16, sizeof(ui16))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_VERSION=%u.%u\n", (ui16 >> 8), (ui16 & 0x0FFu));
         else
             fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_VERSION) failed\n", rc);
-        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_PATCH_NO, (void*)&uchar, sizeof(uchar))) == CANERR_NOERROR)
-            fprintf(stdout, "Property: CANPROP_GET_PATCH_NO=%u\n", uchar);
+        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_PATCH_NO, (void*)&ui8, sizeof(ui8))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_PATCH_NO=%u\n", ui8);
         else
             fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_PATCH_NO) failed\n", rc);
-        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_BUILD_NO, (void*)&ulong, sizeof(ulong))) == CANERR_NOERROR)
-            fprintf(stdout, "Property: CANPROP_GET_BUILD_NO=%lx\n", ulong);
+        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_BUILD_NO, (void*)&ui32, sizeof(ui32))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_BUILD_NO=%"PRIx32"\n", ui32);
         else
             fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_BUILD_NO) failed\n", rc);
-        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_LIBRARY_ID, (void*)&i, sizeof(i))) == CANERR_NOERROR)
-            fprintf(stdout, "Property: CANPROP_GET_LIBRARY_ID=(%d)\n", i);
+        if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_LIBRARY_ID, (void*)&i32, sizeof(i32))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_LIBRARY_ID=(%"PRIi32")\n", i32);
         else
             fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_LIBRARY_ID) failed\n", rc);
         if((rc = can_property(CANAPI_HANDLE, CANPROP_GET_LIBRARY_VENDOR, (void*)string, CANPROP_BUFFER_SIZE)) == CANERR_NOERROR)
@@ -340,20 +341,20 @@ int main(int argc, char *argv[])
     if(option_test) {
         for(i = 0; i < PCAN_BOARDS; i++) {
             if((rc = can_test(can_board[i].type, op_mode, NULL, &opt)) == CANERR_NOERROR)
-                fprintf(stdout, "Testing...BoardType=0x%02lx: %s\n", can_board[i].type, opt == CANBRD_OCCUPIED ? "occupied" : opt == CANBRD_PRESENT ? "available" : "unavailable");
+                fprintf(stdout, "Testing...BoardType=0x%"PRIx32": %s\n", can_board[i].type, opt == CANBRD_OCCUPIED ? "occupied" : opt == CANBRD_PRESENT ? "available" : "unavailable");
             else if(rc == CANERR_ILLPARA)
-                fprintf(stdout, "Testing...BoardType=0x%02lx: incompatible\n", can_board[i].type);
+                fprintf(stdout, "Testing...BoardType=0x%"PRIx32": incompatible\n", can_board[i].type);
             else if(rc == CANERR_NOTSUPP)
-                fprintf(stdout, "Testing...BoardType=0x%02lx: not testable\n", can_board[i].type);
+                fprintf(stdout, "Testing...BoardType=0x%"PRIx32": not testable\n", can_board[i].type);
             else
-                fprintf(stdout, "Testing...BoardType=0x%02lx: FAILED\n+++ error(%i) can_test failed\n", can_board[i].type, rc);
+                fprintf(stdout, "Testing...BoardType=0x%"PRIx32": FAILED\n+++ error(%i) can_test failed\n", can_board[i].type, rc);
         }
     }
     /* selected hardware */
     if(option_info) {
         for(i = 0; i < PCAN_BOARDS; i++) {
             if(channel == can_board[i].type) {
-                fprintf(stdout, "Hardware: %s (0x%lx)\n", can_board[i].name, can_board[i].type);
+                fprintf(stdout, "Hardware: %s (0x%"PRIx32")\n", can_board[i].name, can_board[i].type);
             }
         }
     }
@@ -371,37 +372,37 @@ int main(int argc, char *argv[])
             fprintf(stdout, "Property: PCAN_CHANNEL_VERSION=%s\n", string);
         else
             fprintf(stderr, "+++ error(%i): can_property(PCAN_CHANNEL_VERSION) failed\n", rc);
-        if((rc = can_property(handle, CANPROP_GET_BOARD_TYPE, (void*)&i, sizeof(i))) == CANERR_NOERROR)
-            fprintf(stdout, "Property: CANPROP_GET_BOARD_TYPE=%02xh\n", i);
+        if((rc = can_property(handle, CANPROP_GET_BOARD_TYPE, (void*)&i32, sizeof(i32))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_BOARD_TYPE=0x%"PRIx32"\n", i32);
         else
             fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_BOARD_TYPE) failed\n", rc);
         if((rc = can_property(handle, CANPROP_GET_BOARD_NAME, (void*)string, CANPROP_BUFFER_SIZE)) == CANERR_NOERROR)
             fprintf(stdout, "Property: CANPROP_GET_BOARD_NAME=%s\n", string);
         else
             fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_BOARD_NAME) failed\n", rc);
-        if((rc = can_property(handle, CANPROP_GET_OP_CAPABILITY, (void*)&uchar, sizeof(uchar))) == CANERR_NOERROR)
-            fprintf(stdout, "Property: CANPROP_GET_OP_CAPABILITY=%02xh\n", uchar);
+        if((rc = can_property(handle, CANPROP_GET_OP_CAPABILITY, (void*)&ui8, sizeof(ui8))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_OP_CAPABILITY=0x%02x\n", ui8);
         else
             fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_OP_CAPABILITY) failed\n", rc);
-        if((rc = can_property(handle, CANPROP_GET_OP_MODE, (void*)&uchar, sizeof(uchar))) == CANERR_NOERROR)
-            fprintf(stdout, "Property: CANPROP_GET_OP_MODE=%02xh\n", uchar);
+        if((rc = can_property(handle, CANPROP_GET_OP_MODE, (void*)&ui8, sizeof(ui8))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_OP_MODE=0x%02x\n", ui8);
         else
             fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_OP_MODE) failed\n", rc);
-        if((rc = can_property(handle, CANPROP_GET_STATUS, (void*)&uchar, sizeof(uchar))) == CANERR_NOERROR)
-            fprintf(stdout, "Property: CANPROP_GET_STATUS=%02xh\n", uchar);
+        if((rc = can_property(handle, CANPROP_GET_STATUS, (void*)&ui8, sizeof(ui8))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_STATUS=0x%02x\n", ui8);
         else
             fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_STATUS) failed\n", rc);
     }
     /* channel status */
     if(option_test) {
         if((rc = can_test(channel, op_mode, NULL, &opt)) == CANERR_NOERROR)
-            fprintf(stdout, "Testing...BoardType=0x%02x: %s\n", channel, opt == CANBRD_OCCUPIED ? "now occupied" : opt == CANBRD_PRESENT ? "available" : "unavailable");
+            fprintf(stdout, "Testing...BoardType=0x%"PRIx32": %s\n", channel, opt == CANBRD_OCCUPIED ? "now occupied" : opt == CANBRD_PRESENT ? "available" : "unavailable");
         else if(rc == CANERR_ILLPARA)
-            fprintf(stdout, "Testing...BoardType=0x%02x: incompatible\n", channel);
+            fprintf(stdout, "Testing...BoardType=0x%"PRIx32": incompatible\n", channel);
         else if(rc == CANERR_NOTSUPP)
-            fprintf(stdout, "Testing...BoardType=0x%02x: not testable\n", channel);
+            fprintf(stdout, "Testing...BoardType=0x%"PRIx32": not testable\n", channel);
         else
-            fprintf(stdout, "Testing...BoardType=0x%02x: FAILED\n+++ error(%i) can_test failed\n", channel, rc);
+            fprintf(stdout, "Testing...BoardType=0x%"PRIx32": FAILED\n+++ error(%i) can_test failed\n", channel, rc);
     }
     /* start communication */
     if((rc = can_start(handle, &bitrate)) != CANERR_NOERROR) {
@@ -423,8 +424,8 @@ int main(int argc, char *argv[])
             fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_SPEED) failed\n", rc);
         else
             verbose(&bitrate, &speed);
-        if((rc = can_property(handle, CANPROP_GET_STATUS, (void*)&uchar, sizeof(uchar))) == CANERR_NOERROR)
-            fprintf(stdout, "Property: CANPROP_GET_STATUS=%02xh\n", uchar);
+        if((rc = can_property(handle, CANPROP_GET_STATUS, (void*)&ui8, sizeof(ui8))) == CANERR_NOERROR)
+            fprintf(stdout, "Property: CANPROP_GET_STATUS=0x%02x\n", ui8);
         else
             fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_STATUS) failed\n", rc);
     }
@@ -726,7 +727,7 @@ static void verbose(const can_bitrate_t *bitrate, const can_speed_t *speed)
         if(speed->data.brse)
             fprintf(stdout, ":%.0fkbps@%.1f%%",
                 speed->data.speed / 1000., speed->data.samplepoint * 100.);
-        fprintf(stdout, " (f_clock=%lu,nom_brp=%u,nom_tseg1=%u,nom_tseg2=%u,nom_sjw=%u,nom_sam=%u",
+        fprintf(stdout, " (f_clock=%i,nom_brp=%u,nom_tseg1=%u,nom_tseg2=%u,nom_sjw=%u,nom_sam=%u",
             bitrate->btr.frequency,
             bitrate->btr.nominal.brp,
             bitrate->btr.nominal.tseg1,
@@ -742,7 +743,7 @@ static void verbose(const can_bitrate_t *bitrate, const can_speed_t *speed)
         fprintf(stdout, ")\n");
     }
     else {
-        fprintf(stdout, "Baudrate: %skbps (CiA index %li)\n",
+        fprintf(stdout, "Baudrate: %skbps (CiA index %i)\n",
             bitrate->index == CANBDR_1000 ? "1000" :
             bitrate->index == -CANBDR_800 ? "800" :
             bitrate->index == -CANBDR_500 ? "500" :

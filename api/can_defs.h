@@ -5,13 +5,13 @@
  *  purpose   :  CAN Interface API, Version 3 (libPCBUSB)
  *
  *  copyright :  (C) 2010,2012 UV Software, Friedrichshafen
- *               (C) 2014,2017-2019 UV Software, Berlin
+ *               (C) 2014,2017-2020 UV Software, Berlin
  *
- *  compiler  :  Apple LLVM version 10.0.0 (clang-1000.11.45.5)
+ *  compiler  :  Apple clang version 11.0.0 (clang-1100.0.33.16)
  *
  *  export    :  (see below)
  *
- *  includes  :  (none)
+ *  includes  :  stdint.h, stdbool.h
  *
  *  author    :  Uwe Vogt, UV Software
  *
@@ -37,6 +37,13 @@
  */
 #ifndef CAN_DEFS_H_INCLUDED
 #define CAN_DEFS_H_INCLUDED
+
+/*  -----------  includes  ------------------------------------------------
+ */
+
+#include <stdint.h>                     // C99 header for sized integer types
+#include <stdbool.h>                    // C99 header for boolean type
+
 
 /*  -----------  options  ------------------------------------------------
  */
@@ -93,14 +100,14 @@
 
  #define PCAN_BUF_SIZE              256 //   max. buffer size for CAN_SetValue/CAN_GetValue
 
- #define PCAN_LIB_ID                400 //   library ID (CAN/COP API V1 compatible) 
+ #define PCAN_LIB_ID                400 //   library ID (CAN/COP API V1 compatible)
 #ifndef __APPLE__
  #define PCAN_LIB_BASIC                     "PCANBasic.dll"
  #define PCAN_LIB_WRAPPER                   "u3canpcb.dll"
-#else                                       
+#else
  #define PCAN_LIB_BASIC                     "libPCBUSB.dylib"
  #define PCAN_LIB_WRAPPER                   "libUVCANPCB.dylib"
-#endif                                      
+#endif
  #define PCAN_LIB_VENDOR                    "PEAK-System Technik GmbH, Darmstadt"
  #define CAN_API_VENDOR                     "UV Software, Berlin"
  #define CAN_API_AUTHOR                     "Uwe Vogt, UV Software"
@@ -113,9 +120,9 @@
 
  struct _pcan_param                     //   installation parameters:
  {
-    unsigned char  type;                //     operation mode (non-plug'n'play devices)
-    unsigned long  port;                //     I/O port address (parallel device)
-    unsigned short irq;                 //     interrupt number (parallel device)
+    uint8_t  type;                      //     operation mode (non-plug'n'play devices)
+    uint32_t port;                      //     I/O port address (parallel device)
+    uint16_t irq;                       //     interrupt number (parallel device)
  };
 #endif
 #endif /* CAN_DEFS_H_INCLUDED */

@@ -5,11 +5,11 @@
     <dependencies>
     <item name="msg printer (header)"
               target="printmsg.h"
-              source="/Users/neptune/Projects/SVN/CAN/DRV/API/misc/printmsg.h"
+              source="/Users/eris/Projects/CAN/DRV/API/misc/printmsg.h"
               version="file:latest" />
     <item name="msg printer (c-file)"
               target="printmsg.c"
-              source="/Users/neptune/Projects/SVN/CAN/DRV/API/misc/printmsg.c"
+              source="/Users/eris/Projects/CAN/DRV/API/misc/printmsg.c"
               version="file:latest" />
     </dependencies>
 </depman>
