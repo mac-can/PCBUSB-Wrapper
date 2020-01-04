@@ -171,7 +171,7 @@ static int calc_speed(can_bitrate_t *bitrate, can_speed_t *speed, int modify);
  */
 
 EXPORT
-can_board_t can_board[PCAN_BOARDS] =    // list of CAN Interface boards:
+can_board_t can_boards[PCAN_BOARDS+1] = // list of CAN Interface boards:
 {
     {PCAN_USB1,                           "PCAN-USB1"},
     {PCAN_USB2,                           "PCAN-USB2"},
@@ -189,8 +189,9 @@ can_board_t can_board[PCAN_BOARDS] =    // list of CAN Interface boards:
     {PCAN_USB13,                          "PCAN-USB13"},
     {PCAN_USB14,                          "PCAN-USB14"},
     {PCAN_USB15,                          "PCAN-USB15"},
-    {PCAN_USB16,                          "PCAN-USB16"}
+    {PCAN_USB16,                          "PCAN-USB16"},
 #endif
+    {EOF, NULL}
 };
 static const uint8_t dlc_table[16] = {  // DLC to length
     0,1,2,3,4,5,6,7,8,12,16,20,24,32,48,64
@@ -1204,9 +1205,9 @@ static int drv_parameter(int handle, uint16_t param, void *value, size_t nbytes)
         break;
     case CANPROP_GET_BOARD_NAME:        // board name of the CAN interface (char[256])
         for(i = 0; i < PCAN_BOARDS; i++) {
-            if(can_board[i].type == (int32_t)can[handle].board) {
-                if((nbytes > strlen(can_board[i].name)) && (nbytes <= CANPROP_BUFFER_SIZE)) {
-                    strcpy((char*)value, can_board[i].name);
+            if(can_boards[i].type == (int32_t)can[handle].board) {
+                if((nbytes > strlen(can_boards[i].name)) && (nbytes <= CANPROP_BUFFER_SIZE)) {
+                    strcpy((char*)value, can_boards[i].name);
                     rc = CANERR_NOERROR;
                     break;
                 }

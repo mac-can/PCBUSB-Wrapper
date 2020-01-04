@@ -339,22 +339,22 @@ int main(int argc, char *argv[])
     }
     /* channel tester */
     if(option_test) {
-        for(i = 0; i < PCAN_BOARDS; i++) {
-            if((rc = can_test(can_board[i].type, op_mode, NULL, &opt)) == CANERR_NOERROR)
-                fprintf(stdout, "Testing...BoardType=0x%"PRIx32": %s\n", can_board[i].type, opt == CANBRD_OCCUPIED ? "occupied" : opt == CANBRD_PRESENT ? "available" : "unavailable");
+        for(i = 0; (can_boards[i].type != EOF) && (can_boards[i].name != NULL); i++) {
+            if((rc = can_test(can_boards[i].type, op_mode, NULL, &opt)) == CANERR_NOERROR)
+                fprintf(stdout, "Testing...BoardType=0x%"PRIx32": %s\n", can_boards[i].type, opt == CANBRD_OCCUPIED ? "occupied" : opt == CANBRD_PRESENT ? "available" : "unavailable");
             else if(rc == CANERR_ILLPARA)
-                fprintf(stdout, "Testing...BoardType=0x%"PRIx32": incompatible\n", can_board[i].type);
+                fprintf(stdout, "Testing...BoardType=0x%"PRIx32": incompatible\n", can_boards[i].type);
             else if(rc == CANERR_NOTSUPP)
-                fprintf(stdout, "Testing...BoardType=0x%"PRIx32": not testable\n", can_board[i].type);
+                fprintf(stdout, "Testing...BoardType=0x%"PRIx32": not testable\n", can_boards[i].type);
             else
-                fprintf(stdout, "Testing...BoardType=0x%"PRIx32": FAILED\n+++ error(%i) can_test failed\n", can_board[i].type, rc);
+                fprintf(stdout, "Testing...BoardType=0x%"PRIx32": FAILED\n+++ error(%i) can_test failed\n", can_boards[i].type, rc);
         }
     }
     /* selected hardware */
     if(option_info) {
-        for(i = 0; i < PCAN_BOARDS; i++) {
-            if(channel == can_board[i].type) {
-                fprintf(stdout, "Hardware: %s (0x%"PRIx32")\n", can_board[i].name, can_board[i].type);
+        for(i = 0; (can_boards[i].type != EOF) && (can_boards[i].name != NULL); i++) {
+            if(channel == can_boards[i].type) {
+                fprintf(stdout, "Hardware: %s (0x%"PRIx32")\n", can_boards[i].name, can_boards[i].type);
             }
         }
     }

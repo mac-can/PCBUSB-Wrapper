@@ -298,6 +298,7 @@
 #define can_receive(hnd, msg)           can_read(hnd, msg, 0u)
 #define _CAN_BOARD                      CAN_BOARD_DEFINED
 #define _can_board_t                    can_board_t_
+#define  can_board                      can_boards
 #define _CAN_STATE                      CAN_STATUS_DEFINED
 #define _can_state_t                    can_status_t_
 #define  can_state_t                    can_status_t
@@ -435,7 +436,7 @@ typedef struct can_msg_t_ {
  */
 
 #ifndef _CANAPI_EXPORTS
- CANAPI can_board_t can_board[];        /**< list of CAN interface boards */
+ CANAPI can_board_t can_boards[];       /**< list of CAN interface boards */
 #endif
 
 
