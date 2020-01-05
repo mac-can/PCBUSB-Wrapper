@@ -34,6 +34,7 @@
 
 /*  -----------  includes  -----------------------------------------------
  */
+
 #include "can_api.h"
 #include "printmsg.h"
 
@@ -45,10 +46,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <stdint.h>
-#define BYTE uint8_t
-#define WORD uint16_t
-#define DWORD uint32_t
-#define QWORD uint64_t
+#include <stdbool.h>
 #include <inttypes.h>
 
 
@@ -145,9 +143,9 @@ static int option_brs = OPTION_NO;
 #if (STOP_FRAMES != 0)
 static int stop_frames = 0;
 #endif
-static const BYTE dtab[16] = {0,1,2,3,4,5,6,7,8,12,16,20,24,32,48,64};
+static const uint8_t dtab[16] = {0,1,2,3,4,5,6,7,8,12,16,20,24,32,48,64};
 
-static int running = 1;
+static volatile int running = 1;
 
 
 /*  -----------  functions  ----------------------------------------------
@@ -189,7 +187,7 @@ int main(int argc, char *argv[])
     //};
 
     if((signal(SIGINT, sigterm) == SIG_ERR) ||
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(_WIN64)
        (signal(SIGHUP, sigterm) == SIG_ERR) ||
 #endif
        (signal(SIGTERM, sigterm) == SIG_ERR)) {
@@ -264,8 +262,8 @@ int main(int argc, char *argv[])
         if(!strcmp(argv[i], "LOG")) option_log = OPTION_YES;
 #endif
         /* transmit messages */
-        if(!strncmp(argv[i], "C:", 2) && sscanf(argv[i], "C:%i", &opt) == 1) delay = (DWORD)opt * 1000;
-        if(!strncmp(argv[i], "U:", 2) && sscanf(argv[i], "U:%i", &opt) == 1) delay = (DWORD)opt;
+        if(!strncmp(argv[i], "C:", 2) && sscanf(argv[i], "C:%i", &opt) == 1) delay = (unsigned int)opt * 1000;
+        if(!strncmp(argv[i], "U:", 2) && sscanf(argv[i], "U:%i", &opt) == 1) delay = (unsigned int)opt;
         if(sscanf(argv[i], "%i", &opt) == 1 && opt > 0) option_transmit = opt;
         /* CAN FD operation */
         if(!strcmp(argv[i], "CANFD") || !strcmp(argv[i], "FD")) { option_mode = OPTION_MODE_CAN_FD; op_mode = CANMODE_FDOE; }
@@ -346,8 +344,10 @@ int main(int argc, char *argv[])
                 fprintf(stdout, "Testing...BoardType=0x%"PRIx32": incompatible\n", can_boards[i].type);
             else if(rc == CANERR_NOTSUPP)
                 fprintf(stdout, "Testing...BoardType=0x%"PRIx32": not testable\n", can_boards[i].type);
-            else
-                fprintf(stdout, "Testing...BoardType=0x%"PRIx32": FAILED\n+++ error(%i) can_test failed\n", can_boards[i].type, rc);
+            else {
+                fprintf(stdout, "Testing...BoardType=0x%"PRIx32": FAILED\n", can_boards[i].type);
+                fprintf(stderr, "+++ error(%i) can_test failed\n", rc);
+            }
         }
     }
     /* selected hardware */
@@ -401,8 +401,10 @@ int main(int argc, char *argv[])
             fprintf(stdout, "Testing...BoardType=0x%"PRIx32": incompatible\n", channel);
         else if(rc == CANERR_NOTSUPP)
             fprintf(stdout, "Testing...BoardType=0x%"PRIx32": not testable\n", channel);
-        else
-            fprintf(stdout, "Testing...BoardType=0x%"PRIx32": FAILED\n+++ error(%i) can_test failed\n", channel, rc);
+        else {
+            fprintf(stdout, "Testing...BoardType=0x%"PRIx32": FAILED\n", channel);
+            fprintf(stderr, "+++ error(%i) can_test failed\n", rc);
+        }
     }
     /* start communication */
     if((rc = can_start(handle, &bitrate)) != CANERR_NOERROR) {
@@ -417,7 +419,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "+++ error(%i): can_bitrate failed\n", rc);
         goto end;
     }
-	if(option_info) {
+    if(option_info) {
         if((rc = can_property(handle, CANPROP_GET_BITRATE, (void*)&bitrate, sizeof(bitrate))) != CANERR_NOERROR)
             fprintf(stderr, "+++ error(%i): can_property(CANPROP_GET_BITRATE) failed\n", rc);
         else if((rc = can_property(handle, CANPROP_GET_SPEED, (void*)&speed, sizeof(speed))) != CANERR_NOERROR)
@@ -484,16 +486,16 @@ static int transmit(int handle, int frames, unsigned int delay)
     memset(&message, 0, sizeof(can_msg_t));
 
     for(i = 0; i < frames; i++) {
-        message.id = (DWORD)i % 0x800UL;
-        message.dlc = (BYTE)8;
-        message.data[0] = (BYTE)(((QWORD)i & 0x00000000000000FF) >> 0);
-        message.data[1] = (BYTE)(((QWORD)i & 0x000000000000FF00) >> 8);
-        message.data[2] = (BYTE)(((QWORD)i & 0x0000000000FF0000) >> 16);
-        message.data[3] = (BYTE)(((QWORD)i & 0x00000000FF000000) >> 24);
-        message.data[4] = (BYTE)(((QWORD)i & 0x000000FF00000000) >> 32);
-        message.data[5] = (BYTE)(((QWORD)i & 0x0000FF0000000000) >> 40);
-        message.data[6] = (BYTE)(((QWORD)i & 0x00FF000000000000) >> 48);
-        message.data[7] = (BYTE)(((QWORD)i & 0xFF00000000000000) >> 56);
+        message.id = (uint32_t)i % 0x800UL;
+        message.dlc = (uint8_t)8;
+        message.data[0] = (uint8_t)(((uint64_t)i & 0x00000000000000FF) >> 0);
+        message.data[1] = (uint8_t)(((uint64_t)i & 0x000000000000FF00) >> 8);
+        message.data[2] = (uint8_t)(((uint64_t)i & 0x0000000000FF0000) >> 16);
+        message.data[3] = (uint8_t)(((uint64_t)i & 0x00000000FF000000) >> 24);
+        message.data[4] = (uint8_t)(((uint64_t)i & 0x000000FF00000000) >> 32);
+        message.data[5] = (uint8_t)(((uint64_t)i & 0x0000FF0000000000) >> 40);
+        message.data[6] = (uint8_t)(((uint64_t)i & 0x00FF000000000000) >> 48);
+        message.data[7] = (uint8_t)(((uint64_t)i & 0xFF00000000000000) >> 56);
 repeat:
         if((rc = can_write(handle, &message)) != CANERR_NOERROR) {
             if(rc == CANERR_TX_BUSY && running)
@@ -520,7 +522,7 @@ repeat:
 static int transmit_fd(int handle, int frames, unsigned int delay)
 {
     can_msg_t message;
-    int rc = -1, i; BYTE j;
+    int rc = -1, i; uint8_t j;
 
     fprintf(stdout, "Transmit CAN FD messages");
     memset(&message, 0, sizeof(can_msg_t));
@@ -529,19 +531,19 @@ static int transmit_fd(int handle, int frames, unsigned int delay)
     if(option_fdf)
         message.fdf = 1;
     for(i = 0, j = 0; i < frames; i++, j++) {
-        message.id = (DWORD)i % 0x800UL;
+        message.id = (uint32_t)i % 0x800UL;
         if(option_fdf)
-            message.dlc = (BYTE)(8 + (j % 8)) & 0xF;
+            message.dlc = (uint8_t)(8 + (j % 8)) & 0xF;
         else
-            message.dlc = (BYTE)(8);
-        message.data[0] = (BYTE)(((QWORD)i & 0x00000000000000FF) >> 0);
-        message.data[1] = (BYTE)(((QWORD)i & 0x000000000000FF00) >> 8);
-        message.data[2] = (BYTE)(((QWORD)i & 0x0000000000FF0000) >> 16);
-        message.data[3] = (BYTE)(((QWORD)i & 0x00000000FF000000) >> 24);
-        message.data[4] = (BYTE)(((QWORD)i & 0x000000FF00000000) >> 32);
-        message.data[5] = (BYTE)(((QWORD)i & 0x0000FF0000000000) >> 40);
-        message.data[6] = (BYTE)(((QWORD)i & 0x00FF000000000000) >> 48);
-        message.data[7] = (BYTE)(((QWORD)i & 0xFF00000000000000) >> 56);
+            message.dlc = (uint8_t)(8);
+        message.data[0] = (uint8_t)(((uint64_t)i & 0x00000000000000FF) >> 0);
+        message.data[1] = (uint8_t)(((uint64_t)i & 0x000000000000FF00) >> 8);
+        message.data[2] = (uint8_t)(((uint64_t)i & 0x0000000000FF0000) >> 16);
+        message.data[3] = (uint8_t)(((uint64_t)i & 0x00000000FF000000) >> 24);
+        message.data[4] = (uint8_t)(((uint64_t)i & 0x000000FF00000000) >> 32);
+        message.data[5] = (uint8_t)(((uint64_t)i & 0x0000FF0000000000) >> 40);
+        message.data[6] = (uint8_t)(((uint64_t)i & 0x00FF000000000000) >> 48);
+        message.data[7] = (uint8_t)(((uint64_t)i & 0xFF00000000000000) >> 56);
 repeat_fd:
         if((rc = can_write(handle, &message)) != CANERR_NOERROR) {
             if(rc == CANERR_TX_BUSY && running)
@@ -570,10 +572,10 @@ static int receive(int handle)
     can_msg_t message;
     int rc = -1, i;
 
-    QWORD received = 0;
-    QWORD expected = 0;
-    QWORD frames = 0;
-    QWORD errors = 0;
+    uint64_t received = 0;
+    uint64_t expected = 0;
+    uint64_t frames = 0;
+    uint64_t errors = 0;
 
     char symbol[] = ">!?";
     int prompt = 0;
@@ -600,14 +602,14 @@ static int receive(int handle)
                 }
             }
             received = 0;
-            if(message.dlc > 0) received |= (QWORD)message.data[0] << 0;
-            if(message.dlc > 1) received |= (QWORD)message.data[1] << 8;
-            if(message.dlc > 2) received |= (QWORD)message.data[2] << 16;
-            if(message.dlc > 3) received |= (QWORD)message.data[3] << 24;
-            if(message.dlc > 4) received |= (QWORD)message.data[4] << 32;
-            if(message.dlc > 5) received |= (QWORD)message.data[5] << 40;
-            if(message.dlc > 6) received |= (QWORD)message.data[6] << 48;
-            if(message.dlc > 7) received |= (QWORD)message.data[7] << 56;
+            if(message.dlc > 0) received |= (uint64_t)message.data[0] << 0;
+            if(message.dlc > 1) received |= (uint64_t)message.data[1] << 8;
+            if(message.dlc > 2) received |= (uint64_t)message.data[2] << 16;
+            if(message.dlc > 3) received |= (uint64_t)message.data[3] << 24;
+            if(message.dlc > 4) received |= (uint64_t)message.data[4] << 32;
+            if(message.dlc > 5) received |= (uint64_t)message.data[5] << 40;
+            if(message.dlc > 6) received |= (uint64_t)message.data[6] << 48;
+            if(message.dlc > 7) received |= (uint64_t)message.data[7] << 56;
             if(received != expected) {
                 if(option_check != OPTION_NO) {
                     fprintf(stderr, "+++ error(X): received data is not equal to expected data (%"PRIu64" : %"PRIu64")\n", received, expected);
@@ -647,10 +649,10 @@ static int receive_fd(int handle)
     can_msg_t message;
     int rc = -1, i;
 
-    QWORD received = 0;
-    QWORD expected = 0;
-    QWORD frames = 0;
-    QWORD errors = 0;
+    uint64_t received = 0;
+    uint64_t expected = 0;
+    uint64_t frames = 0;
+    uint64_t errors = 0;
 
     char symbol[] = ">!?";
     int prompt = 0;
@@ -677,14 +679,14 @@ static int receive_fd(int handle)
                 }
             }
             received = 0;
-            if(message.dlc > 0) received |= (QWORD)message.data[0] << 0;
-            if(message.dlc > 1) received |= (QWORD)message.data[1] << 8;
-            if(message.dlc > 2) received |= (QWORD)message.data[2] << 16;
-            if(message.dlc > 3) received |= (QWORD)message.data[3] << 24;
-            if(message.dlc > 4) received |= (QWORD)message.data[4] << 32;
-            if(message.dlc > 5) received |= (QWORD)message.data[5] << 40;
-            if(message.dlc > 6) received |= (QWORD)message.data[6] << 48;
-            if(message.dlc > 7) received |= (QWORD)message.data[7] << 56;
+            if(message.dlc > 0) received |= (uint64_t)message.data[0] << 0;
+            if(message.dlc > 1) received |= (uint64_t)message.data[1] << 8;
+            if(message.dlc > 2) received |= (uint64_t)message.data[2] << 16;
+            if(message.dlc > 3) received |= (uint64_t)message.data[3] << 24;
+            if(message.dlc > 4) received |= (uint64_t)message.data[4] << 32;
+            if(message.dlc > 5) received |= (uint64_t)message.data[5] << 40;
+            if(message.dlc > 6) received |= (uint64_t)message.data[6] << 48;
+            if(message.dlc > 7) received |= (uint64_t)message.data[7] << 56;
             if(received != expected) {
                 if(option_check != OPTION_NO) {
                     fprintf(stderr, "+++ error(X): received data is not equal to expected data (%"PRIu64" : %"PRIu64")\n", received, expected);
