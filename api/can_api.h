@@ -75,7 +75,7 @@
 
 /** @name  CAN API Revision Number
  *  @brief Revision number of the CAN API wrapper specification
- */
+ *  @{ */
 #define CAN_API_SPEC            0x0300  /**< CAN API revision number! */
 /** @} */
 

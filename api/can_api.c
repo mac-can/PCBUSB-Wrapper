@@ -35,16 +35,9 @@
  */
 
 #include "can_vers.h"
-
-#ifdef _MSC_VER
-#define VERSION_MAJOR     3
-#define VERSION_MINOR     3
-#define VERSION_PATCH     0
-#else
 #define VERSION_MAJOR     0
 #define VERSION_MINOR     2
 #define VERSION_PATCH     0
-#endif
 #define VERSION_BUILD     BUILD_NO
 #define VERSION_STRING    TOSTRING(VERSION_MAJOR)"." TOSTRING(VERSION_MINOR)"."TOSTRING(VERSION_PATCH)"-"TOSTRING(BUILD_NO)
 #if defined(_WIN64)
@@ -71,16 +64,10 @@
 
 #include "can_api.h"
 
-#ifdef _MSC_VER
-//no Microsoft extensions please!
-#ifndef _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS 1
-#endif
-#endif
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#ifdef _WIN32
+#if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #include "PCANBasic.h"
 #else
@@ -110,7 +97,7 @@
 #define INVALID_HANDLE          (-1)
 #define IS_HANDLE_VALID(hnd)    ((0 <= (hnd)) && ((hnd) < PCAN_MAX_HANDLES))
 #ifndef DLC2LEN
-#define DLC2LEN(x)              dlc_table[x & 0xF]
+#define DLC2LEN(x)              dlc_table[(x) & 0xF]
 #endif
 #ifdef  CANAPI_CiA_BIT_TIMING
 #undef  PCAN_BAUD_100K
@@ -130,9 +117,9 @@
  */
 
 typedef struct {
-    uint64_t tx;                           // number of transmitted CAN frames
-    uint64_t rx;                           // number of received CAN frames
-    uint64_t err;                          // number of receiced error frames
+    uint64_t tx;                        // number of transmitted CAN frames
+    uint64_t rx;                        // number of received CAN frames
+    uint64_t err;                       // number of receiced error frames
 }   can_counter_t;
 
 typedef struct {
@@ -1089,7 +1076,7 @@ static int string2bitrate(const TPCANBitrateFD string, can_bitrate_t *bitrate, i
 }
 
 /*  - - - - - -  CAN API V3 properties  - - - - - - - - - - - - - - - - -
-    */
+ */
 static int lib_parameter(uint16_t param, void *value, size_t nbytes)
 {
     int rc = CANERR_ILLPARA;            // suppose an invalid parameter
