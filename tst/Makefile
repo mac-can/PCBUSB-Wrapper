@@ -39,7 +39,7 @@ CFLAGS += -O2 -Wall -Wno-parentheses \
 	-I$(DRV)
 
 #LIBRARIES = -lPCBUSB
-LIBRARIES = 
+LIBRARIES =
 
 LDFLAGS  +=
 
@@ -49,7 +49,7 @@ OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/can_api.o $(OUTDIR)/printmsg.o
 
 MAIN_DEPS = $(DRV)/can_api.h $(DRV)/can_defs.h printmsg.h
 
-CAN_API_DEPS = $(DRV)/can_api.h $(DRV)/can_defs.h $(DRV)/can_vers.h
+CAN_API_DEPS = $(DRV)/can_api.h $(DRV)/can_defs.h $(DRV)/build_no.h
 
 PRINTMSG_DEPS = printmsg.h
 

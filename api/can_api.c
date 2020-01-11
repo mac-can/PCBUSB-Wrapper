@@ -34,7 +34,7 @@
 /*  -----------  version  ------------------------------------------------
  */
 
-#include "can_vers.h"
+#include "build_no.h"
 #define VERSION_MAJOR     0
 #define VERSION_MINOR     2
 #define VERSION_PATCH     0
@@ -116,24 +116,24 @@
 /*  -----------  types  --------------------------------------------------
  */
 
-typedef struct {
-    uint64_t tx;                        // number of transmitted CAN frames
-    uint64_t rx;                        // number of received CAN frames
-    uint64_t err;                       // number of receiced error frames
+typedef struct {                        // frame conters:
+    uint64_t tx;                        //   number of transmitted CAN frames
+    uint64_t rx;                        //   number of received CAN frames
+    uint64_t err;                       //   number of receiced error frames
 }   can_counter_t;
 
-typedef struct {
-    TPCANHandle board;                  // board hardware channel handle
-    BYTE  brd_type;                     // board type (none PnP hardware)
-    DWORD brd_port;                     // board parameter: I/O port address
-    WORD  brd_irq;                      // board parameter: interrupt number
+typedef struct {                        // PCAN interface:
+    TPCANHandle board;                  //   board hardware channel handle
+    BYTE  brd_type;                     //   board type (none PnP hardware)
+    DWORD brd_port;                     //   board parameter: I/O port address
+    WORD  brd_irq;                      //   board parameter: interrupt number
 #if !defined(_WIN32) && !defined(_WIN64)
-    int   fdes;                         // file descriptor (for blocking read)
+    int   fdes;                         //   file descriptor (for blocking read)
 #else
 #endif
-    can_mode_t mode;                    // operation mode of the CAN channel
-    can_status_t status;                // 8-bit status register
-    can_counter_t counters;             // statistical counters
+    can_mode_t mode;                    //   operation mode of the CAN channel
+    can_status_t status;                //   8-bit status register
+    can_counter_t counters;             //   statistical counters
 }   can_interface_t;
 
 
@@ -230,11 +230,11 @@ int can_test(int32_t board, uint8_t mode, const void *param, int *result)
         }
         init = 1;                       //   set initialization flag
     }
-    if((rc = CAN_GetValue((WORD)board, PCAN_CHANNEL_CONDITION,
+    if((rc = CAN_GetValue((TPCANHandle)board, PCAN_CHANNEL_CONDITION,
                           (void*)&condition, sizeof(condition))) != PCAN_ERROR_OK)
         return pcan_error(rc);
     for(i = 0; i < PCAN_MAX_HANDLES; i++) {
-        if(can[i].board == (WORD)board) { // me, myself and I!
+        if(can[i].board == (TPCANHandle)board) { // me, myself and I!
             condition = PCAN_CHANNEL_OCCUPIED;
             used = 1;
             break;
@@ -253,7 +253,7 @@ int can_test(int32_t board, uint8_t mode, const void *param, int *result)
     if(((condition == PCAN_CHANNEL_AVAILABLE) || (condition == PCAN_CHANNEL_PCANVIEW)) ||
        (/*(condition == PCAN_CHANNEL_OCCUPIED) ||*/ used)) {
         // FIXME: issue TC07_47_9w - returns PCAN_ERROR_INITIALIZE when channel used by another process
-        if((rc = CAN_GetValue((WORD)board, PCAN_CHANNEL_FEATURES,
+        if((rc = CAN_GetValue((TPCANHandle)board, PCAN_CHANNEL_FEATURES,
                               (void*)&features, sizeof(features))) != PCAN_ERROR_OK)
             return pcan_error(rc);
         if((mode & CANMODE_FDOE) && !(features & FEATURE_FD_CAPABLE))
@@ -304,7 +304,7 @@ int can_init(int32_t board, uint8_t mode, const void *param)
         init = 1;                       //   set initialization flag
     }
     for(i = 0; i < PCAN_MAX_HANDLES; i++) {
-        if(can[i].board == (WORD)board) // channel already in use
+        if(can[i].board == (TPCANHandle)board) // channel already in use
           return CANERR_YETINIT;
     }
     for(i = 0; i < PCAN_MAX_HANDLES; i++) {
@@ -317,13 +317,15 @@ int can_init(int32_t board, uint8_t mode, const void *param)
     /* to start the CAN controller initially in reset state, we have switch OFF
      * the receiver and the transmitter and then to call CAN_Initialize[FD]() */
     value = PCAN_PARAMETER_OFF;         // receiver OFF
-    if((rc = CAN_SetValue((WORD)board, PCAN_RECEIVE_STATUS, (void*)&value, sizeof(value))) != PCAN_ERROR_OK)
+    if((rc = CAN_SetValue((TPCANHandle)board, PCAN_RECEIVE_STATUS,
+                          (void*)&value, sizeof(value))) != PCAN_ERROR_OK)
         return pcan_error(rc);
     value = PCAN_PARAMETER_ON;          // transmitter OFF
-    if((rc = CAN_SetValue((WORD)board, PCAN_LISTEN_ONLY, (void*)&value, sizeof(value))) != PCAN_ERROR_OK)
+    if((rc = CAN_SetValue((TPCANHandle)board, PCAN_LISTEN_ONLY,
+                          (void*)&value, sizeof(value))) != PCAN_ERROR_OK)
         return pcan_error(rc);
     if((mode & CANMODE_FDOE)) {         // CAN FD operation mode?
-        if ((rc = CAN_InitializeFD((WORD)board, BIT_RATE_DEFAULT)) != PCAN_ERROR_OK)
+        if ((rc = CAN_InitializeFD((TPCANHandle)board, BIT_RATE_DEFAULT)) != PCAN_ERROR_OK)
             return pcan_error(rc);
     }
     else {                              // CAN 2.0 operation mode
@@ -332,7 +334,7 @@ int can_init(int32_t board, uint8_t mode, const void *param)
             port = (DWORD)((struct _pcan_param*)param)->port;
             irq  =  (WORD)((struct _pcan_param*)param)->irq;
         }
-        if((rc = CAN_Initialize((WORD)board, BTR0BTR1_DEFAULT, type, port, irq)) != PCAN_ERROR_OK)
+        if((rc = CAN_Initialize((TPCANHandle)board, BTR0BTR1_DEFAULT, type, port, irq)) != PCAN_ERROR_OK)
             return pcan_error(rc);
     }
     can[i].board = board;               // handle of the CAN channel
@@ -663,13 +665,13 @@ retry:
             can[handle].counters.err++;
             return CANERR_ERR_FRAME;    //   error frame received
         }
-        msg->id = can_msg.ID;
+        msg->id = (int32_t)can_msg.ID;
         msg->ext = (can_msg.MSGTYPE & PCAN_MESSAGE_EXTENDED) ? 1 : 0;
         msg->rtr = (can_msg.MSGTYPE & PCAN_MESSAGE_RTR) ? 1 : 0;
         msg->fdf = 0;
         msg->brs = 0;
         msg->esi = 0;
-        msg->dlc = can_msg.LEN;
+        msg->dlc = (uint8_t)can_msg.LEN;
         memcpy(msg->data, can_msg.DATA, CAN_MAX_LEN);
         msec = ((uint64_t)timestamp.millis_overflow << 32) + (uint64_t)timestamp.millis;
         msg->timestamp.sec = (long)(msec / 1000ull);
@@ -689,13 +691,13 @@ retry:
             can[handle].counters.err++;
             return CANERR_ERR_FRAME;    //   error frame received
         }
-        msg->id = can_msg_fd.ID;
+        msg->id = (int32_t)can_msg_fd.ID;
         msg->ext = (can_msg_fd.MSGTYPE & PCAN_MESSAGE_EXTENDED) ? 1 : 0;
         msg->rtr = (can_msg_fd.MSGTYPE & PCAN_MESSAGE_RTR) ? 1 : 0;
         msg->fdf = (can_msg_fd.MSGTYPE & PCAN_MESSAGE_FD) ? 1 : 0;
         msg->brs = (can_msg_fd.MSGTYPE & PCAN_MESSAGE_BRS) ? 1 : 0;
         msg->esi = (can_msg_fd.MSGTYPE & PCAN_MESSAGE_ESI) ? 1 : 0;
-        msg->dlc = can_msg_fd.DLC;
+        msg->dlc = (uint8_t)can_msg_fd.DLC;
         memcpy(msg->data, can_msg_fd.DATA, CANFD_MAX_LEN);
         msg->timestamp.sec = (long)(timestamp_fd / 1000000ull);
         msg->timestamp.usec = (long)(timestamp_fd % 1000000ull);
@@ -916,7 +918,7 @@ static int pcan_capability(WORD board, can_mode_t *capability)
     TPCANStatus rc;                     // return value
     DWORD features;                     // channel features
 
-    if((rc = CAN_GetValue((WORD)board, PCAN_CHANNEL_FEATURES,
+    if((rc = CAN_GetValue((TPCANHandle)board, PCAN_CHANNEL_FEATURES,
                           (void*)&features, sizeof(features))) != PCAN_ERROR_OK)
         return pcan_error(rc);
 
