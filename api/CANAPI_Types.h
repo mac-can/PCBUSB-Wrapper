@@ -32,10 +32,9 @@
 #ifndef CANAPI_TYPES_H_INCLUDED
 #define CANAPI_TYPES_H_INCLUDED
 
-
-/*  -----------  options  ------------------------------------------------
- */
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*  -----------  includes  -----------------------------------------------
  */
@@ -44,6 +43,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <time.h>
+
+
+/*  -----------  options  ------------------------------------------------
+ */
 
 
 /*  -----------  defines  ------------------------------------------------
@@ -470,6 +473,10 @@ typedef struct can_message_t_ {
     can_timestamp_t timestamp;          /**< time-stamp { sec, usec } */
 } can_message_t;
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif /* CANAPI_TYPES_H_INCLUDED */
 /** @}
  */

@@ -52,6 +52,10 @@
 #ifndef CAN_API_H_INCLUDED
 #define CAN_API_H_INCLUDED
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*  -----------  includes  -----------------------------------------------
  */
 
@@ -64,6 +68,15 @@
 
 #if (CAN_API_SPEC != 0x300)
     #error Requires version 3.0 of CANAPI_Types.h
+#endif
+#if (OPTION_CAN_2_0_ONLY != 0)
+    #error Requires CAN FD message format
+#endif
+#if (OPTION_CANAPI_LIBRARY != 0)
+    #error Requires function signatures as driver
+#endif
+#if (OPTION_CANAPI_DRIVER == 0)
+    #define OPTION_CANAPI_DRIVER
 #endif
 #ifdef _CANAPI_EXPORTS
     #define CANAPI  __declspec(dllexport)
@@ -387,6 +400,9 @@ CANAPI char *can_software(int handle);
 CANAPI char* can_version();
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* CAN_API_H_INCLUDED */
 /** @}
  */

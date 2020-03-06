@@ -38,6 +38,7 @@
 #ifndef CAN_DEFS_H_INCLUDED
 #define CAN_DEFS_H_INCLUDED
 
+
 /*  -----------  includes  ------------------------------------------------
  */
 
