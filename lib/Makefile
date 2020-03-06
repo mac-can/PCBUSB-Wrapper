@@ -25,7 +25,7 @@ DRV	= ../api
 
 ifeq ($(current_OS),Darwin) # MacOS - libUVCANPCB.dylib - - - - - - - - - - - -
 
-VERSION = 0.2.dev
+VERSION = 0.3.dev
 
 LIBRARY = libUVCANPCB
 
@@ -49,7 +49,7 @@ endif
 
 OBJECTS = $(OUTDIR)/can_api.o
 
-CAN_API_DEPS = $(DRV)/can_api.h $(DRV)/can_defs.h $(DRV)/build_no.h
+CAN_API_DEPS = $(DRV)/can_api.h $(DRV)/can_defs.h $(DRV)/CANAPI_Types.h $(DRV)/build_no.h
 
 CC = gcc
 LD = gcc

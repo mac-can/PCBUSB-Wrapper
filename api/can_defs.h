@@ -32,7 +32,7 @@
  *
  *  @version     $Rev$
  *
- *  @defgroup    can_defs Options and Definitions
+ *  @addtogroup  can_api
  *  @{
  */
 #ifndef CAN_DEFS_H_INCLUDED
