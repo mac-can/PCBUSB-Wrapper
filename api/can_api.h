@@ -76,7 +76,7 @@ extern "C" {
     #error Requires function signatures as driver
 #endif
 #if (OPTION_CANAPI_DRIVER == 0)
-    #define OPTION_CANAPI_DRIVER
+    #define OPTION_CANAPI_DRIVER 1
 #endif
 #ifdef _CANAPI_EXPORTS
     #define CANAPI  __declspec(dllexport)

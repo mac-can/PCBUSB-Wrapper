@@ -24,7 +24,7 @@
  *
  *  @author      $Author: eris $
  *
- *  @version     $Rev: 136 $
+ *  @version     $Rev: 151 $
  *
  *  @addtogroup  can_api
  *  @{
@@ -202,6 +202,7 @@ extern "C" {
 #define CANERR_RX_EMPTY           (-30) /**< USR - receiver empty */
 #define CANERR_ERR_FRAME          (-40) /**< USR - error frame */
 #define CANERR_TIMEOUT            (-50) /**< USR - time-out */
+#define CANERR_RESOURCE           (-90) /**< USR - resource allocation */
 #define CANERR_BAUDRATE           (-91) /**< USR - illegal baudrate */
 #define CANERR_HANDLE             (-92) /**< USR - illegal handle */
 #define CANERR_ILLPARA            (-93) /**< USR - illegal parameter */
@@ -244,7 +245,7 @@ extern "C" {
 /** @} */
 
 /** @name  Property IDs
- *  @brief Properties which can be read or written
+ *  @brief Properties that can be read or written
  *  @{ */
 #define CANPROP_GET_SPEC             0U /**< version of the wrapper specification (uint16_t) */
 #define CANPROP_GET_VERSION          1U /**< version number of the library (uint16_t) */
@@ -275,7 +276,7 @@ extern "C" {
 #define CANPROP_SET_FLT_11BIT_MASK  37U /**< set value for accecptance filter mask of 11-bit identifier (int32_t) */
 #define CANPROP_SET_FLT_29BIT_CODE  38U /**< set value for accecptance filter code of 29-bit identifier (int32_t) */
 #define CANPROP_SET_FLT_29BIT_MASK  39U /**< set value for accecptance filter mask of 29-bit identifier (int32_t) */
-#ifdef OPTION_CANAPI_LIBRARY
+#if (OPTION_CANAPI_LIBRARY != 0)
 /* - -  build-in bit-rate conversion  - - - - - - - - - - - - - - - - - */
 #define CANPROP_GET_BTR_INDEX       64U /**< bit-rate as CiA index (int32_t) */
 #define CANPROP_GET_BTR_VALUE       65U /**< bit-rate as struct (can_bitrate_t) */
@@ -324,7 +325,7 @@ extern "C" {
 #define CANPROP_BUFFER_SIZE        256U /**< max. buffer size for property values */
 /** @} */
 
-#ifdef OPTION_CANAPI_LIBRARY
+#if (OPTION_CANAPI_LIBRARY != 0)
 /** @name  Property Values
  *  @brief Values which can be used as property value (argument)
  *  @{ */
@@ -389,7 +390,7 @@ typedef union can_mode_t_ {
         uint8_t nrtr : 1;               /**<   remote frames disabled */
         uint8_t nxtd : 1;               /**<   extended format disabled */
         uint8_t shrd : 1;               /**<   shared access enabled */
-#ifndef OPTION_CAN_2_0_ONLY
+#if (OPTION_CAN_2_0_ONLY == 0)
         uint8_t niso : 1;               /**<   Non-ISO CAN FD enabled */
         uint8_t brse : 1;               /**<   bit-rate switch enabled */
         uint8_t fdoe : 1;               /**<   CAN FD operation enabled */
@@ -412,7 +413,7 @@ typedef union can_bitrate_t_ {
             uint16_t sjw;               /**<     synchronization jump width */
             uint8_t  sam;               /**<     number of samples (SJA1000) */
         } nominal;                      /**<   nominal bus speed */
-#ifndef OPTION_CAN_2_0_ONLY
+#if (OPTION_CAN_2_0_ONLY == 0)
         struct {                        /*     data bus speed: */
             uint16_t brp;               /**<     bit-rate prescaler */
             uint16_t tseg1;             /**<     TSEG1 segment */
@@ -427,13 +428,13 @@ typedef union can_bitrate_t_ {
  */
 typedef struct can_speed_t_ {
     struct {                            /*   nominal bus speed: */
-#ifndef OPTION_CAN_2_0_ONLY
+#if (OPTION_CAN_2_0_ONLY == 0)
         bool  fdoe;                     /**<   CAN FD operation enabled */
 #endif
         float speed;                    /**<   bus speed in [Bit/s] */
         float samplepoint;              /**<   sample point in [percent] */
     } nominal;                          /**< nominal bus speed */
-#ifndef OPTION_CAN_2_0_ONLY
+#if (OPTION_CAN_2_0_ONLY == 0)
     struct {                            /*   data bus speed: */
         bool  brse;                     /**<   bit-rate switch enabled */
         float speed;                    /**<   bus speed in [Bit/s] */
@@ -443,6 +444,7 @@ typedef struct can_speed_t_ {
 } can_speed_t;
 
 /** @brief       CAN Time-stamp:
+ *               We use 'struct timespec' with nanoseconds resolution
  */
 typedef struct timespec can_timestamp_t;
 
@@ -453,7 +455,7 @@ typedef struct can_message_t_ {
     struct {
         uint8_t xtd : 1;                /**< flag: extended format */
         uint8_t rtr : 1;                /**< flag: remote frame */
-#ifndef OPTION_CAN_2_0_ONLY
+#if (OPTION_CAN_2_0_ONLY == 0)
         uint8_t fdf : 1;                /**< flag: CAN FD format */
         uint8_t brs : 1;                /**< flag: bit-rate switching */
         uint8_t esi : 1;                /**< flag: error state indicator */
@@ -463,14 +465,14 @@ typedef struct can_message_t_ {
 #endif
         uint8_t sts : 1;                /**< flag: status message */
     };
-#ifndef OPTION_CAN_2_0_ONLY
+#if (OPTION_CAN_2_0_ONLY == 0)
     uint8_t dlc;                        /**< data length code (0 .. 15) */
     uint8_t data[CANFD_MAX_LEN];        /**< payload (CAN FD:  0 .. 64) */
 #else
     uint8_t dlc;                        /**< data length code (0 .. 8) */
     uint8_t data[CAN_MAX_LEN];          /**< payload (CAN 2.0: 0 .. 8) */
 #endif
-    can_timestamp_t timestamp;          /**< time-stamp { sec, usec } */
+    can_timestamp_t timestamp;          /**< time-stamp { sec, nsec } */
 } can_message_t;
 
 

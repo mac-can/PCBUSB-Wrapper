@@ -54,9 +54,9 @@
 #error Unsupported architecture
 #endif
 #ifdef _DEBUG
-    static char _id[] = "CAN API V3 for PEAK PCAN-Basic Interfaces, Version " VERSION_STRING " (" PLATFORM ") _DEBUG";
+    static const char version[] = "CAN API V3 for PEAK PCAN-Basic Interfaces, Version " VERSION_STRING " (" PLATFORM ") _DEBUG";
 #else
-    static char _id[] = "CAN API V3 for PEAK PCAN-Basic Interfaces, Version " VERSION_STRING " (" PLATFORM ")";
+    static const char version[] = "CAN API V3 for PEAK PCAN-Basic Interfaces, Version " VERSION_STRING " (" PLATFORM ")";
 #endif
 
 /*  -----------  includes  -----------------------------------------------
@@ -1378,7 +1378,7 @@ static int calc_speed(can_bitrate_t *bitrate, can_speed_t *speed, int modify)
 EXPORT
 char* can_version()
 {
-    return (char*)_id;
+    return (char*)version;
 }
 
 /*  ===========  run-time loader  ========================================
