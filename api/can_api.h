@@ -5,9 +5,9 @@
  *  purpose   :  CAN Interface API, Version 3 (PCAN-USB)
  *
  *  copyright :  (C) 2010,2012 by UV Software, Friedrichshafen
- *               (C) 2013-2020 by UV Software, Berlin
+ *               (C) 2013-2021 by UV Software, Berlin
  *
- *  compiler  :  Apple clang version 11.0.0 (clang-1100.0.33.16)
+ *  compiler  :  Apple clang version 12.0.0 (clang-1200.0.32.28)
  *
  *  export    :  int can_test(int32_t board, uint8_t mode, const void *param, int *result);
  *               int can_init(int32_t board, uint8_t mode, const void *param);
@@ -106,7 +106,7 @@ typedef int                             can_handle_t;
 /** @name  Legacy Stuff
  *  @brief For compatibility reasons with CAN API V1 and V2
  *  @{ */
-#define can_transmit(hnd, msg)          can_write(hnd, msg)
+#define can_transmit(hnd, msg)          can_write(hnd, msg, 0U)
 #define can_receive(hnd, msg)           can_read(hnd, msg, 0U)
 #define can_msg_t                       can_message_t
 /** @} */

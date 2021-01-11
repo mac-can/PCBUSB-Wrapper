@@ -1,7 +1,7 @@
 /*
  *  CAN Interface API, Version 3 (Data Types and Defines)
  *
- *  Copyright (C) 2004-2020  Uwe Vogt, UV Software, Berlin (info@uv-software.com)
+ *  Copyright (C) 2004-2021  Uwe Vogt, UV Software, Berlin (info@uv-software.com)
  *
  *  This file is part of CAN API V3.
  *
@@ -20,11 +20,11 @@
  */
 /** @file        CANAPI_Types.h
  *
- *  @brief       CAN API V3 for generic CAN Interfaces (Data Types and Defines)
+ *  @brief       CAN API V3 for generic CAN Interfaces - Data Types and Defines
  *
  *  @author      $Author: eris $
  *
- *  @version     $Rev: 151 $
+ *  @version     $Rev: 918 $
  *
  *  @addtogroup  can_api
  *  @{
@@ -48,6 +48,14 @@ extern "C" {
 /*  -----------  options  ------------------------------------------------
  */
 
+/** @note  Set define OPTION_CANAPI_LIBRARY to a non-zero value to compile
+ *         the master loader library (e.g. in the build environment). Or optionally
+ *         set define OPTION_CANAPI_DRIVER to a non-zero value to compile
+ *         a driver library.
+ */
+/** @note  Set define OPTION_CAN_2_0_ONLY to a non-zero value to compile
+ *         with CAN 2.0 frame format only (e.g. in the build environment).
+ */
 
 /*  -----------  defines  ------------------------------------------------
  */
@@ -71,14 +79,14 @@ extern "C" {
 /** @name  CAN Data Length
  *  @brief CAN payload length and DLC definition
  *  @{ */
-#define CAN_MAX_DLC                  8  /**< max. data lenth code (CAN 2.0) */
+#define CAN_MAX_DLC                  8  /**< max. data length code (CAN 2.0) */
 #define CAN_MAX_LEN                  8  /**< max. payload length (CAN 2.0) */
 /** @} */
 
 /** @name  CAN FD Data Length
  *  @brief CAN FD payload length and DLC definition
  *  @{ */
-#define CANFD_MAX_DLC               15  /**< max. data lenth code (CAN FD) */
+#define CANFD_MAX_DLC               15  /**< max. data length code (CAN FD) */
 #define CANFD_MAX_LEN               64  /**< max. payload length (CAN FD) */
 /** @} */
 
@@ -316,16 +324,15 @@ extern "C" {
 #define CANPROP_SET_FMT_EOL_CHAR   161U /**< set formatter option: end-of-line character {OFF, ON} (int) */
 #define CANPROP_SET_FMT_RX_PROMPT  162U /**< set formatter option: prompt for received messages (char[6+1]) */
 #define CANPROP_SET_FMT_TX_PROMPT  163U /**< set formatter option: prompt for sent messages (char[6+1]) */
-#define CANPROP_MSG_STR_LEN       1024U /**< max. length of a formatted message */
 #endif
 /* - -  access to vendor-specific propUrties  - - - - - - - - - - - - - */
 #define CANPROP_GET_VENDOR_PROP    256U /**< get a vendor-specific property value (void*) */
 #define CANPROP_SET_VENDOR_PROP    512U /**< set a vendor-specific property value (void*) */
 #define CANPROP_VENDOR_PROP_RANGE  256U /**< range for vendor-specific property values */
-#define CANPROP_BUFFER_SIZE        256U /**< max. buffer size for property values */
+#define CANPROP_MAX_BUFFER_SIZE    256U /**< max. buffer size for property values */
+#define CANPROP_MAX_STRING_LENGTH 1024U /**< max. length of a formatted message */
 /** @} */
 
-#if (OPTION_CANAPI_LIBRARY != 0)
 /** @name  Property Values
  *  @brief Values which can be used as property value (argument)
  *  @{ */
@@ -334,7 +341,7 @@ extern "C" {
 #define CANPARA_OPTION_OFF           0  /**< formatter option: OFF (false, no, 0) */
 #define CANPARA_OPTION_ON            1  /**< formatter option: ON (true, yes, !0) */
 /* - -  number/data format: HEX, DEC, OCT, BIN  - - - - - - - - - - - - */
-#define CANPARA_NUMBER_HEX          16  /**< mumerical format: HEXadecimal (base 16) */
+#define CANPARA_NUMBER_HEX          16  /**< numerical format: HEXadecimal (base 16) */
 #define CANPARA_NUMBER_DEC          10  /**< numerical format: DECimal (base 10) */
 #define CANPARA_NUMBER_OCT           8  /**< numerical format: OCTal (base 8) */
 /* - -  time-stamp reference: ZERO, ABS, REL  - - - - - - - - - - - - - */
@@ -359,7 +366,6 @@ extern "C" {
 #define CANPARA_WRAPAROUND_32       32  /**< data field wraparound after 32 bytes */
 #define CANPARA_WRAPAROUND_64       64  /**< data field wraparound after 64 bytes */
 /** @} */
-#endif
 
 /*  -----------  types  --------------------------------------------------
  */

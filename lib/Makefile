@@ -25,7 +25,7 @@ DRV	= ../api
 
 ifeq ($(current_OS),Darwin) # MacOS - libUVCANPCB.dylib - - - - - - - - - - - -
 
-VERSION = 0.3.dev
+VERSION = 0.2
 
 LIBRARY = libUVCANPCB
 

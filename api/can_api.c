@@ -5,9 +5,9 @@
  *  purpose   :  CAN Interface API, Version 3 (PCAN-USB)
  *
  *  copyright :  (C) 2010,2012 by UV Software, Friedrichshafen
- *               (C) 2013-2020 by UV Software, Berlin
+ *               (C) 2013-2021 by UV Software, Berlin
  *
- *  compiler  :  Apple clang version 11.0.0 (clang-1100.0.33.16)
+ *  compiler  :  Apple clang version 12.0.0 (clang-1200.0.32.28)
  *
  *  export    :  (see header file)
  *
@@ -36,7 +36,7 @@
 
 #include "build_no.h"
 #define VERSION_MAJOR     0
-#define VERSION_MINOR     3
+#define VERSION_MINOR     2
 #define VERSION_PATCH     0
 #define VERSION_BUILD     BUILD_NO
 #define VERSION_STRING    TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) "-" TOSTRING(BUILD_NO)
@@ -1123,25 +1123,25 @@ static int lib_parameter(uint16_t param, void *value, size_t nbytes)
         }
         break;
     case CANPROP_GET_LIBRARY_VENDOR:    // vendor name of the library (char[256])
-        if((nbytes > strlen(CAN_API_VENDOR)) && (nbytes <= CANPROP_BUFFER_SIZE)) {
+        if((nbytes > strlen(CAN_API_VENDOR)) && (nbytes <= CANPROP_MAX_BUFFER_SIZE)) {
             strcpy((char*)value, CAN_API_VENDOR);
             rc = CANERR_NOERROR;
         }
         break;
     case CANPROP_GET_LIBRARY_DLLNAME:   // file name of the library DLL (char[256])
-        if ((nbytes > strlen(PCAN_LIB_WRAPPER)) && (nbytes <= CANPROP_BUFFER_SIZE)) {
+        if ((nbytes > strlen(PCAN_LIB_WRAPPER)) && (nbytes <= CANPROP_MAX_BUFFER_SIZE)) {
             strcpy((char*)value, PCAN_LIB_WRAPPER);
             rc = CANERR_NOERROR;
         }
         break;
     case CANPROP_GET_DEVICE_VENDOR:     // vendor name of the CAN interface (char[256])
-        if((nbytes > strlen(PCAN_LIB_VENDOR)) && (nbytes <= CANPROP_BUFFER_SIZE)) {
+        if((nbytes > strlen(PCAN_LIB_VENDOR)) && (nbytes <= CANPROP_MAX_BUFFER_SIZE)) {
             strcpy((char*)value, PCAN_LIB_VENDOR);
             rc = CANERR_NOERROR;
         }
         break;
     case CANPROP_GET_DEVICE_DLLNAME:    // file name of the CAN interface DLL(char[256])
-        if((nbytes > strlen(PCAN_LIB_BASIC)) && (nbytes <= CANPROP_BUFFER_SIZE)) {
+        if((nbytes > strlen(PCAN_LIB_BASIC)) && (nbytes <= CANPROP_MAX_BUFFER_SIZE)) {
             strcpy((char*)value, PCAN_LIB_BASIC);
             rc = CANERR_NOERROR;
         }
@@ -1197,7 +1197,7 @@ static int drv_parameter(int handle, uint16_t param, void *value, size_t nbytes)
     case CANPROP_GET_DEVICE_NAME:       // device name of the CAN interface (char[256])
         for(i = 0; i < PCAN_BOARDS; i++) {
             if(can_boards[i].type == (int32_t)can[handle].board) {
-                if((nbytes > strlen(can_boards[i].name)) && (nbytes <= CANPROP_BUFFER_SIZE)) {
+                if((nbytes > strlen(can_boards[i].name)) && (nbytes <= CANPROP_MAX_BUFFER_SIZE)) {
                     strcpy((char*)value, can_boards[i].name);
                     rc = CANERR_NOERROR;
                     break;
