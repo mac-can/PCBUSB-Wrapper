@@ -459,11 +459,11 @@ int can_start(int handle, const can_bitrate_t *bitrate)
         }
     }
     else if(!can[handle].mode.fdoe) {   // btr0btr1 for CAN 2.0
-        if((rc = bitrate2register(bitrate, &btr0btr1)) != CANERR_NOERROR)
+        if(bitrate2register(bitrate, &btr0btr1) != CANERR_NOERROR)
             return CANERR_BAUDRATE;
     }
     else {                              // a string for CAN FD
-        if((rc = bitrate2string(bitrate, string, can[handle].mode.brse)) != CANERR_NOERROR)
+        if(bitrate2string(bitrate, string, can[handle].mode.brse) != CANERR_NOERROR)
             return CANERR_BAUDRATE;
     }
     /* note: to (re-)start the CAN controller, we have to reinitialize it */
@@ -959,6 +959,9 @@ static int pcan_capability(WORD board, can_mode_t *capability)
     TPCANStatus rc;                     // return value
     DWORD features;                     // channel features
 
+    assert(capability);
+    capability->byte = 0x00U;
+    
     if((rc = CAN_GetValue((TPCANHandle)board, PCAN_CHANNEL_FEATURES,
                           (void*)&features, sizeof(features))) != PCAN_ERROR_OK)
         return pcan_error(rc);
@@ -1215,8 +1218,8 @@ static int drv_parameter(int handle, uint16_t param, void *value, size_t nbytes)
     can_bitrate_t bitrate;
     can_speed_t speed;
     can_mode_t mode;
-    uint8_t status;
-    uint8_t load;
+    uint8_t status = 0U;
+    uint8_t load = 0U;
     TPCANStatus sts;
     int i;
 
@@ -1243,7 +1246,7 @@ static int drv_parameter(int handle, uint16_t param, void *value, size_t nbytes)
                 }
             }
         }
-        if((i == PCAN_BOARDS) || (rc = CANERR_NOERROR))
+        if((i == PCAN_BOARDS) || (rc == CANERR_NOERROR))
             rc = CANERR_FATAL;
         break;
     case CANPROP_GET_DEVICE_PARAM:      // device parameter of the CAN interface (char[256])
