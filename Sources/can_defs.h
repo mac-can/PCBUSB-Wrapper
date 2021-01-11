@@ -5,9 +5,9 @@
  *  purpose   :  CAN Interface API, Version 3 (libPCBUSB)
  *
  *  copyright :  (C) 2010,2012 UV Software, Friedrichshafen
- *               (C) 2014,2017-2020 UV Software, Berlin
+ *               (C) 2014,2017-2021 UV Software, Berlin
  *
- *  compiler  :  Apple clang version 11.0.0 (clang-1100.0.33.16)
+ *  compiler  :  Apple clang version 12.0.0 (clang-1200.0.32.28)
  *
  *  export    :  (see below)
  *
@@ -25,8 +25,9 @@
  *  @brief       CAN API V3 for PEAK PCAN-USB Interfaces - Defines
  *
  *               For PEAK PCAN-USB Interfaces (libPCBUSB.dylib):
- *               - PCAN-USB Interface (channel 1 - 8)
- *               - PCAN-USB FD Interface (channel 1 - 8)
+ *               - PCAN-USB Interface
+ *               - PCAN-USB FD Interface
+ *               - PCAN-USB Pro FD Interface (only CAN1)
  *
  *  @author      $Author$
  *

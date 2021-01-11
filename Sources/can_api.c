@@ -62,6 +62,7 @@
 /*  -----------  includes  -----------------------------------------------
  */
 
+#include "can_defs.h"
 #include "can_api.h"
 
 #include <stdio.h>
@@ -80,7 +81,7 @@
 /*  -----------  options  ------------------------------------------------
  */
 
-#ifdef _CANAPI_SHARED_LIBRARY
+#ifdef OPTION_CANAPI_PCBUSB_DYLIB
 #define EXPORT __attribute__((visibility("default")))
 #else
 #define EXPORT
@@ -1422,7 +1423,6 @@ char* can_version(void)
 /*  ===========  run-time loader  ========================================
  */
 
-#ifdef _PCBUSB_SHARED_LIBRARY
 #include <dlfcn.h>
 
 typedef TPCANStatus (*CAN_Initialize_t)(TPCANHandle Channel, TPCANBaudrate Btr0Btr1, TPCANType HwType, DWORD IOPort, WORD Interrupt);
@@ -1639,7 +1639,6 @@ TPCANStatus CAN_WriteFD(TPCANHandle Channel, TPCANMsgFD* MessageBuffer)
     else
         return PCAN_ERROR_UNKNOWN;
 }
-#endif //_PCBUSB_SHARED_LIBRARY
 /** @}
  */
 /*  ----------------------------------------------------------------------

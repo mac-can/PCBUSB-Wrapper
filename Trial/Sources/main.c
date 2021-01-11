@@ -35,6 +35,7 @@
 /*  -----------  includes  -----------------------------------------------
  */
 
+#include "can_defs.h"
 #include "can_api.h"
 #include "printmsg.h"
 

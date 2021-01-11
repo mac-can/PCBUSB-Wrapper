@@ -38,8 +38,8 @@ TARGET	= PCBUSB
 
 CFLAGS += -O2 -Wall -Wno-parentheses \
 	-fno-strict-aliasing \
-	-D_PCBUSB_SHARED_LIBRARY \
-	-D_CANAPI_EXTERN \
+	-DOPTION_CAN_2_0_ONLY=0 \
+	-DOPTION_CANAPI_DRIVER=1 \
 	-I$(SOURCE_DIR) \
 	-I$(CANAPI_DIR) \
 	-I$(MAIN_DIR)
