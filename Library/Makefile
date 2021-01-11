@@ -4,9 +4,9 @@
 #
 # purpose   :  CAN Interface API, Version 3 (PCANBasic)
 #
-# copyright :  (C) 2019 by UV Software, Berlin
+# copyright :  (C) 2019-2021 by UV Software, Berlin
 #
-# compiler  :  Apple LLVM version 10.0.0 (clang-1000.11.45.5)
+# compiler  :  Apple clang version 12.0.0 (clang-1200.0.32.28)
 #
 # author    :  Uwe Vogt, UV Software
 #
@@ -21,9 +21,13 @@ current_OS := $(patsubst MSYS%,MinGW,$(current_OS))
 
 # #############################################################################
 
-DRV	= ../api
+HOME_DIR = ..
+MAIN_DIR = ./Sources
 
-ifeq ($(current_OS),Darwin) # MacOS - libUVCANPCB.dylib - - - - - - - - - - - -
+SOURCE_DIR = $(HOME_DIR)/Sources
+CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
+
+ifeq ($(current_OS),Darwin) # macOS - libUVCANPCB.dylib - - - - - - - - - - - -
 
 VERSION = 0.2
 
@@ -38,7 +42,8 @@ CFLAGS += -Wall -Wno-parentheses \
 	-D_PCBUSB_SHARED_LIBRARY \
 	-D_CANAPI_SHARED_LIBRARY \
 	-D_CANAPI_EXTERN \
-	-I$(DRV)
+	-I$(SOURCE_DIR) \
+	-I$(CANAPI_DIR)
 
 #LIBRARIES = -lPCBUSB
 LIBRARIES =
@@ -48,8 +53,6 @@ LDFLAGS  += -nostartfiles -dynamiclib
 endif
 
 OBJECTS = $(OUTDIR)/can_api.o
-
-CAN_API_DEPS = $(DRV)/can_api.h $(DRV)/can_defs.h $(DRV)/CANAPI_Types.h $(DRV)/build_no.h
 
 CC = gcc
 LD = gcc
@@ -66,34 +69,27 @@ all: info outdir $(TARGET)
 
 info:
 	@echo $(CC)" on "$(current_OS)
-	@echo "Target: "$(TARGET)
+	@echo "target: "$(TARGET)
 	@echo "install: "$(INSTALL)
 
 outdir:
 	@mkdir -p $(OUTDIR)
 
 clean:
-	$(RM) $(TARGET) $(OUTDIR)/*.o
+	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
 
 install:
 	$(CP) $(TARGET) $(INSTALL)/$(TARGET)
 ifeq ($(current_OS),Darwin)
 	$(RM) $(INSTALL)/$(LIBRARY).dylib; ln -s $(INSTALL)/$(TARGET) $(INSTALL)/$(LIBRARY).dylib
 endif
-ifeq ($(current_OS),Linux)
-	$(RM) $(INSTALL)/$(SONAME) ; ln -s $(INSTALL)/$(TARGET) $(INSTALL)/$(SONAME)
-	$(RM) $(INSTALL)/$(LIBRARY).so ; ln -s $(INSTALL)/$(SONAME) $(INSTALL)/$(LIBRARY).so
-endif
 
 distclean:
-	$(RM) $(LIBRARY).$(VERSION).dylib $(OUTDIR)/*.o $(DRV)/*~ *~
+	$(RM) $(LIBRARY).$(VERSION).dylib $(OUTDIR)/*.o $(OUTDIR)/*.d
 
 
-$(OUTDIR)/main.o: main.c $(MAIN_DEPS)
-	$(CC) $(CFLAGS) -o $@ -c $<
-
-$(OUTDIR)/can_api.o: $(DRV)/can_api.c $(CAN_API_DEPS)
-	$(CC) $(CFLAGS) -o $@ -c $<
+$(OUTDIR)/can_api.o: $(SOURCE_DIR)/can_api.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 
 $(TARGET): $(OBJECTS)

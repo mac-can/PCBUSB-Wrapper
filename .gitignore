@@ -1,0 +1,7 @@
+#.gitignore
+Library/.objects
+Library/libUVCANPCB.*
+Trail/.objects
+Trial/PCBUSB
+Sources/build_no.h
+Sources/CANAPI/.svn

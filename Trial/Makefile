@@ -5,9 +5,9 @@
 # purpose   :  CAN API V3 Tester (PCANBasic)
 #
 # copyright :  (C) 2012 by UV Software, Friedrichshafen
-#              (C) 2013-2019 by UV Software, Berlin
+#              (C) 2013-2021 by UV Software, Berlin
 #
-# compiler  :  Apple LLVM version 10.0.0 (clang-1000.11.45.5)
+# compiler  :  Apple clang version 12.0.0 (clang-1200.0.32.28)
 #
 # author    :  Uwe Vogt, UV Software
 #
@@ -22,21 +22,27 @@ current_OS := $(patsubst MSYS%,MinGW,$(current_OS))
 
 # #############################################################################
 
-DRV	= ../api
+HOME_DIR = ..
+MAIN_DIR = ./Sources
 
-ifeq ($(current_OS),Darwin) # MacOS - libUVCANPCB.dylib - - - - - - - - - - - -
+SOURCE_DIR = $(HOME_DIR)/Sources
+CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
+
+ifeq ($(current_OS),Darwin) # macOS - libUVCANPCB.dylib - - - - - - - - - - - -
 
 VERSION = 0
 
 INSTALL = ~/bin
 
-TARGET	= pcb_test
+TARGET	= PCBUSB
 
 CFLAGS += -O2 -Wall -Wno-parentheses \
 	-fno-strict-aliasing \
 	-D_PCBUSB_SHARED_LIBRARY \
 	-D_CANAPI_EXTERN \
-	-I$(DRV)
+	-I$(SOURCE_DIR) \
+	-I$(CANAPI_DIR) \
+	-I$(MAIN_DIR)
 
 #LIBRARIES = -lPCBUSB
 LIBRARIES =
@@ -45,13 +51,8 @@ LDFLAGS  +=
 
 endif
 
-OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/can_api.o $(OUTDIR)/printmsg.o
-
-MAIN_DEPS = $(DRV)/can_api.h $(DRV)/can_defs.h printmsg.h
-
-CAN_API_DEPS = $(DRV)/can_api.h $(DRV)/can_defs.h $(DRV)/build_no.h
-
-PRINTMSG_DEPS = printmsg.h
+OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/printmsg.o \
+	$(OUTDIR)/can_api.o
 
 CC = gcc
 LD = gcc
@@ -68,30 +69,30 @@ all: info outdir $(TARGET)
 
 info:
 	@echo $(CC)" on "$(current_OS)
-	@echo "Target: "$(TARGET)
+	@echo "target: "$(TARGET)
 	@echo "install: "$(INSTALL)
 
 outdir:
 	@mkdir -p $(OUTDIR)
 
 clean:
-	$(RM) $(TARGET) $(OUTDIR)/*.o
+	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
 
 install:
 	$(CP) $(TARGET) $(INSTALL)
 
 distclean:
-	$(RM) $(TARGET) $(OUTDIR)/*.o $(DRV)/*~ *~
+	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
 
 
-$(OUTDIR)/main.o: main.c $(MAIN_DEPS)
-	$(CC) $(CFLAGS) -o $@ -c $<
+$(OUTDIR)/main.o: $(MAIN_DIR)/main.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
-$(OUTDIR)/printmsg.o: printmsg.c $(PRINTMSG_DEPS)
-	$(CC) $(CFLAGS) -o $@ -c $<
+$(OUTDIR)/printmsg.o: $(MAIN_DIR)/printmsg.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
-$(OUTDIR)/can_api.o: $(DRV)/can_api.c $(CAN_API_DEPS)
-	$(CC) $(CFLAGS) -o $@ -c $<
+$(OUTDIR)/can_api.o: $(SOURCE_DIR)/can_api.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 
 $(TARGET): $(OBJECTS)
