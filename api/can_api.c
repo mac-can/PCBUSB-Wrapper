@@ -396,6 +396,34 @@ int can_exit(int handle)
 }
 
 EXPORT
+int can_kill(int handle)
+{
+    int i;
+
+    if(!init)                           // must be initialized
+        return CANERR_NOTINIT;
+    if(handle != CANEXIT_ALL) {
+        if(!IS_HANDLE_VALID(handle))    // must be a valid handle
+            return CANERR_HANDLE;
+        if(can[handle].board == PCAN_NONEBUS) // must be an opened handle
+            return CANERR_HANDLE;
+        /* note: there is no possibility to signal a waiting object with
+         *       the PCBUSB library. */
+        return CANERR_NOTSUPP;
+    }
+    else {
+        for(i = 0; i < PCAN_MAX_HANDLES; i++) {
+            if(can[i].board != PCAN_NONEBUS) // must be an opened handle
+            {
+                /* note: there is no possibility to signal a waiting object with
+                 *       the PCBUSB library. */
+            }
+        }
+    }
+    return CANERR_NOERROR;
+}
+
+EXPORT
 int can_start(int handle, const can_bitrate_t *bitrate)
 {
     TPCANBaudrate btr0btr1;             // btr0btr1 value
