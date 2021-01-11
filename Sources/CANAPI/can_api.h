@@ -23,7 +23,7 @@
  *               int can_property(int handle, uint16_t param, void *value, uint32_t nbytes);
  *               char *can_hardware(int handle);
  *               char *can_software(int handle);
- *               char *can_version();
+ *               char *can_version(void);
  *
  *  includes  :  can_defs.h, CANAPI_Types.h (LGPL)
  *
@@ -398,7 +398,7 @@ CANAPI char *can_software(int handle);
  *
  *  @returns     pointer to a zero-terminated string, or NULL on error.
  */
-CANAPI char* can_version();
+CANAPI char* can_version(void);
 
 
 #ifdef __cplusplus

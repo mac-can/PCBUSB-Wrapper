@@ -426,7 +426,7 @@ int can_kill(int handle)
 EXPORT
 int can_start(int handle, const can_bitrate_t *bitrate)
 {
-    TPCANBaudrate btr0btr1;             // btr0btr1 value
+    TPCANBaudrate btr0btr1 = 0x011CU;   // btr0btr1 value
     char string[PCAN_BUF_SIZE];         // bit-rate string
     DWORD value;                        // parameter value
     //UINT64 filter;                       // for 29-bit filter
@@ -642,6 +642,11 @@ int can_read(int handle, can_msg_t *msg, uint16_t timeout)
     TPCANTimestampFD timestamp_fd;      // time stamp (CAN FD)
     uint64_t msec;                      // milliseconds
     TPCANStatus rc;                     // return value
+
+    memset(&can_msg, 0, sizeof(TPCANMsg));
+    memset(&timestamp, 0, sizeof(TPCANTimestamp));
+    memset(&can_msg_fd, 0, sizeof(TPCANMsgFD));
+    memset(&timestamp_fd, 0, sizeof(TPCANTimestampFD));
 
     if(!init)                           // must be initialized
         return CANERR_NOTINIT;
@@ -1409,7 +1414,7 @@ static int calc_speed(can_bitrate_t *bitrate, can_speed_t *speed, int modify)
  */
 
 EXPORT
-char* can_version()
+char* can_version(void)
 {
     return (char*)version;
 }

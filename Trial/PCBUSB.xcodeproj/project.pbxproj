@@ -203,6 +203,7 @@
 					./Sources,
 					../Sources,
 					../Sources/CANAPI,
+					/usr/local/include,
 				);
 			};
 			name = Debug;
@@ -264,6 +265,7 @@
 					./Sources,
 					../Sources,
 					../Sources/CANAPI,
+					/usr/local/include,
 				);
 			};
 			name = Release;

@@ -4,7 +4,7 @@
  *
  *  purpose   :  Print CAN Messages (Monitor)
  *
- *  copyright :  (C) 2019, UV Software, Berlin
+ *  copyright :  (C) 2019-2021, UV Software, Berlin
  *
  *  compiler  :  Microsoft Visual C/C++ Compiler
  *               Apple LLVM Compiler (clang)
@@ -212,6 +212,7 @@ void msg_print_ascii(FILE *stream, unsigned char data, int mode)
             fprintf(stream, ".");
     }
 }
+
 void msg_print_time(FILE *stream, struct msg_timestamp *timestamp, int mode)
 {
     static struct msg_timestamp laststamp = { 0, 0 };
@@ -223,8 +224,8 @@ void msg_print_time(FILE *stream, struct msg_timestamp *timestamp, int mode)
     case MSG_TIME_ZERO:
         if (laststamp.tv_sec == 0)  /* first init */
             laststamp = *timestamp;
-        difftime.tv_sec = timestamp->tv_sec - laststamp.tv_sec;
-        difftime.tv_usec = timestamp->tv_usec - laststamp.tv_usec;
+        difftime.tv_sec = (time_t)(timestamp->tv_sec - laststamp.tv_sec);
+        difftime.tv_usec = (int)(timestamp->tv_usec - laststamp.tv_usec);
         if (difftime.tv_usec < 0) {
             difftime.tv_sec -= 1;
             difftime.tv_usec += 1000000;
