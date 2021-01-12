@@ -6,11 +6,11 @@ _Copyright &copy; 2012-2019   Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
 
 CAN API V3 is a wrapper specification to have a uniform CAN Interface API for various CAN interfaces from different vendors running under multiple operating systems.
 
-## MacCAN-PCANBasic
+## PCANBasic-Wrapper
 
-This repo contains the source code for a CAN API V3 compatible wrapper library under macOS for PCAN-USB Interfaces from Peak-System Technik GmbH.
+This repo contains the source code for a CAN API V3 compatible wrapper library under macOS for PCAN-USB Interfaces from PEAK-System Technik GmbH.
 The wrapper library is build upon the PCBUSB library by UV&nbsp;Software.
-The PCBUSB library is almost compatible to Peak´s PCANBasic DLL.
+The PCBUSB library is almost compatible to PEAK´s PCANBasic DLL.
 
 ### CAN Interface API, Version 3
 
@@ -70,7 +70,7 @@ _(The version number of the libraries can be adapted by editing the `Makefile`s 
 
 #### macOS Big Sur
 
-- macOS Catalina (11.1) on a MacBook Pro (2019)
+- macOS Big Sur (11.1) on a MacBook Pro (2019)
 - Apple clang version 12.0.0 (clang-1200.0.32.28)
 - Xcode Version 12.3 (12C33)
 
@@ -97,6 +97,8 @@ Please note the copyright and license agreements.
 
 ### Licenses
 
+#### CAN API V3 License
+
 CAN API V3 is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -109,6 +111,21 @@ GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
 along with CAN API V3.  If not, see <http://www.gnu.org/licenses/>.
+
+#### PCANBasic-Wrapper License
+
+PCANBasic-Wrapper is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+PCANBasic-Wrapper is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with PCANBasic-Wrapper.  If not, see <http://www.gnu.org/licenses/>.
 
 ### Trademarks
 
