@@ -20,7 +20,7 @@
 #
 all:
 	@./build_no.sh
-	@echo "Building PCANBasic-Wrapper (build "$(shell git log -1 --pretty=format:%h)")..."
+	@echo "Building PCANBasic-Wrapper..."
 	$(MAKE) -C Trial $@
 	$(MAKE) -C Library $@
 #	$(MAKE) -C Utilities/can_test $@

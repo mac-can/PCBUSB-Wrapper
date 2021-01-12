@@ -46,7 +46,7 @@ COMPATIBILITY_VERSION = $(MAJOR).$(MINOR).0
 
 INSTALL = /usr/local/lib
 
-TARGET  = $(LIBRARY).$(VERSION).dylib
+INCLUDE = /usr/local/include
 
 DEFINES = -DOPTION_CAN_2_0_ONLY=0 \
 	-DOPTION_CANAPI_PCBUSB_DYLIB=1 \
@@ -113,7 +113,6 @@ endif
 	@echo "Copying header files..."
 	$(CP) $(CANAPI_DIR)/can_api.h $(INCLUDE)
 	$(CP) $(CANAPI_DIR)/CANAPI_Types.h $(INCLUDE)
-	$(CP) $(CANAPI_DIR)/CANAPI_Defines.h $(INCLUDE)
 #	$(CP) $(CANAPI_DIR)/CANAPI_PCANBasic.h $(INCLUDE)
 
 
