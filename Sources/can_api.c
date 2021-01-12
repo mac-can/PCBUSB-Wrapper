@@ -1,39 +1,26 @@
-/*  -- $HeadURL$ --
+/*
+ *  CAN Interface API, Version 3 (for PEAK PCAN-Basic Interfaces)
  *
- *  project   :  CAN - Controller Area Network
+ *  Copyright (C) 2010-2021  Uwe Vogt, UV Software, Berlin (info@uv-software.com)
  *
- *  purpose   :  CAN Interface API, Version 3 (PCAN-USB)
+ *  This file is part of PCANBasic-Wrapper.
  *
- *  copyright :  (C) 2010,2012 by UV Software, Friedrichshafen
- *               (C) 2013-2021 by UV Software, Berlin
+ *  PCANBasic-Wrapper is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
  *
- *  compiler  :  Apple clang version 12.0.0 (clang-1200.0.32.28)
+ *  PCANBasic-Wrapper is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
  *
- *  export    :  (see header file)
- *
- *  includes  :  can_api.h (can_defs.h), PCBUSB.h
- *
- *  author    :  Uwe Vogt, UV Software
- *
- *  e-mail    :  uwe.vogt@uv-software.de
- *
- *
- *  -----------  description  --------------------------------------------
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with PCANBasic-Wrapper.  If not, see <http://www.gnu.org/licenses/>.
  */
-/** @file        can_api.h
- *
- *  @brief       CAN API V3 for PEAK PCAN-USB Interfaces - API
- *
- *  @author      $Author$
- *
- *  @version     $Rev$
- *
- *  @addtogroup  can_api
+/** @addtogroup  can_api
  *  @{
  */
-/*  -----------  version  ------------------------------------------------
- */
-
 #include "build_no.h"
 #define VERSION_MAJOR     0
 #define VERSION_MINOR     2
@@ -961,7 +948,7 @@ static int pcan_capability(WORD board, can_mode_t *capability)
 
     assert(capability);
     capability->byte = 0x00U;
-    
+
     if((rc = CAN_GetValue((TPCANHandle)board, PCAN_CHANNEL_FEATURES,
                           (void*)&features, sizeof(features))) != PCAN_ERROR_OK)
         return pcan_error(rc);

@@ -1,39 +1,24 @@
-/*  -- $HeadURL$ --
+/*
+ *  CAN Interface API, Version 3 (for PEAK PCAN-Basic Interfaces)
  *
- *  project   :  CAN - Controller Area Network
+ *  Copyright (C) 2010-2021  Uwe Vogt, UV Software, Berlin (info@uv-software.com)
  *
- *  purpose   :  CAN Interface API, Version 3 (libPCBUSB)
+ *  This file is part of PCANBasic-Wrapper.
  *
- *  copyright :  (C) 2010,2012 UV Software, Friedrichshafen
- *               (C) 2014,2017-2021 UV Software, Berlin
+ *  PCANBasic-Wrapper is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
  *
- *  compiler  :  Apple clang version 12.0.0 (clang-1200.0.32.28)
+ *  PCANBasic-Wrapper is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Lesser General Public License for more details.
  *
- *  export    :  (see below)
- *
- *  includes  :  stdint.h, stdbool.h
- *
- *  author    :  Uwe Vogt, UV Software
- *
- *  e-mail    :  uwe.vogt@uv-software.de
- *
- *
- *  -----------  description  --------------------------------------------
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with PCANBasic-Wrapper.  If not, see <http://www.gnu.org/licenses/>.
  */
-/** @file        can_defs.h
- *
- *  @brief       CAN API V3 for PEAK PCAN-USB Interfaces - Defines
- *
- *               For PEAK PCAN-USB Interfaces (libPCBUSB.dylib):
- *               - PCAN-USB Interface
- *               - PCAN-USB FD Interface
- *               - PCAN-USB Pro FD Interface (only CAN1)
- *
- *  @author      $Author$
- *
- *  @version     $Rev$
- *
- *  @addtogroup  can_api
+/** @addtogroup  can_api
  *  @{
  */
 #ifndef CAN_DEFS_H_INCLUDED
@@ -65,7 +50,6 @@
  #define PCAN_USB6              0x56U   //   PCAN-USB interface, channel 6
  #define PCAN_USB7              0x57U   //   PCAN-USB interface, channel 7
  #define PCAN_USB8              0x58U   //   PCAN-USB interface, channel 8
-#ifndef __APPLE__
  #define PCAN_USB9              0x509U  //   PCAN-USB interface, channel 9
  #define PCAN_USB10             0x50AU  //   PCAN-USB interface, channel 10
  #define PCAN_USB11             0x50BU  //   PCAN-USB interface, channel 11
@@ -77,11 +61,7 @@
  #define PCAN_BOARDS               (16) //   number of PCAN Interface boards
 
  #define PCAN_MAX_HANDLES          (16) //   maximum number of interface handles
-#else
- #define PCAN_BOARDS               (8)  //   number of PCAN Interface boards
 
- #define PCAN_MAX_HANDLES          (8)  //   maximum number of interface handles
-#endif
  #define PCAN_ERR_REGTEST          -201 //   test of the CAN controller hardware registers failed (no hardware found)
  #define PCAN_ERR_NODRIVER         -202 //   driver not loaded
  #define PCAN_ERR_HWINUSE          -203 //   hardware is in use by another Net
@@ -115,7 +95,7 @@
  #define CAN_API_AUTHOR                     "Uwe Vogt, UV Software"
  #define CAN_API_WEBSITE                    "www.uv-software.com"
  #define CAN_API_CONTACT                    "info@uv-software.com"
- #define CAN_API_LICENSE                    "UVS Freeware License (without any warranty or support)"
+ #define CAN_API_LICENSE                    "GNU Lesser General Public License, Version 3"
  #define CAN_API_COPYRIGHT                  "Copyright (C) 2005-20%02u, UV Software, Berlin"
  #define CAN_API_HAZARD_NOTE                "Do not connect your CAN device to a real CAN network when using this program.\n" \
                                             "This can damage your application."

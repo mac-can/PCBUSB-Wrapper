@@ -54,9 +54,8 @@
 /*  -----------  options  ------------------------------------------------
  */
 
-#if !defined(__uvs_license) && !defined(__gpl_license) && !defined(__mit_license)
-    #define  __uvs_license
-#endif
+//#define STOP_FRAMES       64//+16
+
 
 /*  -----------  defines  ------------------------------------------------
  */
@@ -81,8 +80,6 @@
 
 #define OPTION_NO           (0)
 #define OPTION_YES          (1)
-
-//#define STOP_FRAMES       64//+16
 
 #define DLC2DLEN(dlc)       dtab[(dlc) & 0xFu]
 
@@ -217,7 +214,6 @@ int main(int argc, char *argv[])
         if(!strcmp(argv[i], "PCAN-USB6")) channel = PCAN_USB6;
         if(!strcmp(argv[i], "PCAN-USB7")) channel = PCAN_USB7;
         if(!strcmp(argv[i], "PCAN-USB8")) channel = PCAN_USB8;
-#if !defined(__APPLE__)
         if(!strcmp(argv[i], "PCAN-USB9")) channel = PCAN_USB9;
         if(!strcmp(argv[i], "PCAN-USB10")) channel = PCAN_USB10;
         if(!strcmp(argv[i], "PCAN-USB11")) channel = PCAN_USB11;
@@ -226,7 +222,6 @@ int main(int argc, char *argv[])
         if(!strcmp(argv[i], "PCAN-USB14")) channel = PCAN_USB14;
         if(!strcmp(argv[i], "PCAN-USB15")) channel = PCAN_USB15;
         if(!strcmp(argv[i], "PCAN-USB16")) channel = PCAN_USB16;
-#endif
         /* baud rate (CAN 2.0) */
         if(!strcmp(argv[i], "BD:0") || !strcmp(argv[i], "BD:1000")) bitrate.index = -CANBDR_1000;
         if(!strcmp(argv[i], "BD:1") || !strcmp(argv[i], "BD:800")) bitrate.index = -CANBDR_800;

@@ -1,22 +1,26 @@
-# #############################################################################
 #
-# project   :  CAN - Controller Area Network.
+#	CAN Interface API, Version 3 (for PEAK PCAN-Basic Interfaces)
 #
-# purpose   :  CAN API V3 Tester (PCANBasic)
+#	Copyright (C) 2010-2021  Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 #
-# copyright :  (C) 2019-2021 by UV Software, Berlin
+#	This library is part of PCANBasic-Wrapper.
 #
-# compiler  :  Apple clang version 12.0.0 (clang-1200.0.32.28)
+#	PCANBasic-Wrapper is free software: you can redistribute it and/or modify
+#	it under the terms of the GNU Lesser General Public License as published by
+#	the Free Software Foundation, either version 3 of the License, or
+#	(at your option) any later version.
 #
-# author    :  Uwe Vogt, UV Software
+#	PCANBasic-Wrapper is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#	GNU Lesser General Public License for more details.
 #
-# e-mail    :  uwe.vogt@uv-software.de
+#	You should have received a copy of the GNU Lesser General Public License
+#	along with PCANBasic-Wrapper.  If not, see <http://www.gnu.org/licenses/>.
 #
-# #############################################################################
-
 all:
 	@./build_no.sh
-	@echo "Building PCBUSB (build "$(shell git log -1 --pretty=format:%h)")..."
+	@echo "Building PCANBasic-Wrapper (build "$(shell git log -1 --pretty=format:%h)")..."
 	$(MAKE) -C Trial $@
 	$(MAKE) -C Library $@
 #	$(MAKE) -C Utilities/can_test $@
