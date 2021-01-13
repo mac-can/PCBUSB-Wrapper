@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0F03747E25AE3F36005ED7DA /* can_api.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F03747D25AE3F36005ED7DA /* can_api.c */; };
 		0F4DD53125ACBC29000E23B5 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F4DD52E25ACBC29000E23B5 /* main.c */; };
 		0F4DD53225ACBC29000E23B5 /* printmsg.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F4DD52F25ACBC29000E23B5 /* printmsg.c */; };
-		0F4DD53825ACBC70000E23B5 /* can_api.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F4DD53725ACBC70000E23B5 /* can_api.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,14 +25,15 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0F03747C25AE3F36005ED7DA /* can_defs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = can_defs.h; path = ../Sources/PCAN_Wrapper/can_defs.h; sourceTree = "<group>"; };
+		0F03747D25AE3F36005ED7DA /* can_api.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = can_api.c; path = ../Sources/PCAN_Wrapper/can_api.c; sourceTree = "<group>"; };
+		0F03748025AE3F4D005ED7DA /* build_no.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = build_no.h; path = ../Sources/build_no.h; sourceTree = "<group>"; };
 		0F4DD52025ACBB8A000E23B5 /* PCBUSB */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PCBUSB; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F4DD52E25ACBC29000E23B5 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = main.c; path = Sources/main.c; sourceTree = "<group>"; };
 		0F4DD52F25ACBC29000E23B5 /* printmsg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = printmsg.c; path = Sources/printmsg.c; sourceTree = "<group>"; };
 		0F4DD53025ACBC29000E23B5 /* printmsg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = printmsg.h; path = Sources/printmsg.h; sourceTree = "<group>"; };
 		0F4DD53425ACBC59000E23B5 /* can_api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = can_api.h; path = ../Sources/CANAPI/can_api.h; sourceTree = "<group>"; };
 		0F4DD53525ACBC59000E23B5 /* CANAPI_Types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CANAPI_Types.h; path = ../Sources/CANAPI/CANAPI_Types.h; sourceTree = "<group>"; };
-		0F4DD53625ACBC70000E23B5 /* can_defs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = can_defs.h; path = ../Sources/can_defs.h; sourceTree = "<group>"; };
-		0F4DD53725ACBC70000E23B5 /* can_api.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = can_api.c; path = ../Sources/can_api.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,10 +66,11 @@
 		0F4DD52D25ACBC0C000E23B5 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				0F03748025AE3F4D005ED7DA /* build_no.h */,
+				0F03747D25AE3F36005ED7DA /* can_api.c */,
+				0F03747C25AE3F36005ED7DA /* can_defs.h */,
 				0F4DD53525ACBC59000E23B5 /* CANAPI_Types.h */,
 				0F4DD53425ACBC59000E23B5 /* can_api.h */,
-				0F4DD53725ACBC70000E23B5 /* can_api.c */,
-				0F4DD53625ACBC70000E23B5 /* can_defs.h */,
 				0F4DD52E25ACBC29000E23B5 /* main.c */,
 				0F4DD52F25ACBC29000E23B5 /* printmsg.c */,
 				0F4DD53025ACBC29000E23B5 /* printmsg.h */,
@@ -133,7 +135,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0F4DD53125ACBC29000E23B5 /* main.c in Sources */,
-				0F4DD53825ACBC70000E23B5 /* can_api.c in Sources */,
+				0F03747E25AE3F36005ED7DA /* can_api.c in Sources */,
 				0F4DD53225ACBC29000E23B5 /* printmsg.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -203,7 +205,7 @@
 					./Sources,
 					../Sources,
 					../Sources/CANAPI,
-					/usr/local/include,
+					../Sources/PCAN_Wrapper,
 				);
 			};
 			name = Debug;
@@ -265,7 +267,7 @@
 					./Sources,
 					../Sources,
 					../Sources/CANAPI,
-					/usr/local/include,
+					../Sources/PCAN_Wrapper,
 				);
 			};
 			name = Release;

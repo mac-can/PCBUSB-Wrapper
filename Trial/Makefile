@@ -1,3 +1,23 @@
+#
+#	CAN Interface API, Version 3 (for PEAK PCAN-Basic Interfaces)
+#
+#	Copyright (C) 2010-2021  Uwe Vogt, UV Software, Berlin (info@uv-software.com)
+#
+#	This library is part of PCANBasic-Wrapper.
+#
+#	PCANBasic-Wrapper is free software: you can redistribute it and/or modify
+#	it under the terms of the GNU Lesser General Public License as published by
+#	the Free Software Foundation, either version 3 of the License, or
+#	(at your option) any later version.
+#
+#	PCANBasic-Wrapper is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#	GNU Lesser General Public License for more details.
+#
+#	You should have received a copy of the GNU Lesser General Public License
+#	along with PCANBasic-Wrapper.  If not, see <http://www.gnu.org/licenses/>.
+#
 current_OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown OS')
 current_OS := $(patsubst CYGWIN%,Cygwin,$(current_OS))
 current_OS := $(patsubst MINGW%,MinGW,$(current_OS))
@@ -8,6 +28,7 @@ MAIN_DIR = ./Sources
 
 SOURCE_DIR = $(HOME_DIR)/Sources
 CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
+PCBUSB_DIR = $(HOME_DIR)/Sources/PCAN_Wrapper
 
 ifeq ($(current_OS),Darwin) # macOS - libUVCANPCB.dylib
 
@@ -23,6 +44,7 @@ CFLAGS += -O2 -Wall -Wno-parentheses \
 	-DOPTION_CANAPI_DRIVER=1 \
 	-I$(SOURCE_DIR) \
 	-I$(CANAPI_DIR) \
+	-I$(PCBUSB_DIR) \
 	-I$(MAIN_DIR)
 
 LIBRARIES =
@@ -68,7 +90,7 @@ $(OUTDIR)/main.o: $(MAIN_DIR)/main.c
 $(OUTDIR)/printmsg.o: $(MAIN_DIR)/printmsg.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
-$(OUTDIR)/can_api.o: $(SOURCE_DIR)/can_api.c
+$(OUTDIR)/can_api.o: $(PCBUSB_DIR)/can_api.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 

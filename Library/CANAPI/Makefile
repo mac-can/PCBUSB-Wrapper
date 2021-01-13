@@ -27,11 +27,12 @@ MAJOR = 0
 MINOR = 2
 PATCH = 0
 
-HOME_DIR = ..
+HOME_DIR = ../..
 MAIN_DIR = ./Sources
 
 SOURCE_DIR = $(HOME_DIR)/Sources
 CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
+PCBUSB_DIR = $(HOME_DIR)/Sources/PCAN_Wrapper
 
 ifeq ($(current_OS),Darwin) # macOS - libUVCANPCB.dylib
 
@@ -54,7 +55,7 @@ DEFINES = -DOPTION_CAN_2_0_ONLY=0 \
 
 HEADERS = -I$(SOURCE_DIR) \
 	-I$(CANAPI_DIR) \
-	-I$(CANAPI_DIR)
+	-I$(PCBUSB_DIR)
 
 CFLAGS += -O2 -Wall -Wno-parentheses \
 	-fno-strict-aliasing \
@@ -116,7 +117,7 @@ endif
 #	$(CP) $(CANAPI_DIR)/CANAPI_PCANBasic.h $(INCLUDE)
 
 
-$(OUTDIR)/can_api.o: $(SOURCE_DIR)/can_api.c
+$(OUTDIR)/can_api.o: $(PCBUSB_DIR)/can_api.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 
