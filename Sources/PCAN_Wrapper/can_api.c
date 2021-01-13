@@ -1428,6 +1428,7 @@ typedef TPCANStatus (*CAN_GetErrorText_t)(TPCANStatus Error, WORD Language, char
 typedef TPCANStatus (*CAN_InitializeFD_t)(TPCANHandle Channel, TPCANBitrateFD BitrateFD);
 typedef TPCANStatus (*CAN_ReadFD_t)(TPCANHandle Channel, TPCANMsgFD* MessageBuffer, TPCANTimestampFD* TimestampBuffer);
 typedef TPCANStatus (*CAN_WriteFD_t)(TPCANHandle Channel, TPCANMsgFD* MessageBuffer);
+typedef TPCANStatus (*CAN_LookUpChannel_t)(LPSTR Parameters, TPCANHandle* FoundChannel);
 
 static CAN_Initialize_t _CAN_Initialize = NULL;
 static CAN_Uninitialize_t _CAN_Uninitialize = NULL;
@@ -1442,6 +1443,7 @@ static CAN_GetErrorText_t _CAN_GetErrorText = NULL;
 static CAN_InitializeFD_t _CAN_InitializeFD = NULL;
 static CAN_ReadFD_t _CAN_ReadFD = NULL;
 static CAN_WriteFD_t _CAN_WriteFD = NULL;
+static CAN_LookUpChannel_t _CAN_LookUpChannel = NULL;
 
 static void *hLibrary = NULL;
 
@@ -1477,6 +1479,8 @@ static int LoadLibrary(void)
             goto err;
         if((_CAN_WriteFD = (CAN_WriteFD_t)dlsym(hLibrary, "CAN_WriteFD")) == NULL)
             goto err;
+        if((_CAN_LookUpChannel = (CAN_LookUpChannel_t)dlsym(hLibrary, "CAN_LookUpChannel")) == NULL)
+            _CAN_LookUpChannel = NULL;  // note: this function is not available before version 0.10
     }
     return 0;
 err:
@@ -1493,6 +1497,7 @@ err:
     _CAN_InitializeFD = NULL;
     _CAN_ReadFD = NULL;
     _CAN_WriteFD = NULL;
+    _CAN_LookUpChannel = NULL;
     dlclose(hLibrary);
     return -1;
 }
@@ -1626,6 +1631,16 @@ TPCANStatus CAN_WriteFD(TPCANHandle Channel, TPCANMsgFD* MessageBuffer)
         return PCAN_ERROR_NODRIVER;
     if(_CAN_WriteFD)
         return _CAN_WriteFD(Channel, MessageBuffer);
+    else
+        return PCAN_ERROR_UNKNOWN;
+}
+
+TPCANStatus CAN_LookUpChannel(LPSTR Parameters, TPCANHandle* FoundChannel)
+{
+    if(LoadLibrary() != 0)
+        return PCAN_ERROR_NODRIVER;
+    if(_CAN_LookUpChannel)
+        return _CAN_LookUpChannel(Parameters, FoundChannel);
     else
         return PCAN_ERROR_UNKNOWN;
 }
