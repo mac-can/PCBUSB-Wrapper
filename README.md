@@ -1,8 +1,8 @@
 ### macOS® Wrapper Library for PCAN-USB Interfaces
 
-_Copyright &copy; 2012-2019   Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
+_Copyright &copy; 2007, 2010, 2012-2021   Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
 
-# CAN API V3 for PCAN-USB Interfaces (macOS, x86_64)
+# CAN API V3 for PCAN-USB Interfaces
 
 CAN API V3 is a wrapper specification to have a uniform CAN Interface API for various CAN interfaces from different vendors running under multiple operating systems.
 
@@ -11,6 +11,8 @@ CAN API V3 is a wrapper specification to have a uniform CAN Interface API for va
 This repo contains the source code for a CAN API V3 compatible wrapper library under macOS for PCAN-USB Interfaces from PEAK-System Technik GmbH.
 The wrapper library is build upon the PCBUSB library by UV&nbsp;Software.
 The PCBUSB library is almost compatible to PEAK´s PCANBasic DLL.
+
+Remarks: _The PCBUSB library is not included in this repo, and must be installed separately!_
 
 ### CAN Interface API, Version 3
 
@@ -50,14 +52,14 @@ See header file `can_api.h` for a description of the provided functions.
 
 ## Build Targets
 
-_Important note_: To build any of the following build targets run the `build_no.sh` script to generate a pseudo build number.
+Important note: _To build any of the following build targets run the script_ `build_no.sh` _to generate a pseudo build number._
 ```
 uv-pc013mac:~ eris$ cd ~/Projects/CAN/DRV/Drivers/PCBUSB
 uv-pc013mac:Sources eris$ ./build_no.sh
 ```
 Repeat this step after each `git commit`, `git pull`, `git clone`, etc.
 
-Then go back to root folder and compile the whole _bleep_ by typing the usual commands:
+Then go back to the root folder and compile the whole _bleep_ by typing the usual commands:
 ```
 uv-pc013mac:Sources eris$ cd ~/Projects/CAN/DRV/Drivers/PCBUSB
 uv-pc013mac:PCBUSB eris$ make clean
@@ -65,6 +67,35 @@ uv-pc013mac:PCBUSB eris$ make all
 uv-pc013mac:PCBUSB eris$ sudo make install
 ```
 _(The version number of the libraries can be adapted by editing the `Makefile`s in the subfolders and changing the variable `VERSION` accordingly.  Don´t forget to set the version number also in the source files.)_
+
+#### libPCAN
+
+___libPCAN___ is a dynamic library with a CAN API V3 compatible application programming interface for use in __C++__ applications.
+See header file `PCAN.h` for a description of all class members.
+
+#### libUVCANPCB
+
+___libUVCANPCB___ is a dynamic library with a CAN API V3 compatible application programming interface for use in __C__ applications.
+See header file `can_api.h` for a description of all API functions.
+
+#### can_moni
+
+`can_moni` is a command line tool to view incoming CAN messages.
+I hate this messing around with binary masks for identifier filtering.
+So I wrote this little program to have an exclude list for single identifiers or identifier ranges (see program option `--exclude` or just `-x`). Precede the list with a `~` and you get an include list.
+
+Type `can_moni --help` to display all program options.
+
+#### can_test
+
+`can_test` is a command line tool to test CAN communication.
+Originally developed for electronic environmental tests on an embedded Linux system with SocketCAN, I´m using it for many years as a traffic generator for CAN stress-tests.
+
+Type `can_test --help` to display all program options.
+
+### Target Platform
+
+- macOS Deployment Target: 11.1 (x86_64)
 
 ### Development Environments
 
@@ -86,9 +117,14 @@ _(The version number of the libraries can be adapted by editing the `Makefile`s 
 - PCAN-USB FD - single channel, CAN 2.0 and CAN FD (Peak´s item no.: IPEH-004022)
 - PCAN-USB Pro FD - dual channel, CAN 2.0 and CAN FD (Peak´s item no.: IPEH-004061)
 
+### Required PCBUSB Library
+
+- `libPCBUSB.x.y.dylib` - Version 0.9 or later _(Latest is Greatest!)_
+
 ## Known Bugs and Caveats
 
 - For a list of bugs and caveats in the underlying PCBUSB library read the documentation of the appropriated library version.
+- PCAN-USB Pro FD devices are supported since version 0.10 of the PCBUSB library, _but only the first channel_ (CAN1).
 
 ## This and That
 
