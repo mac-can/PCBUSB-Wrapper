@@ -130,7 +130,7 @@ typedef struct {                        // PCAN interface:
  */
 
 static int pcan_error(TPCANStatus);     // PCAN specific errors
-static int pcan_capability(WORD board, can_mode_t *capability);
+static int pcan_capability(TPCANHandle board, can_mode_t *capability);
 
 static int bitrate2register(const can_bitrate_t *bitrate, TPCANBaudrate *btr0btr1);
 static int register2bitrate(const TPCANBaudrate btr0btr1, can_bitrate_t *bitrate);
@@ -328,7 +328,7 @@ int can_init(int32_t board, uint8_t mode, const void *param)
         if((rc = CAN_Initialize((TPCANHandle)board, BTR0BTR1_DEFAULT, type, port, irq)) != PCAN_ERROR_OK)
             return pcan_error(rc);
     }
-    can[i].board = board;               // handle of the CAN channel
+    can[i].board = (TPCANHandle)board;  // handle of the CAN channel
     if(param) {                         // non-plug'n'play devices:
         can[i].brd_type =  (BYTE)((struct _pcan_param*)param)->type;
         can[i].brd_port = (DWORD)((struct _pcan_param*)param)->port;
@@ -941,7 +941,7 @@ static int pcan_error(TPCANStatus status)
     return PCAN_ERR_UNKNOWN;
 }
 
-static int pcan_capability(WORD board, can_mode_t *capability)
+static int pcan_capability(TPCANHandle board, can_mode_t *capability)
 {
     TPCANStatus rc;                     // return value
     DWORD features;                     // channel features
