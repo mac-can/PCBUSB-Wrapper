@@ -34,7 +34,7 @@ OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/PCAN.o \
 	$(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o
 
 
-ifeq ($(current_OS),Darwin) # macOS - libUVCANPCB.dylib
+ifeq ($(current_OS),Darwin) # macOS - libPCAN.dylib
 
 VERSION = 0
 
@@ -111,4 +111,4 @@ $(OUTDIR)/can_btr.o: $(CANAPI_DIR)/can_btr.c
 
 $(TARGET): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
-	@echo "Target '"$@"' successfully build"
+	@echo "\033[1mTarget '"$@"' successfully build\033[0m"

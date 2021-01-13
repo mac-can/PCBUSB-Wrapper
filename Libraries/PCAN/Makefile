@@ -69,7 +69,8 @@ CXXFLAGS += -g -Wall -Wextra -pthread \
 
 LIBRARIES =
 
-LDFLAGS  += -nostartfiles -dynamiclib -fvisibility=hidden \
+LDFLAGS  += -lpthread \
+	-nostartfiles -dynamiclib -fvisibility=hidden \
 	-install_name $(INSTALL_NAME) \
 	-current_version $(CURRENT_VERSION) \
 	-compatibility_version $(COMPATIBILITY_VERSION)
@@ -132,4 +133,4 @@ $(OUTDIR)/can_btr.o: $(CANAPI_DIR)/can_btr.c
 
 $(TARGET): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
-	@echo "Target '"$@"' successfully build"
+	@echo "\033[1mTarget '"$@"' successfully build\033[0m"
