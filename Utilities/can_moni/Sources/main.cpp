@@ -824,7 +824,7 @@ static void usage(FILE *stream, const char *program)
     fprintf(stream, " -b, --baudrate=<baudrate>     CAN bit timing in kbps (default=250)\n");
     fprintf(stream, "     --bitrate=<bit-rate>      CAN bit rate settings (as a string)\n");
     fprintf(stream, " -v, --verbose                 show detailed bit rate settings\n");
-#if (OPTION_CANAPI_LIBRARY == 0)
+#if (OPTION_CANAPI_LIBRARY != 0)
     fprintf(stream, " -L, --list-boards[=<vendor>]  list all supported CAN interfaces and exit\n");
     fprintf(stream, " -T, --test-boards[=<vendor>]  list all available CAN interfaces and exit\n");
 #else
