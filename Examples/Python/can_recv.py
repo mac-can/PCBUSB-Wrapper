@@ -100,26 +100,26 @@ while True:
     res, message = can.read()
     if res == CANERR_NOERROR:
         if message.flags.fdf:
-            print('{}\t{:7}.{:04}\t{:03X}\t{}{}{}{}{} [{}] '.format(frames,
-                                                                    message.timestamp.sec,
-                                                                    int(message.timestamp.nsec / 100000),
-                                                                    message.id,
-                                                                    flag_xtd[message.flags.xtd],
-                                                                    flag_rtr[message.flags.rtr],
-                                                                    flag_fdf[message.flags.fdf],
-                                                                    flag_brs[message.flags.brs],
-                                                                    flag_esi[message.flags.esi],
-                                                                    can.dlc2len(message.dlc)) +
+            print('>>> {}\t{:7}.{:04}\t{:03X}\t{}{}{}{}{} [{}] '.format(frames,
+                                                                        message.timestamp.sec,
+                                                                        int(message.timestamp.nsec / 100000),
+                                                                        message.id,
+                                                                        flag_xtd[message.flags.xtd],
+                                                                        flag_rtr[message.flags.rtr],
+                                                                        flag_fdf[message.flags.fdf],
+                                                                        flag_brs[message.flags.brs],
+                                                                        flag_esi[message.flags.esi],
+                                                                        can.dlc2len(message.dlc)) +
                   ', '.join('{:02X}'.format(x) for x in message.data[:can.dlc2len(message.dlc)]) +
                   flag_sts[message.flags.sts])
         else:
-            print('{}\t{:7}.{:04}\t{:03X}\t{}{} [{}] '.format(frames,
-                                                              message.timestamp.sec,
-                                                              int(message.timestamp.nsec / 100000),
-                                                              message.id,
-                                                              flag_xtd[message.flags.xtd],
-                                                              flag_rtr[message.flags.rtr],
-                                                              message.dlc) +
+            print('>>> {}\t{:7}.{:04}\t{:03X}\t{}{} [{}] '.format(frames,
+                                                                  message.timestamp.sec,
+                                                                  int(message.timestamp.nsec / 100000),
+                                                                  message.id,
+                                                                  flag_xtd[message.flags.xtd],
+                                                                  flag_rtr[message.flags.rtr],
+                                                                  message.dlc) +
                   ' '.join('{:02X}'.format(x) for x in message.data[:message.dlc]) +
                   flag_sts[message.flags.sts])
         frames = frames + 1
