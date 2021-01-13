@@ -1233,7 +1233,7 @@ static int drv_parameter(int handle, uint16_t param, void *value, size_t nbytes)
                 }
             }
         }
-        if((i == PCAN_BOARDS) || (rc == CANERR_NOERROR))
+        if((i == PCAN_BOARDS) || (rc != CANERR_NOERROR))
             rc = CANERR_FATAL;
         break;
     case CANPROP_GET_DEVICE_PARAM:      // device parameter of the CAN interface (char[256])

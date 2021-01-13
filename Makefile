@@ -22,19 +22,22 @@ all:
 	@./build_no.sh
 	@echo "Building PCANBasic-Wrapper..."
 	$(MAKE) -C Trial $@
-	$(MAKE) -C Library/CANAPI $@
+	$(MAKE) -C Libraries/PCAN $@
+	$(MAKE) -C Libraries/CANAPI $@
 #	$(MAKE) -C Utilities/can_test $@
 #	$(MAKE) -C Utilities/can_moni $@
 
 clean:
 	$(MAKE) -C Trial $@
-	$(MAKE) -C Library/CANAPI $@
+	$(MAKE) -C Libraries/PCAN $@
+	$(MAKE) -C Libraries/CANAPI $@
 #	$(MAKE) -C Utilities/can_test $@
 #	$(MAKE) -C Utilities/can_moni $@
 
 install:
 	$(MAKE) -C Trial $@
-	$(MAKE) -C Library/CANAPI $@
+	$(MAKE) -C Libraries/PCAN $@
+	$(MAKE) -C Libraries/CANAPI $@
 ##	$(MAKE) -C Utilities/can_test $@
 ##	$(MAKE) -C Utilities/can_moni $@
 

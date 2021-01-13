@@ -30,47 +30,59 @@ SOURCE_DIR = $(HOME_DIR)/Sources
 CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
 PCBUSB_DIR = $(HOME_DIR)/Sources/PCAN_Wrapper
 
+OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/PCAN.o \
+	$(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o
+
+
 ifeq ($(current_OS),Darwin) # macOS - libUVCANPCB.dylib
 
 VERSION = 0
 
-INSTALL = ~/bin
-
 TARGET	= PCBUSB
 
-CFLAGS += -O2 -Wall -Wno-parentheses \
-	-fno-strict-aliasing \
-	-DOPTION_CAN_2_0_ONLY=0 \
+INSTALL = ~/bin
+
+DEFINES = -DOPTION_CAN_2_0_ONLY=0 \
 	-DOPTION_CANAPI_DRIVER=1 \
-	-I$(SOURCE_DIR) \
+	-DOPTION_CANAPI_COMPANIONS=1
+
+HEADERS = -I$(SOURCE_DIR) \
 	-I$(CANAPI_DIR) \
 	-I$(PCBUSB_DIR) \
 	-I$(MAIN_DIR)
 
+CFLAGS += -O2 -Wall -Wno-parentheses \
+	-fno-strict-aliasing \
+	$(DEFINES) \
+	$(HEADERS)
+
+CXXFLAGS += -g -Wall -Wextra -pthread \
+	$(DEFINES) \
+	$(HEADERS)
+
 LIBRARIES =
 
-LDFLAGS  +=
+LDFLAGS  += -lpthread
 
 endif
 
-OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/printmsg.o \
-	$(OUTDIR)/can_api.o
 
+CXX = g++
 CC = gcc
-LD = gcc
+LD = g++
 RM = rm -f
 CP = cp -f
 
 OUTDIR = .objects
 
 
-.PHONY: outdir info
+.PHONY: info outdir
 
 
 all: info outdir $(TARGET)
 
 info:
-	@echo $(CC)" on "$(current_OS)
+	@echo $(CXX)" on "$(current_OS)
 	@echo "target: "$(TARGET)
 	@echo "install: "$(INSTALL)
 
@@ -84,16 +96,19 @@ install:
 	$(CP) $(TARGET) $(INSTALL)
 
 
-$(OUTDIR)/main.o: $(MAIN_DIR)/main.c
-	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+$(OUTDIR)/main.o: $(MAIN_DIR)/main.cpp
+	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
-$(OUTDIR)/printmsg.o: $(MAIN_DIR)/printmsg.c
-	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+$(OUTDIR)/PCAN.o: $(SOURCE_DIR)/PCAN.cpp
+	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 $(OUTDIR)/can_api.o: $(PCBUSB_DIR)/can_api.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
+$(OUTDIR)/can_btr.o: $(CANAPI_DIR)/can_btr.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
+	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
 	@echo "Target '"$@"' successfully build"

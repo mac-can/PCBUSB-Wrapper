@@ -7,13 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0F03747E25AE3F36005ED7DA /* can_api.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F03747D25AE3F36005ED7DA /* can_api.c */; };
-		0F4DD53125ACBC29000E23B5 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F4DD52E25ACBC29000E23B5 /* main.c */; };
-		0F4DD53225ACBC29000E23B5 /* printmsg.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F4DD52F25ACBC29000E23B5 /* printmsg.c */; };
+		0FB7FEA125AEEBBA00A2B7B1 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0FB7FEA025AEEBBA00A2B7B1 /* main.cpp */; };
+		0FB7FEA625AEEBE100A2B7B1 /* PCAN.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0FB7FEA525AEEBE100A2B7B1 /* PCAN.cpp */; };
+		0FB7FEAB25AEED0F00A2B7B1 /* can_api.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FB7FEA825AEED0F00A2B7B1 /* can_api.c */; };
+		0FB7FEB225AEED5500A2B7B1 /* can_btr.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FB7FEB125AEED5500A2B7B1 /* can_btr.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		0F4DD51E25ACBB8A000E23B5 /* CopyFiles */ = {
+		0FE14B1525AEEA4900E87475 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
@@ -25,19 +26,23 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0F03747C25AE3F36005ED7DA /* can_defs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = can_defs.h; path = ../Sources/PCAN_Wrapper/can_defs.h; sourceTree = "<group>"; };
-		0F03747D25AE3F36005ED7DA /* can_api.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = can_api.c; path = ../Sources/PCAN_Wrapper/can_api.c; sourceTree = "<group>"; };
-		0F03748025AE3F4D005ED7DA /* build_no.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = build_no.h; path = ../Sources/build_no.h; sourceTree = "<group>"; };
-		0F4DD52025ACBB8A000E23B5 /* PCBUSB */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PCBUSB; sourceTree = BUILT_PRODUCTS_DIR; };
-		0F4DD52E25ACBC29000E23B5 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = main.c; path = Sources/main.c; sourceTree = "<group>"; };
-		0F4DD52F25ACBC29000E23B5 /* printmsg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = printmsg.c; path = Sources/printmsg.c; sourceTree = "<group>"; };
-		0F4DD53025ACBC29000E23B5 /* printmsg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = printmsg.h; path = Sources/printmsg.h; sourceTree = "<group>"; };
-		0F4DD53425ACBC59000E23B5 /* can_api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = can_api.h; path = ../Sources/CANAPI/can_api.h; sourceTree = "<group>"; };
-		0F4DD53525ACBC59000E23B5 /* CANAPI_Types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CANAPI_Types.h; path = ../Sources/CANAPI/CANAPI_Types.h; sourceTree = "<group>"; };
+		0FB7FEA025AEEBBA00A2B7B1 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = Sources/main.cpp; sourceTree = "<group>"; };
+		0FB7FEA325AEEBE100A2B7B1 /* PCAN.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PCAN.h; path = ../Sources/PCAN.h; sourceTree = "<group>"; };
+		0FB7FEA425AEEBE100A2B7B1 /* build_no.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = build_no.h; path = ../Sources/build_no.h; sourceTree = "<group>"; };
+		0FB7FEA525AEEBE100A2B7B1 /* PCAN.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PCAN.cpp; path = ../Sources/PCAN.cpp; sourceTree = "<group>"; };
+		0FB7FEA825AEED0F00A2B7B1 /* can_api.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = can_api.c; path = ../Sources/PCAN_Wrapper/can_api.c; sourceTree = "<group>"; };
+		0FB7FEA925AEED0F00A2B7B1 /* PCBUSB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PCBUSB.h; path = ../Sources/PCAN_Wrapper/PCBUSB.h; sourceTree = "<group>"; };
+		0FB7FEAA25AEED0F00A2B7B1 /* can_defs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = can_defs.h; path = ../Sources/PCAN_Wrapper/can_defs.h; sourceTree = "<group>"; };
+		0FB7FEAD25AEED5500A2B7B1 /* CANAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CANAPI.h; path = ../Sources/CANAPI/CANAPI.h; sourceTree = "<group>"; };
+		0FB7FEAE25AEED5500A2B7B1 /* CANAPI_Types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CANAPI_Types.h; path = ../Sources/CANAPI/CANAPI_Types.h; sourceTree = "<group>"; };
+		0FB7FEAF25AEED5500A2B7B1 /* can_api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = can_api.h; path = ../Sources/CANAPI/can_api.h; sourceTree = "<group>"; };
+		0FB7FEB025AEED5500A2B7B1 /* can_btr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = can_btr.h; path = ../Sources/CANAPI/can_btr.h; sourceTree = "<group>"; };
+		0FB7FEB125AEED5500A2B7B1 /* can_btr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = can_btr.c; path = ../Sources/CANAPI/can_btr.c; sourceTree = "<group>"; };
+		0FE14B1725AEEA4900E87475 /* PCBUSB */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PCBUSB; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		0F4DD51D25ACBB8A000E23B5 /* Frameworks */ = {
+		0FE14B1425AEEA4900E87475 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -47,47 +52,51 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0F4DD51725ACBB8A000E23B5 = {
+		0FB7FE9F25AEEB9900A2B7B1 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				0F4DD52D25ACBC0C000E23B5 /* Sources */,
-				0F4DD52125ACBB8A000E23B5 /* Products */,
-			);
-			sourceTree = "<group>";
-		};
-		0F4DD52125ACBB8A000E23B5 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				0F4DD52025ACBB8A000E23B5 /* PCBUSB */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		0F4DD52D25ACBC0C000E23B5 /* Sources */ = {
-			isa = PBXGroup;
-			children = (
-				0F03748025AE3F4D005ED7DA /* build_no.h */,
-				0F03747D25AE3F36005ED7DA /* can_api.c */,
-				0F03747C25AE3F36005ED7DA /* can_defs.h */,
-				0F4DD53525ACBC59000E23B5 /* CANAPI_Types.h */,
-				0F4DD53425ACBC59000E23B5 /* can_api.h */,
-				0F4DD52E25ACBC29000E23B5 /* main.c */,
-				0F4DD52F25ACBC29000E23B5 /* printmsg.c */,
-				0F4DD53025ACBC29000E23B5 /* printmsg.h */,
+				0FB7FEAF25AEED5500A2B7B1 /* can_api.h */,
+				0FB7FEB125AEED5500A2B7B1 /* can_btr.c */,
+				0FB7FEB025AEED5500A2B7B1 /* can_btr.h */,
+				0FB7FEAD25AEED5500A2B7B1 /* CANAPI.h */,
+				0FB7FEAE25AEED5500A2B7B1 /* CANAPI_Types.h */,
+				0FB7FEA925AEED0F00A2B7B1 /* PCBUSB.h */,
+				0FB7FEA825AEED0F00A2B7B1 /* can_api.c */,
+				0FB7FEAA25AEED0F00A2B7B1 /* can_defs.h */,
+				0FB7FEA525AEEBE100A2B7B1 /* PCAN.cpp */,
+				0FB7FEA325AEEBE100A2B7B1 /* PCAN.h */,
+				0FB7FEA425AEEBE100A2B7B1 /* build_no.h */,
+				0FB7FEA025AEEBBA00A2B7B1 /* main.cpp */,
 			);
 			name = Sources;
+			sourceTree = "<group>";
+		};
+		0FE14B0E25AEEA4900E87475 = {
+			isa = PBXGroup;
+			children = (
+				0FB7FE9F25AEEB9900A2B7B1 /* Sources */,
+				0FE14B1825AEEA4900E87475 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		0FE14B1825AEEA4900E87475 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0FE14B1725AEEA4900E87475 /* PCBUSB */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		0F4DD51F25ACBB8A000E23B5 /* PCBUSB */ = {
+		0FE14B1625AEEA4900E87475 /* PCBUSB */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 0F4DD52725ACBB8A000E23B5 /* Build configuration list for PBXNativeTarget "PCBUSB" */;
+			buildConfigurationList = 0FE14B1E25AEEA4900E87475 /* Build configuration list for PBXNativeTarget "PCBUSB" */;
 			buildPhases = (
-				0F4DD51C25ACBB8A000E23B5 /* Sources */,
-				0F4DD51D25ACBB8A000E23B5 /* Frameworks */,
-				0F4DD51E25ACBB8A000E23B5 /* CopyFiles */,
+				0FE14B1325AEEA4900E87475 /* Sources */,
+				0FE14B1425AEEA4900E87475 /* Frameworks */,
+				0FE14B1525AEEA4900E87475 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -95,23 +104,23 @@
 			);
 			name = PCBUSB;
 			productName = PCBUSB;
-			productReference = 0F4DD52025ACBB8A000E23B5 /* PCBUSB */;
+			productReference = 0FE14B1725AEEA4900E87475 /* PCBUSB */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		0F4DD51825ACBB8A000E23B5 /* Project object */ = {
+		0FE14B0F25AEEA4900E87475 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 1230;
 				TargetAttributes = {
-					0F4DD51F25ACBB8A000E23B5 = {
+					0FE14B1625AEEA4900E87475 = {
 						CreatedOnToolsVersion = 12.3;
 					};
 				};
 			};
-			buildConfigurationList = 0F4DD51B25ACBB8A000E23B5 /* Build configuration list for PBXProject "PCBUSB" */;
+			buildConfigurationList = 0FE14B1225AEEA4900E87475 /* Build configuration list for PBXProject "PCBUSB" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -119,31 +128,32 @@
 				en,
 				Base,
 			);
-			mainGroup = 0F4DD51725ACBB8A000E23B5;
-			productRefGroup = 0F4DD52125ACBB8A000E23B5 /* Products */;
+			mainGroup = 0FE14B0E25AEEA4900E87475;
+			productRefGroup = 0FE14B1825AEEA4900E87475 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				0F4DD51F25ACBB8A000E23B5 /* PCBUSB */,
+				0FE14B1625AEEA4900E87475 /* PCBUSB */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		0F4DD51C25ACBB8A000E23B5 /* Sources */ = {
+		0FE14B1325AEEA4900E87475 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0F4DD53125ACBC29000E23B5 /* main.c in Sources */,
-				0F03747E25AE3F36005ED7DA /* can_api.c in Sources */,
-				0F4DD53225ACBC29000E23B5 /* printmsg.c in Sources */,
+				0FB7FEA125AEEBBA00A2B7B1 /* main.cpp in Sources */,
+				0FB7FEAB25AEED0F00A2B7B1 /* can_api.c in Sources */,
+				0FB7FEA625AEEBE100A2B7B1 /* PCAN.cpp in Sources */,
+				0FB7FEB225AEED5500A2B7B1 /* can_btr.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		0F4DD52525ACBB8A000E23B5 /* Debug */ = {
+		0FE14B1C25AEEA4900E87475 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -189,6 +199,7 @@
 					"$(inherited)",
 					"OPTION_CAN_2_0_ONLY=0",
 					"OPTION_CANAPI_DRIVER=1",
+					"OPTION_CANAPI_COMPANIONS=1",
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -210,7 +221,7 @@
 			};
 			name = Debug;
 		};
-		0F4DD52625ACBB8A000E23B5 /* Release */ = {
+		0FE14B1D25AEEA4900E87475 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -252,6 +263,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"OPTION_CAN_2_0_ONLY=0",
 					"OPTION_CANAPI_DRIVER=1",
+					"OPTION_CANAPI_COMPANIONS=1",
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -272,7 +284,7 @@
 			};
 			name = Release;
 		};
-		0F4DD52825ACBB8A000E23B5 /* Debug */ = {
+		0FE14B1F25AEEA4900E87475 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -280,7 +292,7 @@
 			};
 			name = Debug;
 		};
-		0F4DD52925ACBB8A000E23B5 /* Release */ = {
+		0FE14B2025AEEA4900E87475 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -291,25 +303,25 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		0F4DD51B25ACBB8A000E23B5 /* Build configuration list for PBXProject "PCBUSB" */ = {
+		0FE14B1225AEEA4900E87475 /* Build configuration list for PBXProject "PCBUSB" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				0F4DD52525ACBB8A000E23B5 /* Debug */,
-				0F4DD52625ACBB8A000E23B5 /* Release */,
+				0FE14B1C25AEEA4900E87475 /* Debug */,
+				0FE14B1D25AEEA4900E87475 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		0F4DD52725ACBB8A000E23B5 /* Build configuration list for PBXNativeTarget "PCBUSB" */ = {
+		0FE14B1E25AEEA4900E87475 /* Build configuration list for PBXNativeTarget "PCBUSB" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				0F4DD52825ACBB8A000E23B5 /* Debug */,
-				0F4DD52925ACBB8A000E23B5 /* Release */,
+				0FE14B1F25AEEA4900E87475 /* Debug */,
+				0FE14B2025AEEA4900E87475 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = 0F4DD51825ACBB8A000E23B5 /* Project object */;
+	rootObject = 0FE14B0F25AEEA4900E87475 /* Project object */;
 }

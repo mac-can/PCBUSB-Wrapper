@@ -1,6 +1,8 @@
 #.gitignore
-Library/CANAPI/.objects
-Library/CANAPI/libUVCANPCB.*
+Libraries/CANAPI/.objects
+Libraries/CANAPI/libUVCANPCB.*
+Libraries/PCAN/.objects
+Libraries/PCAN/libPCAN.*
 Trial/.objects
 Trial/PCBUSB
 Sources/build_no.h
