@@ -59,9 +59,22 @@ public:
     // CPCAN-specific error codes (CAN API V3 extension)
     enum EErrorCodes {
         // note: range 0...-99 is reserved by CAN API V3
-        GeneralError = VendorSpecific
+        GeneralError = VendorSpecific, ///< mapped PCAN-Basic error codes
+        RegisterTestFailed     = -201, ///< PCAN_ERROR_REGTEST: test of the CAN controller hardware registers failed (no hardware found)
+        DriverNotLoaded        = -202, ///< PCAN_ERROR_NODRIVER: driver not loaded
+        HardwareAlreadyInUse   = -203, ///< PCAN_ERROR_HWINUSE: hardware is in use by another Net
+        ClientAlreadyConnected = -204, ///< PCAN_ERROR_NETINUSE: a client is already connected to the Net
+        HardwareHandleIsWrong  = -220, ///< PCAN_ERROR_ILLHW: hardware handle is wrong
+        NetworkHandleIsWrong   = -224, ///< PCAN_ERROR_ILLNET: net handle is wrong
+        ClientHandleIsWrong    = -228, ///< PCAN_ERROR_ILLCLIENT: client handle is wrong
+        ResourceNotCreated     = -232, ///< PCAN_ERROR_RESOURCE: resource (FIFO, Client, timeout) cannot be created
+        InvalidParameterType   = -264, ///< PCAN_ERROR_ILLPARAMTYPE: invalid parameter
+        InvalidParameterValue  = -265, ///< PCAN_ERROR_ILLPARAMVAL: invalid parameter value
+        InvalidData            = -267, ///< PCAN_ERROR_ILLDATA: invalid data, function, or action
+        InvalidOperation       = -268, ///< PCAN_ERROR_ILLOPERATION: invalid operation
+        Caution                = -289, ///< PCAN_ERROR_CAUTION: an operation was successfully carried out, however, irregularities were registered
+        UnkownError            = -299  ///< PCAN_ERROR_UNKNOWN: unknown error
     };
-
     // CCANAPI overrides
     static CANAPI_Return_t ProbeChannel(int32_t channel, CANAPI_OpMode_t opMode, const void *param, EChannelState &state);
     static CANAPI_Return_t ProbeChannel(int32_t channel, CANAPI_OpMode_t opMode, EChannelState &state);

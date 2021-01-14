@@ -36,7 +36,7 @@
 //
 /// \author      $Author: eris $
 //
-/// \version     $Rev: 927 $
+/// \version     $Rev: 928 $
 //
 /// \defgroup    can_api CAN Interface API, Version 3
 /// \{
@@ -109,7 +109,9 @@ public:
         ReceiverEmpty = CANERR_RX_EMPTY,  ///< receiver empty
         ErrorFrame = CANERR_ERR_FRAME,  ///< error frame
         Timeout = CANERR_TIMEOUT,  ///< timed out
+        ResourceError = CANERR_RESOURCE,  ///< resource allocation
         InvalidBaudrate = CANERR_BAUDRATE,  ///<  illegal baudrate
+        InvalidHandle = CANERR_HANDLE,  ///<  illegal handle
         IllegalParameter = CANERR_ILLPARA,  ///< illegal parameter
         NullPointer = CANERR_NULLPTR,  ///< null-pointer assignment
         NotInitialized = CANERR_NOTINIT,  ///< not initialized
@@ -341,4 +343,4 @@ public:
 /// \}
 #endif // CANAPI_H_INCLUDED
 /// \}
-// $Id: CANAPI.h 927 2021-01-13 18:16:30Z eris $  Copyright (C) UV Software //
+// $Id: CANAPI.h 928 2021-01-14 08:09:06Z eris $  Copyright (C) UV Software //
