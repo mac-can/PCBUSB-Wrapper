@@ -37,7 +37,7 @@ extern int can_status(int handle, uint8_t *status);
 extern int can_busload(int handle, uint8_t *load, uint8_t *status);
 
 extern int can_bitrate(int handle, can_bitrate_t *bitrate, can_speed_t *speed);
-extern int can_property(int handle, uint16_t param, void *value, uint32_t nbytes);
+extern int can_property(int handle, uint16_t param, void *value, uint32_t nbyte);
 
 extern char *can_hardware(int handle);
 extern char *can_software(int handle);
@@ -45,7 +45,7 @@ extern char *can_software(int handle);
 #if (OPTION_CANAPI_LIBRARY != 0)
 extern char *can_library(int handle);
 #endif
-extern char* can_version();
+extern char* can_version(void);
 ```
 See header file `can_api.h` for a description of the provided functions.
 
