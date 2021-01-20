@@ -1,7 +1,7 @@
 /*
  *  CAN Interface API, Version 3 (for PEAK PCAN-Basic Interfaces)
  *
- *  Copyright (C) 2010-2021  Uwe Vogt, UV Software, Berlin (info@uv-software.com)
+ *  Copyright (C) 2012-2021  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
  *
  *  This file is part of PCANBasic-Wrapper.
  *
@@ -22,29 +22,30 @@
  *  @{
  */
 #include "build_no.h"
-#define VERSION_MAJOR     0
-#define VERSION_MINOR     2
-#define VERSION_PATCH     0
-#define VERSION_BUILD     BUILD_NO
-#define VERSION_STRING    TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) "-" TOSTRING(BUILD_NO)
+#ifdef _MSC_VER
+#define VERSION_MAJOR    0
+#define VERSION_MINOR    4
+#define VERSION_PATCH    0
+#else
+#define VERSION_MAJOR    0
+#define VERSION_MINOR    2
+#define VERSION_PATCH    0
+#endif
+#define VERSION_BUILD    BUILD_NO
+#define VERSION_STRING   TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) " (" TOSTRING(BUILD_NO) ")"
 #if defined(_WIN64)
-#define PLATFORM    "x64"
+#define PLATFORM        "x64"
 #elif defined(_WIN32)
-#define PLATFORM    "x86"
+#define PLATFORM        "x86"
 #elif defined(__linux__)
-#define PLATFORM    "Linux"
+#define PLATFORM        "Linux"
 #elif defined(__APPLE__)
-#define PLATFORM    "macOS"
-#elif defined(__MINGW32__)
-#define PLATFORM    "MinGW"
+#define PLATFORM        "macOS"
 #else
 #error Unsupported architecture
 #endif
-#ifdef _DEBUG
-    static const char version[] = "CAN API V3 for PEAK PCAN-Basic Interfaces, Version " VERSION_STRING " (" PLATFORM ") _DEBUG";
-#else
-    static const char version[] = "CAN API V3 for PEAK PCAN-Basic Interfaces, Version " VERSION_STRING " (" PLATFORM ")";
-#endif
+static const char version[] = "CAN API V3 for PEAK PCAN-Basic Interfaces, Version " VERSION_STRING;
+
 
 /*  -----------  includes  -----------------------------------------------
  */
@@ -88,7 +89,7 @@
 #ifndef DLC2LEN
 #define DLC2LEN(x)              dlc_table[(x) & 0xF]
 #endif
-#ifdef  CANAPI_CiA_BIT_TIMING
+#ifdef  OPTION_PCAN_CiA_BIT_TIMING
 #undef  PCAN_BAUD_100K
 #define PCAN_BAUD_100K          0x441Cu
 #undef  PCAN_BAUD_50K
@@ -101,6 +102,9 @@
 #define BTR0BTR1_DEFAULT        PCAN_BAUD_250K
 #define BIT_RATE_DEFAULT        "f_clock_mhz=80,nom_brp=20,nom_tseg1=12,nom_tseg2=3,nom_sjw=1," \
                                               "data_brp=4,data_tseg1=7,data_tseg2=2,data_sjw=1"
+#ifndef SYSERR_OFFSET
+#define SYSERR_OFFSET           (-10000)
+#endif
 
 /*  -----------  types  --------------------------------------------------
  */
@@ -390,7 +394,7 @@ int can_kill(int handle)
 
     if(!init)                           // must be initialized
         return CANERR_NOTINIT;
-    if(handle != CANEXIT_ALL) {
+    if(handle != CANKILL_ALL) {
         if(!IS_HANDLE_VALID(handle))    // must be a valid handle
             return CANERR_HANDLE;
         if(can[handle].board == PCAN_NONEBUS) // must be an opened handle
@@ -415,7 +419,7 @@ EXPORT
 int can_start(int handle, const can_bitrate_t *bitrate)
 {
     TPCANBaudrate btr0btr1 = 0x011CU;   // btr0btr1 value
-    char string[PCAN_BUF_SIZE];         // bit-rate string
+    char string[PCAN_MAX_BUFFER_SIZE];  // bit-rate string
     DWORD value;                        // parameter value
     //UINT64 filter;                       // for 29-bit filter
     TPCANStatus rc;                     // return value
@@ -789,8 +793,8 @@ int can_busload(int handle, uint8_t *load, uint8_t *status)
 EXPORT
 int can_bitrate(int handle, can_bitrate_t *bitrate, can_speed_t *speed)
 {
-    TPCANBaudrate btr0btr1;             // btr0btr1 value
-    char string[PCAN_BUF_SIZE];         // bit-rate string
+    TPCANBaudrate btr0btr1 = 0x011CU;   // btr0btr1 value
+    char string[PCAN_MAX_BUFFER_SIZE];  // bit-rate string
     can_bitrate_t temporary;            // bit-rate settings
     int rc;                             // return value
 
@@ -812,7 +816,7 @@ int can_bitrate(int handle, can_bitrate_t *bitrate, can_speed_t *speed)
     }
     else {                              // CAN FD
         if((rc = CAN_GetValue(can[handle].board, PCAN_BITRATE_INFO_FD,
-                             (void*)string, PCAN_BUF_SIZE)) != PCAN_ERROR_OK)
+                             (void*)string, PCAN_MAX_BUFFER_SIZE)) != PCAN_ERROR_OK)
             return pcan_error(rc);
         if((rc = string2bitrate(string, &temporary, can[handle].mode.brse)) != CANERR_NOERROR)
             return rc;
@@ -1160,7 +1164,7 @@ static int lib_parameter(uint16_t param, void *value, size_t nbytes)
             rc = CANERR_NOERROR;
         }
         break;
-    case CANPROP_GET_LIBRARY_DLLNAME:   // file name of the library DLL (char[256])
+    case CANPROP_GET_LIBRARY_DLLNAME:   // file name of the library (char[256])
         if ((nbytes > strlen(PCAN_LIB_WRAPPER)) && (nbytes <= CANPROP_MAX_BUFFER_SIZE)) {
             strcpy((char*)value, PCAN_LIB_WRAPPER);
             rc = CANERR_NOERROR;
@@ -1172,7 +1176,7 @@ static int lib_parameter(uint16_t param, void *value, size_t nbytes)
             rc = CANERR_NOERROR;
         }
         break;
-    case CANPROP_GET_DEVICE_DLLNAME:    // file name of the CAN interface DLL(char[256])
+    case CANPROP_GET_DEVICE_DLLNAME:    // file name of the CAN interface (char[256])
         if((nbytes > strlen(PCAN_LIB_BASIC)) && (nbytes <= CANPROP_MAX_BUFFER_SIZE)) {
             strcpy((char*)value, PCAN_LIB_BASIC);
             rc = CANERR_NOERROR;

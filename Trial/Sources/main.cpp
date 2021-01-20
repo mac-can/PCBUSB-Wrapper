@@ -5,36 +5,23 @@
 //  Created by Uwe Vogt on 13.01.21.
 //  Copyright © 2021 UV Software, Berlin. All rights reserved.
 //
-
+#include "PCAN_Defines.h"
 #include "PCAN.h"
 
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 #include <signal.h>
 #include <errno.h>
 #include <time.h>
+#if !defined(_WIN32) && !defined(_WIN64)
+ #include <unistd.h>
+#else
+ #include <windows.h>
+#endif
 
 #include <inttypes.h>
 
 //#define SECOND_CHANNEL
-
-#define PCAN_USB1  0x051
-#define PCAN_USB2  0x052
-#define PCAN_USB3  0x053
-#define PCAN_USB4  0x054
-#define PCAN_USB5  0x055
-#define PCAN_USB6  0x056
-#define PCAN_USB7  0x057
-#define PCAN_USB8  0x058
-#define PCAN_USB9  0x509
-#define PCAN_USB10 0x50A
-#define PCAN_USB11 0x50B
-#define PCAN_USB12 0x50C
-#define PCAN_USB13 0x50D
-#define PCAN_USB14 0x50E
-#define PCAN_USB15 0x50F
-#define PCAN_USB16 0x510
 
 #define BITRATE_DEFAULT(x) do {x.btr.frequency=80000000;x.btr.nominal.brp=20;x.btr.nominal.tseg1=12;x.btr.nominal.tseg2=3;x.btr.nominal.sjw=1; \
                                                         x.btr.data.brp=4;x.btr.data.tseg1=7;x.btr.data.tseg2=2;x.btr.data.sjw=1} while(0)
@@ -59,46 +46,46 @@
 #define OPTION_TIME_ABS     (2)
 #define OPTION_TIME_REL     (3)
 
+#if defined(_WIN32) || defined(_WIN64)
+ static void usleep(unsigned int usec);
+#endif
 static void sigterm(int signo);
 //static void usage(FILE *stream, char *program);
 //static void version(FILE *stream, char *program);
 
-static void verbose(const can_mode_t mode, const can_bitrate_t *bitrate, const can_speed_t *speed);
+static void verbose(const can_mode_t mode, const can_bitrate_t bitrate, const can_speed_t speed);
 
 static volatile int running = 1;
 
-int main(int argc, const char * argv[]) {
-    CPCAN myDriver = CPCAN();
+static CPCAN myDriver = CPCAN();
 #ifdef SECOND_CHANNEL
-    CPCAN mySecond = CPCAN();
+ static CPCAN mySecond = CPCAN();
 #endif
-    CANAPI_OpMode_t opMode = {
-        .byte = CANMODE_DEFAULT
-    };
-    CANAPI_Status_t status = {
-        .byte = CANSTAT_RESET
-    };
-    CANAPI_Bitrate_t bitrate = {
-        .index = CANBTR_INDEX_250K
-    };
-    can_message_t message = {
-        .id = 0x55AU,
-        .xtd = 0,
-        .rtr = 0,
-        .dlc = CAN_MAX_DLC,
-        .data[0] = 0x11,
-        .data[1] = 0x22,
-        .data[2] = 0x33,
-        .data[3] = 0x44,
-        .data[4] = 0x55,
-        .data[5] = 0x66,
-        .data[6] = 0x77,
-        .data[7] = 0x88,
-        .timestamp.tv_sec = 0,
-        .timestamp.tv_nsec = 0
-    };
+
+int main(int argc, const char * argv[]) {
+    CANAPI_OpMode_t opMode = {};
+    opMode.byte = CANMODE_DEFAULT;
+    CANAPI_Status_t status = {};
+    status.byte = CANSTAT_RESET;
+    CANAPI_Bitrate_t bitrate = {};
+    bitrate.index = CANBTR_INDEX_250K;
+    can_message_t message = {};
+    message.id = 0x55AU;
+    message.xtd = 0;
+    message.rtr = 0;
+    message.dlc = CAN_MAX_DLC;
+    message.data[0] = 0x11;
+    message.data[1] = 0x22;
+    message.data[2] = 0x33;
+    message.data[3] = 0x44;
+    message.data[4] = 0x55;
+    message.data[5] = 0x66;
+    message.data[6] = 0x77;
+    message.data[7] = 0x88;
+    message.timestamp.tv_sec = 0;
+    message.timestamp.tv_nsec = 0;
     CANAPI_Return_t retVal = 0;
-    int32_t channel = PCAN_USB1;
+    int32_t channel = (int32_t)PCAN_USB1;
     uint16_t timeout = CANREAD_INFINITE;
     useconds_t delay = 0U;
     CCANAPI::EChannelState state;
@@ -118,22 +105,22 @@ int main(int argc, const char * argv[]) {
     int option_transmit = OPTION_NO;
     for (int i = 1, opt = 0; i < argc; i++) {
         /* PCAN-USB channel */
-        if (!strcmp(argv[i], "PCAN-USB1")) channel = PCAN_USB1;
-        if (!strcmp(argv[i], "PCAN-USB2")) channel = PCAN_USB2;
-        if (!strcmp(argv[i], "PCAN-USB3")) channel = PCAN_USB3;
-        if (!strcmp(argv[i], "PCAN-USB4")) channel = PCAN_USB4;
-        if (!strcmp(argv[i], "PCAN-USB5")) channel = PCAN_USB5;
-        if (!strcmp(argv[i], "PCAN-USB6")) channel = PCAN_USB6;
-        if (!strcmp(argv[i], "PCAN-USB7")) channel = PCAN_USB7;
-        if (!strcmp(argv[i], "PCAN-USB8")) channel = PCAN_USB8;
-        if (!strcmp(argv[i], "PCAN-USB9")) channel = PCAN_USB9;
-        if (!strcmp(argv[i], "PCAN-USB10")) channel = PCAN_USB10;
-        if (!strcmp(argv[i], "PCAN-USB11")) channel = PCAN_USB11;
-        if (!strcmp(argv[i], "PCAN-USB12")) channel = PCAN_USB12;
-        if (!strcmp(argv[i], "PCAN-USB13")) channel = PCAN_USB13;
-        if (!strcmp(argv[i], "PCAN-USB14")) channel = PCAN_USB14;
-        if (!strcmp(argv[i], "PCAN-USB15")) channel = PCAN_USB15;
-        if (!strcmp(argv[i], "PCAN-USB16")) channel = PCAN_USB16;
+        if (!strcmp(argv[i], "PCAN-USB1")) channel = (int32_t)PCAN_USB1;
+        if (!strcmp(argv[i], "PCAN-USB2")) channel = (int32_t)PCAN_USB2;
+        if (!strcmp(argv[i], "PCAN-USB3")) channel = (int32_t)PCAN_USB3;
+        if (!strcmp(argv[i], "PCAN-USB4")) channel = (int32_t)PCAN_USB4;
+        if (!strcmp(argv[i], "PCAN-USB5")) channel = (int32_t)PCAN_USB5;
+        if (!strcmp(argv[i], "PCAN-USB6")) channel = (int32_t)PCAN_USB6;
+        if (!strcmp(argv[i], "PCAN-USB7")) channel = (int32_t)PCAN_USB7;
+        if (!strcmp(argv[i], "PCAN-USB8")) channel = (int32_t)PCAN_USB8;
+        if (!strcmp(argv[i], "PCAN-USB9")) channel = (int32_t)PCAN_USB9;
+        if (!strcmp(argv[i], "PCAN-USB10")) channel = (int32_t)PCAN_USB10;
+        if (!strcmp(argv[i], "PCAN-USB11")) channel = (int32_t)PCAN_USB11;
+        if (!strcmp(argv[i], "PCAN-USB12")) channel = (int32_t)PCAN_USB12;
+        if (!strcmp(argv[i], "PCAN-USB13")) channel = (int32_t)PCAN_USB13;
+        if (!strcmp(argv[i], "PCAN-USB14")) channel = (int32_t)PCAN_USB14;
+        if (!strcmp(argv[i], "PCAN-USB15")) channel = (int32_t)PCAN_USB15;
+        if (!strcmp(argv[i], "PCAN-USB16")) channel = (int32_t)PCAN_USB16;
         /* baud rate (CAN 2.0) */
         if (!strcmp(argv[i], "BD:0") || !strcmp(argv[i], "BD:1000")) bitrate.index = CANBTR_INDEX_1M;
         if (!strcmp(argv[i], "BD:1") || !strcmp(argv[i], "BD:800")) bitrate.index = CANBTR_INDEX_800K;
@@ -235,7 +222,7 @@ int main(int argc, const char * argv[]) {
             fprintf(stderr, "+++ error: myDriver.GetProperty(PCAN_PROPERTY_LIBRARY_VENDOR) returned %i\n", retVal);
     }
     if (option_test) {
-        for (int32_t ch = PCAN_USB1; ch <= PCAN_USB16; ch = (ch == PCAN_USB8) ? PCAN_USB9 : ch + 1) {
+        for (int32_t ch = (int32_t)PCAN_USB1; ch <= (int32_t)PCAN_USB16; ch = (ch == (int32_t)PCAN_USB8) ? (int32_t)PCAN_USB9 : ch + 1) {
             retVal = CPCAN::ProbeChannel(ch, opMode, state);
             fprintf(stdout, ">>> CCANAPI.ProbeChannel(%i): state = %s", ch,
                             (state == CCANAPI::ChannelOccupied) ? "occupied" :
@@ -284,7 +271,7 @@ int main(int argc, const char * argv[]) {
         // vendor-specific properties
         retVal = myDriver.GetProperty(PCAN_PROPERTY_DEVICE_ID, (void *)&u32Val, sizeof(uint32_t));
         if (retVal == CCANAPI::NoError)
-            fprintf(stdout, ">>> myDriver.GetProperty(PCAN_PROPERTY_DEVICE_ID): value = 0x%08X\n", u32Val);
+            fprintf(stdout, ">>> myDriver.GetProperty(PCAN_PROPERTY_DEVICE_ID): value = %d\n", u32Val);
         else
             fprintf(stderr, "+++ error: myDriver.GetProperty(PCAN_PROPERTY_DEVICE_ID) returned %i\n", retVal);
         retVal = myDriver.GetProperty(PCAN_PROPERTY_API_VERSION, (void *)szVal, CANPROP_MAX_BUFFER_SIZE);
@@ -303,7 +290,8 @@ int main(int argc, const char * argv[]) {
         if (retVal == CCANAPI::NoError)
             fprintf(stdout, ">>> myDriver.GetProperty(PCAN_PROPERTY_HARDWARE_NAME): value = '%s'\n", szVal);
         else
-            fprintf(stderr, "+++ error: myDriver.GetProperty(PCAN_PROPERTY_HARDWARE_NAME) returned %i\n", retVal);//        retVal = myDriver.GetProperty(PCAN_PROPERTY_CLOCK_DOMAIN, (void *)&i32Val, sizeof(int32_t));
+            fprintf(stderr, "+++ error: myDriver.GetProperty(PCAN_PROPERTY_HARDWARE_NAME) returned %i\n", retVal);
+//        retVal = myDriver.GetProperty(PCAN_PROPERTY_CLOCK_DOMAIN, (void *)&i32Val, sizeof(int32_t));
 //        if (retVal == CCANAPI::NoError)
 //            fprintf(stdout, ">>> myDriver.GetProperty(PCAN_PROPERTY_CLOCK_DOMAIN): value = %d\n", i32Val);
 //        else
@@ -315,6 +303,8 @@ int main(int argc, const char * argv[]) {
             fprintf(stderr, "+++ error: myDriver.GetProperty(PCAN_PROPERTY_OP_CAPABILITY) returned %i\n", retVal);
         if (myDriver.GetProperty(PCAN_PROPERTY_OP_MODE, (void *)&opMode.byte, sizeof(uint8_t)) == CCANAPI::NoError)
             fprintf(stdout, ">>> myDriver.GetProperty(PCAN_PROPERTY_OP_MODE): value = 0x%02X\n", (uint8_t)opMode.byte);
+        if (myDriver.GetProperty(PCAN_PROPERTY_STATUS, (void *)&status.byte, sizeof(uint8_t)) == CCANAPI::NoError)
+            fprintf(stdout, ">>> myDriver.GetProperty(PCAN_PROPERTY_STATUS): value = 0x%02X\n", (uint8_t)status.byte);
     }
     retVal = myDriver.StartController(bitrate);
     if (retVal != CCANAPI::NoError) {
@@ -322,13 +312,13 @@ int main(int argc, const char * argv[]) {
         goto teardown;
     }
     else if (myDriver.GetStatus(status) == CCANAPI::NoError) {
-        fprintf(stdout, ">>> myDriver.GetStatus: status = 0x%02X\n", status.byte);
+        fprintf(stdout, ">>> myDriver.StartController: status = 0x%02X\n", status.byte);
     }
     if (option_info) {
         CANAPI_BusSpeed_t speed;
         if ((myDriver.GetBitrate(bitrate) == CCANAPI::NoError) &&
             (myDriver.GetBusSpeed(speed) == CCANAPI::NoError))
-            verbose(opMode, &bitrate, &speed);
+            verbose(opMode, bitrate, speed);
     }
 #ifdef SECOND_CHANNEL
     retVal = mySecond.InitializeChannel(channel+1U, opMode);
@@ -364,7 +354,7 @@ int main(int argc, const char * argv[]) {
         if ((retVal = myDriver.ReadMessage(message, timeout)) == CCANAPI::NoError) {
             if (option_echo) {
                 fprintf(stdout, ">>> %i\t", frames++);
-                fprintf(stdout, "%7li.%04li\t", message.timestamp.tv_sec, message.timestamp.tv_nsec / 100000);
+                fprintf(stdout, "%7li.%04li\t", (long)message.timestamp.tv_sec, message.timestamp.tv_nsec / 100000);
                 if (!opMode.fdoe)
                     fprintf(stdout, "%03x\t%c%c [%i]", message.id, message.xtd ? 'X' : 'S', message.rtr ? 'R' : ' ', message.dlc);
                 else
@@ -394,14 +384,33 @@ int main(int argc, const char * argv[]) {
         }
 #ifdef SECOND_CHANNEL
         if ((retVal = mySecond.ReadMessage(message, 0U)) == CCANAPI::NoError) {
-            fprintf(stdout, ">2> %i\t%7li.%04li\t%03x\t%c%c [%i]", frames++,
-                             message.timestamp.tv_sec, message.timestamp.tv_nsec / 100000,
-                             message.id, message.xtd? 'X' : 'S', message.rtr? 'R' : ' ', message.dlc);
-            for (uint8_t i = 0; i < CCANAPI::DLc2Len(message.dlc); i++)
-                fprintf(stdout, " %02x", message.data[i]);
-            if (message.sts)
-                fprintf(stdout, " <<< status frame");
-            fprintf(stdout, "\n");
+            if (option_echo) {
+                fprintf(stdout, ">>> %i\t", frames++);
+                fprintf(stdout, "%7li.%04li\t", (long)message.timestamp.tv_sec, message.timestamp.tv_nsec / 100000);
+                if (!opMode.fdoe)
+                    fprintf(stdout, "%03x\t%c%c [%i]", message.id, message.xtd ? 'X' : 'S', message.rtr ? 'R' : ' ', message.dlc);
+                else
+                    fprintf(stdout, "%03x\t%c%c%c%c%c [%i]", message.id, message.xtd ? 'X' : 'S', message.rtr ? 'R' : ' ',
+                        message.fdf ? 'F' : ' ', message.brs ? 'B' : ' ', message.esi ? 'E' : ' ', CCANAPI::DLc2Len(message.dlc));
+                for (uint8_t i = 0; i < CCANAPI::DLc2Len(message.dlc); i++)
+                    fprintf(stdout, " %02x", message.data[i]);
+                if (message.sts)
+                    fprintf(stdout, " <<< status frame");
+                else if (option_repeat) {
+                    retVal = myDriver.WriteMessage(message);
+                    if (retVal != CCANAPI::NoError) {
+                        fprintf(stderr, "+++ error: myDriver.WriteMessage returned %i\n", retVal);
+                        goto teardown;
+                    }
+                }
+                fprintf(stdout, "\n");
+            }
+            else {
+                if (!(frames++ % 2048)) {
+                    fprintf(stdout, ".");
+                    fflush(stdout);
+                }
+            }
         }
         else if (retVal != CCANAPI::ReceiverEmpty) {
             fprintf(stderr, "+++ error: mySecond.ReadMessage(2) returned %i\n", retVal);
@@ -452,51 +461,86 @@ end:
     return retVal;
 }
 
-static void verbose(const can_mode_t mode, const can_bitrate_t *bitrate, const can_speed_t *speed)
+static void verbose(const can_mode_t mode, const can_bitrate_t bitrate, const can_speed_t speed)
 {
     fprintf(stdout, "Op.-Mode: 0x%02X (fdoe=%u,brse=%u,niso=%u,shrd=%u,nxtd=%u,nrtr=%u,err=%u,mon=%u)\n",
             mode.byte, mode.fdoe, mode.brse, mode.niso, mode.shrd, mode.nxtd, mode.nrtr, mode.err, mode.mon);
-    if(bitrate->btr.frequency > 0) {
+    if(bitrate.btr.frequency > 0) {
         fprintf(stdout, "Baudrate: %.0fkbps@%.1f%%",
-            speed->nominal.speed / 1000., speed->nominal.samplepoint * 100.);
+            speed.nominal.speed / 1000., speed.nominal.samplepoint * 100.);
 #if (OPTION_CAN_2_0_ONLY == 0)
-        if(/*speed->data.brse*/mode.fdoe && mode.brse)
+        if(/*speed.data.brse*/mode.fdoe && mode.brse)
             fprintf(stdout, ":%.0fkbps@%.1f%%",
-                speed->data.speed / 1000., speed->data.samplepoint * 100.);
+                speed.data.speed / 1000., speed.data.samplepoint * 100.);
 #endif
         fprintf(stdout, " (f_clock=%i,nom_brp=%u,nom_tseg1=%u,nom_tseg2=%u,nom_sjw=%u,nom_sam=%u",
-            bitrate->btr.frequency,
-            bitrate->btr.nominal.brp,
-            bitrate->btr.nominal.tseg1,
-            bitrate->btr.nominal.tseg2,
-            bitrate->btr.nominal.sjw,
-            bitrate->btr.nominal.sam);
+            bitrate.btr.frequency,
+            bitrate.btr.nominal.brp,
+            bitrate.btr.nominal.tseg1,
+            bitrate.btr.nominal.tseg2,
+            bitrate.btr.nominal.sjw,
+            bitrate.btr.nominal.sam);
 #if (OPTION_CAN_2_0_ONLY == 0)
         if(mode.fdoe && mode.brse)
             fprintf(stdout, ",data_brp=%u,data_tseg1=%u,data_tseg2=%u,data_sjw=%u",
-                bitrate->btr.data.brp,
-                bitrate->btr.data.tseg1,
-                bitrate->btr.data.tseg2,
-                bitrate->btr.data.sjw);
+                bitrate.btr.data.brp,
+                bitrate.btr.data.tseg1,
+                bitrate.btr.data.tseg2,
+                bitrate.btr.data.sjw);
 #endif
         fprintf(stdout, ")\n");
     }
     else {
         fprintf(stdout, "Baudrate: %skbps (CiA index %i)\n",
-            bitrate->index == CANBDR_1000 ? "1000" :
-            bitrate->index == -CANBDR_800 ? "800" :
-            bitrate->index == -CANBDR_500 ? "500" :
-            bitrate->index == -CANBDR_250 ? "250" :
-            bitrate->index == -CANBDR_125 ? "125" :
-            bitrate->index == -CANBDR_100 ? "100" :
-            bitrate->index == -CANBDR_50 ? "50" :
-            bitrate->index == -CANBDR_20 ? "20" :
-            bitrate->index == -CANBDR_10 ? "10" : "?", -bitrate->index);
+            bitrate.index == CANBDR_1000 ? "1000" :
+            bitrate.index == -CANBDR_800 ? "800" :
+            bitrate.index == -CANBDR_500 ? "500" :
+            bitrate.index == -CANBDR_250 ? "250" :
+            bitrate.index == -CANBDR_125 ? "125" :
+            bitrate.index == -CANBDR_100 ? "100" :
+            bitrate.index == -CANBDR_50 ? "50" :
+            bitrate.index == -CANBDR_20 ? "20" :
+            bitrate.index == -CANBDR_10 ? "10" : "?", -bitrate.index);
     }
 }
 
+#if defined(_WIN32) || defined(_WIN64)
+ /* usleep(3) - Linux man page
+  *
+  * Notes
+  * The type useconds_t is an unsigned integer type capable of holding integers in the range [0,1000000].
+  * Programs will be more portable if they never mention this type explicitly. Use
+  *
+  *    #include <unistd.h>
+  *    ...
+  *        unsigned int usecs;
+  *    ...
+  *        usleep(usecs);
+  */
+ static void usleep(unsigned int usec) {
+    HANDLE timer;
+    LARGE_INTEGER ft;
+
+    ft.QuadPart = -(10 * (LONGLONG)usec); // Convert to 100 nanosecond interval, negative value indicates relative time
+    if (usec >= 100) {
+        if ((timer = CreateWaitableTimer(NULL, TRUE, NULL)) != NULL) {
+            SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+            WaitForSingleObject(timer, INFINITE);
+            CloseHandle(timer);
+        }
+    }
+    else {
+        Sleep(0);
+    }
+ }
+#endif
+
 static void sigterm(int signo) {
-     //fprintf(stderr, "%s: got signal %d\n", __FILE__, signo);
-     running = 0;
-     (void)signo;
+    //fprintf(stderr, "%s: got signal %d\n", __FILE__, signo);
+    (void)myDriver.SignalChannel();
+#ifdef SECOND_CHANNEL
+    (void)mySecond.SignalChannel();
+#endif
+    running = 0;
+    (void)signo;
 }
