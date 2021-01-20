@@ -22,9 +22,9 @@
  *
  *  @brief       CAN API V3 for generic CAN Interfaces
  *
- *  @author      $Author: eris $
+ *  @author      $Author: haumea $
  *
- *  @version     $Rev: 926 $
+ *  @version     $Rev: 952 $
  *
  *  @defgroup    can_api CAN Interface API, Version 3
  *  @{
@@ -39,28 +39,37 @@ extern "C" {
 /*  -----------  includes  -----------------------------------------------
  */
 
-#include "CANAPI_Defines.h"             /* CAN definitions and options */
 #include "CANAPI_Types.h"               /* CAN API data types and defines */
 
 
 /*  -----------  options  ------------------------------------------------
  */
 
+/** @note  Set define OPTION_CANAPI_LIBRARY to a non-zero value to compile
+ *         the master loader library (e.g. in the build environment). Or
+ *         optionally set define OPTION_CANAPI_DRIVER to a non-zero value
+ *         to compile a driver library.
+ */
+/** @note  Set define OPTION_CAN_2_0_ONLY to a non-zero value to compile
+ *         with CAN 2.0 frame format only (e.g. in the build environment).
+ */
 #if (CAN_API_SPEC != 0x300)
-    #error Requires version 3.0 of CANAPI_Types.h
+#error Requires version 3.0 of CANAPI_Types.h
 #endif
 #if (OPTION_CAN_2_0_ONLY != 0)
-    #error Requires CAN FD message format
+#error Requires CAN FD message format
 #endif
-#if (OPTION_CANAPI_LIBRARY == 0) && (OPTION_CANAPI_DRIVER == 0)
-    #error Option for function signatures not set
+#if (OPTION_CANAPI_LIBRARY == 0)
+#if  (OPTION_CANAPI_DRIVER == 0)
+#define OPTION_CANAPI_DRIVER  1
+#endif
 #endif
 #if (OPTION_CANAPI_DLLEXPORT != 0)
-    #define CANAPI  __declspec(dllexport)
+#define CANAPI  __declspec(dllexport)
 #elif (OPTION_CANAPI_DLLIMPORT != 0)
-    #define CANAPI  __declspec(dllimport)
+#define CANAPI  __declspec(dllimport)
 #else
-    #define CANAPI  extern
+#define CANAPI  extern
 #endif
 
 /*  -----------  defines  ------------------------------------------------
@@ -128,10 +137,10 @@ CANAPI can_board_t can_boards[];        /**< list of CAN interface boards */
 /*  -----------  prototypes  ---------------------------------------------
  */
 
-/** @brief       tests if the CAN interface (hardware and driver) given by
- *               the arguments 'library' and 'board' is present, and if the
- *               requested operation mode is supported by the CAN controller
- *               board.
+/** @brief       probss if the CAN interface (hardware and driver) given by
+ *               the argument [ 'library' and ] 'board' is present, and
+ *               if the requested operation mode is supported by the CAN
+ *               controller.
  *
  *  @note        When a requested operation mode is not supported by the
  *               CAN controller, error CANERR_ILLPARA will be returned.
@@ -163,7 +172,7 @@ CANAPI int can_test(int32_t board, uint8_t mode, const void *param, int *result)
 
 /** @brief       initializes the CAN interface (hardware and driver) by loading
  *               and starting the appropriate DLL for the specified CAN controller
- *               board given by the arguments 'library' and 'board'.
+ *               board given by the argument [ 'library' and ] 'board'.
  *               The operation state of the CAN controller is set to 'stopped';
  *               no communication is possible in this state.
  *
