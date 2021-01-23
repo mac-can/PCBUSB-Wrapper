@@ -28,11 +28,11 @@ SOURCE_DIR = $(HOME_DIR)/Sources
 CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
 PCBUSB_DIR = $(HOME_DIR)/Sources/PCAN_Wrapper
 
-OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o $(OUTDIR)/Message.o $(OUTDIR)/PCAN.o \
-	$(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o  $(OUTDIR)/can_msg.o
+OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o  $(BINDIR)/libUVPCAN.a \
+	$(OUTDIR)/Message.o $(OUTDIR)/can_msg.o
 
 
-ifeq ($(current_OS),Darwin) # macOS - libPCAN.dylib
+ifeq ($(current_OS),Darwin) # macOS - libUVPCAN.dylib
 
 VERSION = 0
 
@@ -40,14 +40,13 @@ TARGET  = can_moni
 
 INSTALL = ~/bin
 
-DEFINES = -DOPTION_CAN_2_0_ONLY=0 \
-	-DOPTION_CANAPI_DRIVER=1 \
+DEFINES = -DOPTION_CANAPI_DRIVER=1 \
 	-DOPTION_CANAPI_COMPANIONS=1
 
-HEADERS = -I$(SOURCE_DIR) \
+HEADERS = -I$(MAIN_DIR) \
+	-I$(SOURCE_DIR) \
 	-I$(CANAPI_DIR) \
-	-I$(PCBUSB_DIR) \
-	-I$(MAIN_DIR)
+	-I$(PCBUSB_DIR)
 
 CFLAGS += -O2 -Wall -Wno-parentheses \
 	-fno-strict-aliasing \
@@ -72,12 +71,13 @@ RM = rm -f
 CP = cp -f
 
 OUTDIR = .objects
+BINDIR = $(HOME_DIR)/Binaries
+INCDIR = $(HOME_DIR)/Includes
+
+.PHONY: info outdir bindir incdir
 
 
-.PHONY: info outdir
-
-
-all: info outdir $(TARGET)
+all: info outdir bindir incdir $(TARGET)
 
 info:
 	@echo $(CXX)" on "$(current_OS)
@@ -87,35 +87,38 @@ info:
 outdir:
 	@mkdir -p $(OUTDIR)
 
+bindir:
+	@mkdir -p $(BINDIR)
+
+incdir:
+	@mkdir -p $(INCDIR)
+
 clean:
 	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
 
+distclean:
+	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
+	$(RM) $(BINDIR)/$(TARGET)
+
 install:
+	@echo "Copying binary file..."
 	$(CP) $(TARGET) $(INSTALL)
 
 
 $(OUTDIR)/main.o: $(MAIN_DIR)/main.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
-$(OUTDIR)/PCAN.o: $(SOURCE_DIR)/PCAN.cpp
+$(OUTDIR)/Timer.o: $(MAIN_DIR)/Timer.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
-
-$(OUTDIR)/can_api.o: $(PCBUSB_DIR)/can_api.c
-	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
-
-$(OUTDIR)/can_btr.o: $(CANAPI_DIR)/can_btr.c
-	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
-
-$(OUTDIR)/can_msg.o: $(CANAPI_DIR)/can_msg.c
-	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 $(OUTDIR)/Message.o: $(MAIN_DIR)/Message.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
-$(OUTDIR)/Timer.o: $(MAIN_DIR)/Timer.cpp
-	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
+$(OUTDIR)/can_msg.o: $(CANAPI_DIR)/can_msg.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 
 $(TARGET): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
+	$(CP) $(TARGET) $(BINDIR)
 	@echo "\033[1mTarget '"$@"' successfully build\033[0m"

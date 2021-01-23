@@ -24,13 +24,12 @@ current_OS := $(patsubst MINGW%,MinGW,$(current_OS))
 current_OS := $(patsubst MSYS%,MinGW,$(current_OS))
 
 HOME_DIR = ../..
-MAIN_DIR = ./Sources
 
 SOURCE_DIR = $(HOME_DIR)/Sources
 CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
 PCBUSB_DIR = $(HOME_DIR)/Sources/PCAN_Wrapper
 
-OBJECTS = $(OUTDIR)/can_api.o
+OBJECTS = $(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o
 
 
 ifeq ($(current_OS),Darwin) # macOS - libUVCANPCB.dylib
@@ -43,6 +42,7 @@ PATCH = 0
 
 VERSION = $(MAJOR).$(MINOR)
 TARGET  = $(LIBRARY).$(VERSION).dylib
+STATIC  = $(LIBRARY).a
 
 INSTALL_NAME = $(TARGET)
 CURRENT_VERSION = $(MAJOR).$(MINOR).0
@@ -54,7 +54,8 @@ INCLUDE = /usr/local/include
 
 DEFINES = -DOPTION_CAN_2_0_ONLY=0 \
 	-DOPTION_CANAPI_PCBUSB_DYLIB=1 \
-	-DOPTION_CANAPI_DRIVER=1
+	-DOPTION_CANAPI_DRIVER=1 \
+	-DOPTION_CANAPI_COMPANIONS=1
 
 HEADERS = -I$(SOURCE_DIR) \
 	-I$(CANAPI_DIR) \
@@ -79,18 +80,23 @@ LDFLAGS  += -lpthread \
 
 endif
 
+
+CXX = g++
 CC = gcc
 LD = gcc
+AR = ar
 RM = rm -f
 CP = cp -f
+LN = ln -s
 
 OUTDIR = .objects
+BINDIR = $(HOME_DIR)/Binaries
+INCDIR = $(HOME_DIR)/Includes
+
+.PHONY: info outdir bindir incdir
 
 
-.PHONY: outdir info
-
-
-all: info outdir $(TARGET)
+all: info outdir bindir incdir $(STATIC) $(TARGET)
 
 info:
 	@echo $(CC)" on "$(current_OS)
@@ -100,14 +106,28 @@ info:
 outdir:
 	@mkdir -p $(OUTDIR)
 
+bindir:
+	@mkdir -p $(BINDIR)
+
+incdir:
+	@mkdir -p $(INCDIR)
+	@cp $(SOURCE_DIR)/PCAN_Defines.h $(INCDIR)
+	@cp $(CANAPI_DIR)/can_api.h $(INCDIR)
+	@cp $(CANAPI_DIR)/CANAPI_Types.h $(INCDIR)
+	@cp $(CANAPI_DIR)/CANAPI_Defines.h $(INCDIR)
+
 clean:
 	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
+
+distclean:
+	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
+	$(RM) $(BINDIR)/$(TARGET) $(BINDIR)/$(STATIC) $(BINDIR)/$(LIBRARY).dylib
 
 install:
 	@echo "Copying library file..."
 	$(CP) $(TARGET) $(INSTALL)
 ifeq ($(current_OS),Darwin)
-	$(RM) $(INSTALL)/$(LIBRARY).dylib ; ln -s $(INSTALL)/$(TARGET) $(INSTALL)/$(LIBRARY).dylib
+	$(RM) $(INSTALL)/$(LIBRARY).dylib ; $(LN) $(INSTALL)/$(TARGET) $(INSTALL)/$(LIBRARY).dylib
 endif
 ifeq ($(current_OS),Linux)
 	$(RM) $(INSTALL)/$(SONAME) ; ln -s $(INSTALL)/$(TARGET) $(INSTALL)/$(SONAME)
@@ -118,7 +138,17 @@ endif
 $(OUTDIR)/can_api.o: $(PCBUSB_DIR)/can_api.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
+$(OUTDIR)/can_btr.o: $(CANAPI_DIR)/can_btr.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+
+
+$(STATIC): $(OBJECTS)
+	$(AR) $(ARFLAGS) $@ $(OBJECTS) $(LIBRARIES)
+	$(CP) $(STATIC) $(BINDIR)
 
 $(TARGET): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
+	$(CP) $(TARGET) $(BINDIR)
+	$(RM) $(BINDIR)/$(LIBRARY).dylib ; $(LN) $(BINDIR)/$(TARGET) $(BINDIR)/$(LIBRARY).dylib
 	@echo "\033[1mTarget '"$@"' successfully build\033[0m"

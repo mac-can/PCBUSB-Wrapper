@@ -38,7 +38,7 @@ ifeq ($(current_OS),Darwin) # macOS - libPCAN.dylib
 
 VERSION = 0
 
-TARGET	= PCBUSB
+TARGET	= pcb_test
 
 INSTALL = ~/bin
 
@@ -90,6 +90,9 @@ outdir:
 	@mkdir -p $(OUTDIR)
 
 clean:
+	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
+
+distclean:
 	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
 
 install:

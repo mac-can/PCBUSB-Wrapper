@@ -23,23 +23,26 @@ current_OS := $(patsubst CYGWIN%,Cygwin,$(current_OS))
 current_OS := $(patsubst MINGW%,MinGW,$(current_OS))
 current_OS := $(patsubst MSYS%,MinGW,$(current_OS))
 
-MAJOR = 0
-MINOR = 1
-PATCH = 0
-
 HOME_DIR = ../..
-MAIN_DIR = ./Sources
 
 SOURCE_DIR = $(HOME_DIR)/Sources
 CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
 PCBUSB_DIR = $(HOME_DIR)/Sources/PCAN_Wrapper
 
-ifeq ($(current_OS),Darwin) # macOS - libUVCANPCB.dylib
+OBJECTS = $(OUTDIR)/PCAN.o $(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o
 
-LIBRARY = libPCAN
+
+ifeq ($(current_OS),Darwin) # macOS - libUVCPAN.dylib
+
+LIBRARY = libUVPCAN
+
+MAJOR = 0
+MINOR = 2
+PATCH = 0
 
 VERSION = $(MAJOR).$(MINOR)
 TARGET  = $(LIBRARY).$(VERSION).dylib
+STATIC  = $(LIBRARY).a
 
 INSTALL_NAME = $(TARGET)
 CURRENT_VERSION = $(MAJOR).$(MINOR).0
@@ -75,50 +78,64 @@ LDFLAGS  += -lpthread \
 	-current_version $(CURRENT_VERSION) \
 	-compatibility_version $(COMPATIBILITY_VERSION)
 
+ARFLAGS = r
+
 endif
 
-OBJECTS = $(OUTDIR)/PCAN.o $(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o
 
 CXX = g++
 CC = gcc
 LD = g++
+AR = ar
 RM = rm -f
 CP = cp -f
+LN = ln -s
 
 OUTDIR = .objects
+BINDIR = $(HOME_DIR)/Binaries
+INCDIR = $(HOME_DIR)/Includes
+
+.PHONY: info outdir bindir incdir
 
 
-.PHONY: outdir info
-
-
-all: info outdir $(TARGET)
+all: info outdir bindir incdir $(STATIC) $(TARGET)
 
 info:
-	@echo $(CC)" on "$(current_OS)
+	@echo $(CXX)" on "$(current_OS)
 	@echo "target: "$(TARGET)
 	@echo "install: "$(INSTALL)
 
 outdir:
 	@mkdir -p $(OUTDIR)
 
+bindir:
+	@mkdir -p $(BINDIR)
+
+incdir:
+	@mkdir -p $(INCDIR)
+	@cp $(SOURCE_DIR)/PCAN.h $(INCDIR)
+	@cp $(SOURCE_DIR)/PCAN_Defines.h $(INCDIR)
+	@cp $(CANAPI_DIR)/CANAPI.h $(INCDIR)
+	@cp $(CANAPI_DIR)/CANAPI_Types.h $(INCDIR)
+	@cp $(CANAPI_DIR)/CANAPI_Defines.h $(INCDIR)
+
 clean:
 	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
+
+distclean:
+	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
+	$(RM) $(BINDIR)/$(TARGET) $(BINDIR)/$(STATIC) $(BINDIR)/$(LIBRARY).dylib
 
 install:
 	@echo "Copying library file..."
 	$(CP) $(TARGET) $(INSTALL)
 ifeq ($(current_OS),Darwin)
-	$(RM) $(INSTALL)/$(LIBRARY).dylib ; ln -s $(INSTALL)/$(TARGET) $(INSTALL)/$(LIBRARY).dylib
+	$(RM) $(INSTALL)/$(LIBRARY).dylib ; $(LN) $(INSTALL)/$(TARGET) $(INSTALL)/$(LIBRARY).dylib
 endif
 ifeq ($(current_OS),Linux)
-	$(RM) $(INSTALL)/$(SONAME) ; ln -s $(INSTALL)/$(TARGET) $(INSTALL)/$(SONAME)
-	$(RM) $(INSTALL)/$(LIBRARY).so ; ln -s $(INSTALL)/$(SONAME) $(INSTALL)/$(LIBRARY).so
+	$(RM) $(INSTALL)/$(SONAME) ; $(LN) $(INSTALL)/$(TARGET) $(INSTALL)/$(SONAME)
+	$(RM) $(INSTALL)/$(LIBRARY).so ; $(LN) $(INSTALL)/$(SONAME) $(INSTALL)/$(LIBRARY).so
 endif
-	@echo "Copying header files..."
-	$(CP) $(SOURCE_DIR)/PCAN.h $(INCLUDE)
-	$(CP) $(CANAPI_DIR)/CANAPI.h $(INCLUDE)
-	$(CP) $(CANAPI_DIR)/CANAPI_Types.h $(INCLUDE)
-#	$(CP) $(CANAPI_DIR)/CANAPI_PCANBasic.h $(INCLUDE)
 
 
 $(OUTDIR)/PCAN.o: $(SOURCE_DIR)/PCAN.cpp
@@ -131,6 +148,12 @@ $(OUTDIR)/can_btr.o: $(CANAPI_DIR)/can_btr.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 
+$(STATIC): $(OBJECTS)
+	$(AR) $(ARFLAGS) $@ $(OBJECTS) $(LIBRARIES)
+	$(CP) $(STATIC) $(BINDIR)
+
 $(TARGET): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
+	$(CP) $(TARGET) $(BINDIR)
+	$(RM) $(BINDIR)/$(LIBRARY).dylib ; $(LN) $(BINDIR)/$(TARGET) $(BINDIR)/$(LIBRARY).dylib
 	@echo "\033[1mTarget '"$@"' successfully build\033[0m"
