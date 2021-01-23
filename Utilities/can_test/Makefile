@@ -1,5 +1,5 @@
 #
-#	CAN Tester for PEAK PCAN-Basic Interfaces
+#	CAN Tester for PEAK PCAN-USB Interfaces
 #
 #	Copyright (C) 2007,2012-2021  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 #

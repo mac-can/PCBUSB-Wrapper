@@ -1,22 +1,22 @@
 #
-#	CAN Interface API, Version 3 (for PEAK PCAN-Basic Interfaces)
+#	CAN Interface API, Version 3 (for PEAK PCAN-USB Interfaces)
 #
 #	Copyright (C) 2010-2021  Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 #
-#	This library is part of PCANBasic-Wrapper.
+#	This library is part of PCBUSB-Wrapper.
 #
-#	PCANBasic-Wrapper is free software: you can redistribute it and/or modify
+#	PCBUSB-Wrapper is free software: you can redistribute it and/or modify
 #	it under the terms of the GNU Lesser General Public License as published by
 #	the Free Software Foundation, either version 3 of the License, or
 #	(at your option) any later version.
 #
-#	PCANBasic-Wrapper is distributed in the hope that it will be useful,
+#	PCBUSB-Wrapper is distributed in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
 #	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #	GNU Lesser General Public License for more details.
 #
 #	You should have received a copy of the GNU Lesser General Public License
-#	along with PCANBasic-Wrapper.  If not, see <http://www.gnu.org/licenses/>.
+#	along with PCBUSB-Wrapper.  If not, see <http://www.gnu.org/licenses/>.
 #
 current_OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown OS')
 current_OS := $(patsubst CYGWIN%,Cygwin,$(current_OS))
@@ -77,6 +77,8 @@ LDFLAGS  += -lpthread \
 	-install_name $(INSTALL_NAME) \
 	-current_version $(CURRENT_VERSION) \
 	-compatibility_version $(COMPATIBILITY_VERSION)
+
+ARFLAGS = r
 
 endif
 

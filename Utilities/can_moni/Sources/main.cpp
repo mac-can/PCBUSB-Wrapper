@@ -1,5 +1,5 @@
 //
-//  CAN Monitor for PEAK PCAN-Basic Interfaces
+//  CAN Monitor for PEAK PCAN-USB Interfaces
 //
 //  Copyright (C) 2007,2012-2021  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 //
@@ -51,9 +51,9 @@
 #error Unsupported architecture
 #endif
 #ifdef _DEBUG
-static const char APPLICATION[] = "CAN Monitor for PEAK PCAN-Basic Interfaces, Version " VERSION_STRING " _DEBUG";
+static const char APPLICATION[] = "CAN Monitor for PEAK PCAN-USB Interfaces, Version " VERSION_STRING " _DEBUG";
 #else
-static const char APPLICATION[] = "CAN Monitor for PEAK PCAN-Basic Interfaces, Version " VERSION_STRING;
+static const char APPLICATION[] = "CAN Monitor for PEAK PCAN-USB Interfaces, Version " VERSION_STRING;
 #endif
 static const char COPYRIGHT[]   = "Copyright (C) 2007,2012-2021 by Uwe Vogt, UV Software, Berlin";
 static const char WARRANTY[]    = "This program comes with ABSOLUTELY NO WARRANTY!\n\n" \
@@ -94,7 +94,7 @@ public:
     } m_CanDevices[];
 };
 const CCanDriver::TCanVendor CCanDriver::m_CanVendors[] = {
-    {PCAN_LIBRARY_ID, (char *)"Peak-System" },
+    {PCAN_LIBRARY_ID, (char *)"PEAK" },
     {EOF, NULL}
 };
 const CCanDriver::TCanDevice CCanDriver::m_CanDevices[] = {

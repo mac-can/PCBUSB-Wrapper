@@ -1,4 +1,4 @@
-### macOS® Wrapper Library for PCAN-USB Interfaces
+### macOS® Wrapper Library for PCAN-USB Interfaces from Peak-System
 
 _Copyright &copy; 2007, 2010, 2012-2021   Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
 
@@ -6,7 +6,7 @@ _Copyright &copy; 2007, 2010, 2012-2021   Uwe Vogt, UV Software, Berlin (info@ma
 
 CAN API V3 is a wrapper specification to have a uniform CAN Interface API for various CAN interfaces from different vendors running under multiple operating systems.
 
-## PCANBasic-Wrapper
+## PCBUSB-Wrapper
 
 This repo contains the source code for a CAN API V3 compatible wrapper library under macOS for PCAN-USB Interfaces from PEAK-System Technik GmbH.
 The wrapper library is build upon the PCBUSB library by UV&nbsp;Software.
@@ -105,9 +105,9 @@ Type `can_test --help` to display all program options.
 
 ### Target Platform
 
-- macOS Deployment Target: 11.1 (x86_64)
+- Apple´s macOS (x86_64)
 
-### Development Environments
+### Development Environment
 
 #### macOS Big Sur
 
@@ -158,20 +158,20 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with CAN API V3.  If not, see <http://www.gnu.org/licenses/>.
 
-#### PCANBasic-Wrapper License
+#### PCBUSB-Wrapper License
 
-PCANBasic-Wrapper is free software: you can redistribute it and/or modify
+PCBUSB-Wrapper is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-PCANBasic-Wrapper is distributed in the hope that it will be useful,
+PCBUSB-Wrapper is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Lesser General Public License for more details.
 
 You should have received a copy of the GNU Lesser General Public License
-along with PCANBasic-Wrapper.  If not, see <http://www.gnu.org/licenses/>.
+along with PCBUSB-Wrapper.  If not, see <http://www.gnu.org/licenses/>.
 
 ### Trademarks
 
@@ -183,12 +183,6 @@ PCAN is a registered trademark of PEAK-System Technik GmbH, Darmstadt, Germany.
 _If you connect your CAN device to a real CAN network when using this library, you might damage your application._
 
 ### Contact
-
-Uwe Vogt \
-UV Software \
-Chausseestrasse 33a \
-10115 Berlin \
-Germany
 
 E-Mail: mailto://info@mac.can.com \
 Internet: https://www.mac-can.com

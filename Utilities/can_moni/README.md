@@ -1,4 +1,4 @@
-__CAN Monitor for PEAK PCAN-Basic Interfaces, Version 0.2.0__ \
+__CAN Monitor for PEAK PCAN-USB Interfaces, Version 0.2.0__ \
 Copyright &copy; 2007,2012-2021 by Uwe Vogt, UV Software, Berlin
 
 ```
