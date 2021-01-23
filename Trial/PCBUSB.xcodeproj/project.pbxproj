@@ -26,6 +26,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0F86FB2F25BC24AF009844F5 /* PCAN_Defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PCAN_Defines.h; path = ../Sources/PCAN_Defines.h; sourceTree = "<group>"; };
+		0F86FB3025BC24C4009844F5 /* CANAPI_Defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CANAPI_Defines.h; path = ../Sources/CANAPI/CANAPI_Defines.h; sourceTree = "<group>"; };
 		0FB7FEA025AEEBBA00A2B7B1 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = Sources/main.cpp; sourceTree = "<group>"; };
 		0FB7FEA325AEEBE100A2B7B1 /* PCAN.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PCAN.h; path = ../Sources/PCAN.h; sourceTree = "<group>"; };
 		0FB7FEA425AEEBE100A2B7B1 /* build_no.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = build_no.h; path = ../Sources/build_no.h; sourceTree = "<group>"; };
@@ -60,11 +62,13 @@
 				0FB7FEB025AEED5500A2B7B1 /* can_btr.h */,
 				0FB7FEAD25AEED5500A2B7B1 /* CANAPI.h */,
 				0FB7FEAE25AEED5500A2B7B1 /* CANAPI_Types.h */,
-				0FB7FEA925AEED0F00A2B7B1 /* PCBUSB.h */,
+				0F86FB3025BC24C4009844F5 /* CANAPI_Defines.h */,
 				0FB7FEA825AEED0F00A2B7B1 /* can_api.c */,
 				0FB7FEAA25AEED0F00A2B7B1 /* can_defs.h */,
+				0F86FB2F25BC24AF009844F5 /* PCAN_Defines.h */,
 				0FB7FEA525AEEBE100A2B7B1 /* PCAN.cpp */,
 				0FB7FEA325AEEBE100A2B7B1 /* PCAN.h */,
+				0FB7FEA925AEED0F00A2B7B1 /* PCBUSB.h */,
 				0FB7FEA425AEEBE100A2B7B1 /* build_no.h */,
 				0FB7FEA025AEEBBA00A2B7B1 /* main.cpp */,
 			);
