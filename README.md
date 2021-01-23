@@ -8,11 +8,12 @@ CAN API V3 is a wrapper specification to have a uniform CAN Interface API for va
 
 ## PCBUSB-Wrapper
 
-This repo contains the source code for a CAN API V3 compatible wrapper library under macOS for PCAN-USB Interfaces from PEAK-System Technik GmbH.
-The wrapper library is build upon the PCBUSB library by UV&nbsp;Software.
-The PCBUSB library is almost compatible to PEAK´s PCANBasic DLL.
+This repo contains the source code for a CAN API V3 compatible wrapper library under macOS for PCAN-USB interfaces from PEAK-System Technik GmbH.
+The wrapper library is build upon the PCBUSB library from UV&nbsp;Software.
 
-Remarks: _The PCBUSB library is not included in this repo, and must be installed separately!_
+The [PCBUSB](https://www.mac-can.com) library is a user-space driver for PCAN-USB interfaces under macOS, and is almost compatible to PEAK´s PCANBasic DLL.
+
+Note: _The PCBUSB library is not included in this repo, and must be installed separately!_
 
 ### CAN Interface API, Version 3
 
@@ -65,13 +66,13 @@ See header file `PCAN.h` for a description of the provided methods.
 Important note: _To build any of the following build targets run the script_ `build_no.sh` _to generate a pseudo build number._
 ```
 uv-pc013mac:~ eris$ cd ~/Projects/CAN/Drivers/PCBUSB
-uv-pc013mac:Sources eris$ ./build_no.sh
+uv-pc013mac:PCBUSB eris$ ./build_no.sh
 ```
 Repeat this step after each `git commit`, `git pull`, `git clone`, etc.
 
 Then go back to the root folder and compile the whole _bleep_ by typing the usual commands:
 ```
-uv-pc013mac:Sources eris$ cd ~/Projects/CAN/Drivers/PCBUSB
+uv-pc013mac:~ eris$ cd ~/Projects/CAN/Drivers/PCBUSB
 uv-pc013mac:PCBUSB eris$ make clean
 uv-pc013mac:PCBUSB eris$ make all
 uv-pc013mac:PCBUSB eris$ sudo make install
@@ -138,7 +139,7 @@ Type `can_test --help` to display all program options.
 
 ## This and That
 
-The PCBUSB library can be downloaded form the [MacCAN](https://mac-can.com/) website or at [GitHub](https://github.com/mac-can/PCBUSB-Library) (binaries only).
+The PCBUSB library can be downloaded form the [MacCAN](https://mac-can.com/) website (binaries only).
 Please note the copyright and license agreements.
 
 ### Licenses
