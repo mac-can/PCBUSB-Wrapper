@@ -6,8 +6,8 @@ Trial/PCBUSB
 Trial/pcb_test
 Libraries/CANAPI/.objects
 Libraries/CANAPI/libUVCANPCB.*
-Libraries/PCAN/.objects
-Libraries/PCAN/libPCAN.*
+Libraries/UVPCAN/.objects
+Libraries/UVPCAN/libUVPCAN.*
 Binaries
 Includes
 Testing

@@ -23,10 +23,6 @@ current_OS := $(patsubst CYGWIN%,Cygwin,$(current_OS))
 current_OS := $(patsubst MINGW%,MinGW,$(current_OS))
 current_OS := $(patsubst MSYS%,MinGW,$(current_OS))
 
-MAJOR = 0
-MINOR = 2
-PATCH = 0
-
 HOME_DIR = ../..
 MAIN_DIR = ./Sources
 
@@ -34,9 +30,16 @@ SOURCE_DIR = $(HOME_DIR)/Sources
 CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
 PCBUSB_DIR = $(HOME_DIR)/Sources/PCAN_Wrapper
 
+OBJECTS = $(OUTDIR)/can_api.o
+
+
 ifeq ($(current_OS),Darwin) # macOS - libUVCANPCB.dylib
 
 LIBRARY = libUVCANPCB
+
+MAJOR = 0
+MINOR = 2
+PATCH = 0
 
 VERSION = $(MAJOR).$(MINOR)
 TARGET  = $(LIBRARY).$(VERSION).dylib
@@ -76,8 +79,6 @@ LDFLAGS  += -lpthread \
 
 endif
 
-OBJECTS = $(OUTDIR)/can_api.o
-
 CC = gcc
 LD = gcc
 RM = rm -f
@@ -112,10 +113,6 @@ ifeq ($(current_OS),Linux)
 	$(RM) $(INSTALL)/$(SONAME) ; ln -s $(INSTALL)/$(TARGET) $(INSTALL)/$(SONAME)
 	$(RM) $(INSTALL)/$(LIBRARY).so ; ln -s $(INSTALL)/$(SONAME) $(INSTALL)/$(LIBRARY).so
 endif
-	@echo "Copying header files..."
-	$(CP) $(CANAPI_DIR)/can_api.h $(INCLUDE)
-	$(CP) $(CANAPI_DIR)/CANAPI_Types.h $(INCLUDE)
-#	$(CP) $(CANAPI_DIR)/CANAPI_PCANBasic.h $(INCLUDE)
 
 
 $(OUTDIR)/can_api.o: $(PCBUSB_DIR)/can_api.c
@@ -123,5 +120,5 @@ $(OUTDIR)/can_api.o: $(PCBUSB_DIR)/can_api.c
 
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
+	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
 	@echo "\033[1mTarget '"$@"' successfully build\033[0m"
