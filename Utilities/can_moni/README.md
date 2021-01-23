@@ -1,4 +1,4 @@
-__CAN Monitor for PEAK PCAN-Basic Interfaces, Version 0.1.0__ \
+__CAN Monitor for PEAK PCAN-Basic Interfaces, Version 0.2.0__ \
 Copyright &copy; 2007,2012-2021 by Uwe Vogt, UV Software, Berlin
 
 ```
@@ -8,6 +8,7 @@ Options:
  -i  --id=(HEX|DEC|OCT)        display mode of CAN-IDs (default=HEX)
  -d, --data=(HEX|DEC|OCT)      display mode of data bytes (default=HEX)
  -a, --ascii=(ON|OFF)          display data bytes in ASCII (default=ON)
+ -w, --wrap=(NO|8|10|16|32|64) wraparound after n data bytes (default=NO)
  -x, --exclude=[~]<id-list>    exclude CAN-IDs: <id>[-<id>]{,<id>[-<id>]}
  -m, --mode=(2.0|FDF[+BSR])    CAN operation mode: CAN 2.0 or CAN FD format
      --shared                  shared CAN controller access (when supported)
