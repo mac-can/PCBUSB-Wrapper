@@ -16,13 +16,11 @@ static volatile int running = 1;
 
 int main(int argc, const char * argv[]) {
     CPCAN myDriver = CPCAN();
-    CANAPI_OpMode_t opMode = {
-        .byte = CANMODE_DEFAULT
-    };
-    CANAPI_Bitrate_t bitrate = {
-        .index = BAUDRATE
-    };
-    CANAPI_Message_t message;
+    CANAPI_OpMode_t opMode = {};
+    opMode.byte = CANMODE_DEFAULT;
+    CANAPI_Bitrate_t bitrate = {};
+    bitrate.index = BAUDRATE;
+    CANAPI_Message_t message = {};
     CANAPI_Return_t retVal = 0;
     int frames = 0;
 
@@ -46,15 +44,15 @@ int main(int argc, const char * argv[]) {
     std::cout << "Press Ctrl+C to abort..." << std::endl;
     while (running) {
         if ((retVal = myDriver.ReadMessage(message, CANREAD_INFINITE)) == CCANAPI::NoError) {
-            fprintf(stdout, ">>> %i\t", frames++);
-            fprintf(stdout, "%7li.%04li\t", message.timestamp.tv_sec, message.timestamp.tv_nsec / 100000);
+            fprintf(stdout, "%i\t", frames++);
+            fprintf(stdout, "%7li.%04li\t", (long)message.timestamp.tv_sec, message.timestamp.tv_nsec / 100000);
             if (!opMode.fdoe)
-                fprintf(stdout, "%03x\t%c%c [%i]", message.id, message.xtd ? 'X' : 'S', message.rtr ? 'R' : ' ', message.dlc);
+                fprintf(stdout, "%03X\t%c%c [%u] ", message.id, message.xtd ? 'X' : 'S', message.rtr ? 'R' : ' ', message.dlc);
             else
-                fprintf(stdout, "%03x\t%c%c%c%c%c [%i]", message.id, message.xtd ? 'X' : 'S', message.rtr ? 'R' : ' ',
+                fprintf(stdout, "%03X\t%c%c%c%c%c [%u] ", message.id, message.xtd ? 'X' : 'S', message.rtr ? 'R' : ' ',
                         message.fdf ? 'F' : ' ', message.brs ? 'B' : ' ', message.esi ? 'E' :' ', CCANAPI::DLc2Len(message.dlc));
             for (uint8_t i = 0; i < CCANAPI::DLc2Len(message.dlc); i++)
-                fprintf(stdout, " %02x", message.data[i]);
+                fprintf(stdout, " %02X", message.data[i]);
             if (message.sts)
                 fprintf(stdout, " <<< status frame");
             fprintf(stdout, "\n");

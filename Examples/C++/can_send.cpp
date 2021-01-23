@@ -18,7 +18,7 @@ int main(int argc, const char * argv[]) {
     can_message_t message;
 
     std::cout << can_version() << std::endl;
-    if ((handle = can_init(CAN_BOARD(CANLIB_PCANBASIC, CHANNEL), CANMODE_DEFAULT, NULL)) < 0) {
+    if ((handle = can_init(CHANNEL, CANMODE_DEFAULT, NULL)) < 0) {
         std::cerr << "+++ error: interface could not be initialized" << std::endl;
         return -1;
     }
