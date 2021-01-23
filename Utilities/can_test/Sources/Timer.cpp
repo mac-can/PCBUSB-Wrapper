@@ -1,7 +1,7 @@
 //
-//  Software for Industrial Communication, Motion Control, and Automation
+//  Software for Industrial Communication, Motion Control and Automation
 //
-//  Copyright (C) 2002-2020  Uwe Vogt, UV Software, Berlin (info@uv-software.com)
+//  Copyright (C) 2002-2021  Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 //
 //  This class is part of the SourceMedley repository.
 //
@@ -40,7 +40,7 @@ CTimer::CTimer(uint32_t u32Microseconds) {
                    + ((uint64_t)u32Microseconds);
 #else
     LARGE_INTEGER largeCounter;  // high-resolution performance counter
-
+    
     // retrieve the frequency of the high-resolution performance counter
     if(!QueryPerformanceFrequency(&m_largeFrequency))
         return;
@@ -62,7 +62,7 @@ bool CTimer::Restart(uint32_t u32Microseconds) {
     return true;
 #else
     LARGE_INTEGER largeCounter;  // high-resolution performance counter
-
+    
     // retrieve the current value of the high-resolution performance counter
     if(!QueryPerformanceCounter(&largeCounter))
         return false;
@@ -85,7 +85,7 @@ bool CTimer::Timeout() {
         return true;
 #else
     LARGE_INTEGER largeCounter;  // high-resolution performance counter
-
+    
     // retrieve the current value of the high-resolution performance counter
     if(!QueryPerformanceCounter(&largeCounter))
         return false;
@@ -105,7 +105,7 @@ bool CTimer::Delay(uint32_t u32Microseconds) {
     LARGE_INTEGER largeFrequency;  // frequency in counts per second
     LARGE_INTEGER largeCounter;    // high-resolution performance counter
     LONGLONG      llUntilStop;     // counter value for the desired delay
-
+    
     // retrieve the current value of the high-resolution performance counter
     if(!QueryPerformanceCounter(&largeCounter))
         return false;
@@ -126,18 +126,26 @@ bool CTimer::Delay(uint32_t u32Microseconds) {
 # else
     HANDLE timer;
     LARGE_INTEGER ft;
-
+    
     ft.QuadPart = -(10 * (LONGLONG)u32Microseconds); // Convert to 100 nanosecond interval, negative value indicates relative time
-
+    
     if(u32Microseconds >= 100) {  // FIXME: Who made this decision?
-        timer = CreateWaitableTimer(NULL, TRUE, NULL);
-        SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
-        WaitForSingleObject(timer, INFINITE);
-        CloseHandle(timer);
+        if ((timer = CreateWaitableTimer(NULL, TRUE, NULL)) != NULL) {
+            SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+            WaitForSingleObject(timer, INFINITE);
+            CloseHandle(timer);
+        }
+    }
+    else {
+        // According to MSDN's documentation for Sleep:
+        // | A value of zero causes the thread to relinquish the remainder of its time slice to any other
+        // | thread that is ready to run.If there are no other threads ready to run, the function returns
+        // | immediately, and the thread continues execution.
+        Sleep(0);
     }
     return true;
 # endif
 #endif
 }
 
-// $Id: Timer.cpp 579 2020-03-14 16:08:36Z haumea $  Copyright (C) UV Software //
+// $Id: Timer.cpp 701 2021-01-20 13:43:05Z haumea $  Copyright (C) UV Software, Berlin //

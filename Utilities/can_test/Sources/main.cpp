@@ -16,6 +16,7 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+#include "PCAN_Defines.h"
 #include "PCAN.h"
 #include "Timer.h"
 
@@ -33,7 +34,7 @@
 
 #include "build_no.h"
 #define VERSION_MAJOR    0
-#define VERSION_MINOR    1
+#define VERSION_MINOR    2
 #define VERSION_PATCH    0
 #define VERSION_BUILD    BUILD_NO
 #define VERSION_STRING   TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) " (" TOSTRING(BUILD_NO) ")"
@@ -45,8 +46,6 @@
 #define PLATFORM        "Linux"
 #elif defined(__APPLE__)
 #define PLATFORM        "macOS"
-#elif defined(__CYGWIN__)
-#define PLATFORM        "Cygwin"
 #else
 #error Unsupported architecture
 #endif
@@ -101,22 +100,22 @@ const CCanDriver::TCanVendor CCanDriver::m_CanVendors[] = {
     {EOF, NULL}
 };
 const CCanDriver::TCanDevice CCanDriver::m_CanDevices[] = {
-    {PCAN_LIBRARY_ID, 0x51, (char *)"PCAN-USB1" },
-    {PCAN_LIBRARY_ID, 0x52, (char *)"PCAN-USB2" },
-    {PCAN_LIBRARY_ID, 0x53, (char *)"PCAN-USB3" },
-    {PCAN_LIBRARY_ID, 0x54, (char *)"PCAN-USB4" },
-    {PCAN_LIBRARY_ID, 0x55, (char *)"PCAN-USB5" },
-    {PCAN_LIBRARY_ID, 0x56, (char *)"PCAN-USB6" },
-    {PCAN_LIBRARY_ID, 0x57, (char *)"PCAN-USB7" },
-    {PCAN_LIBRARY_ID, 0x58, (char *)"PCAN-USB8" },
-    {PCAN_LIBRARY_ID, 0x509, (char *)"PCAN-USB9" },
-    {PCAN_LIBRARY_ID, 0x50A, (char *)"PCAN-USB10" },
-    {PCAN_LIBRARY_ID, 0x50B, (char *)"PCAN-USB11" },
-    {PCAN_LIBRARY_ID, 0x50C, (char *)"PCAN-USB12" },
-    {PCAN_LIBRARY_ID, 0x50D, (char *)"PCAN-USB13" },
-    {PCAN_LIBRARY_ID, 0x50E, (char *)"PCAN-USB14" },
-    {PCAN_LIBRARY_ID, 0x50F, (char *)"PCAN-USB15" },
-    {PCAN_LIBRARY_ID, 0x510, (char *)"PCAN-USB16" },
+    {PCAN_LIBRARY_ID, PCAN_USB1, (char *)"PCAN-USB1" },
+    {PCAN_LIBRARY_ID, PCAN_USB2, (char *)"PCAN-USB2" },
+    {PCAN_LIBRARY_ID, PCAN_USB3, (char *)"PCAN-USB3" },
+    {PCAN_LIBRARY_ID, PCAN_USB4, (char *)"PCAN-USB4" },
+    {PCAN_LIBRARY_ID, PCAN_USB5, (char *)"PCAN-USB5" },
+    {PCAN_LIBRARY_ID, PCAN_USB6, (char *)"PCAN-USB6" },
+    {PCAN_LIBRARY_ID, PCAN_USB7, (char *)"PCAN-USB7" },
+    {PCAN_LIBRARY_ID, PCAN_USB8, (char *)"PCAN-USB8" },
+    {PCAN_LIBRARY_ID, PCAN_USB9, (char *)"PCAN-USB9" },
+    {PCAN_LIBRARY_ID, PCAN_USB10, (char *)"PCAN-USB10" },
+    {PCAN_LIBRARY_ID, PCAN_USB11, (char *)"PCAN-USB11" },
+    {PCAN_LIBRARY_ID, PCAN_USB12, (char *)"PCAN-USB12" },
+    {PCAN_LIBRARY_ID, PCAN_USB13, (char *)"PCAN-USB13" },
+    {PCAN_LIBRARY_ID, PCAN_USB14, (char *)"PCAN-USB14" },
+    {PCAN_LIBRARY_ID, PCAN_USB15, (char *)"PCAN-USB15" },
+    {PCAN_LIBRARY_ID, PCAN_USB16, (char *)"PCAN-USB16" },
     {EOF, EOF, NULL}
 };
 
@@ -138,7 +137,7 @@ int main(int argc, const char * argv[]) {
     time_t txtime = 0;
     long txframes = 0;
     long id = 0x100; int c = 0;
-    long data = 8; int d = 0;
+    long dlc = 8; int d = 0;
     long delay = 0; int t = 0;
     long number = 0; int n = 0;
     int stop_on_error = 0;
@@ -163,7 +162,7 @@ int main(int argc, const char * argv[]) {
         {"random", required_argument, 0, 'F'},
         {"cycle", required_argument, 0, 'c'},
         {"usec", required_argument, 0, 'u'},
-        {"data", required_argument, 0, 'd'},
+        {"dlc", required_argument, 0, 'd'},
         {"id", required_argument, 0, 'i'},
         {"list-boards", optional_argument, 0, 'L'},
         {"test-boards", optional_argument, 0, 'T'},
@@ -172,19 +171,17 @@ int main(int argc, const char * argv[]) {
         {0, 0, 0, 0}
     };
     CCanDriver canDriver = CCanDriver();
-    CANAPI_Bitrate_t bitrate = {
-        .index = CANBTR_INDEX_250K
-    };
-    CANAPI_OpMode_t opMode = {
-        .byte = CANMODE_DEFAULT
-    };
+    CANAPI_Bitrate_t bitrate = {};
+    bitrate.index = CANBTR_INDEX_250K;
+    CANAPI_OpMode_t opMode = {};
+    opMode.byte = CANMODE_DEFAULT;
     CANAPI_Return_t retVal = 0;
 
     /* default bit-timing */
     CANAPI_BusSpeed_t speed = {};
-    (void) CCanDriver::MapIndex2Bitrate(bitrate.index, bitrate);
-    (void) CCanDriver::MapBitrate2Speed(bitrate, speed);
-    (void) op;
+    (void)CCanDriver::MapIndex2Bitrate(bitrate.index, bitrate);
+    (void)CCanDriver::MapBitrate2Speed(bitrate, speed);
+    (void)op;
 
     /* signal handler */
     if((signal(SIGINT, sigterm) == SIG_ERR) ||
@@ -387,7 +384,7 @@ int main(int argc, const char * argv[]) {
                 return 1;
             }
             if (!d) /* let the tester generate messages of arbitrary length */
-                data = 0;
+                dlc = 0;
             mode = TxRANDOM;
             break;
         case 'c':  /* option `--cycle=<msec>' (-c) */
@@ -419,21 +416,21 @@ int main(int argc, const char * argv[]) {
                 return 1;
             }
             break;
-        case 'd':  /* option `--data=<length>' (-d) */
+        case 'd':  /* option `--dlc=<length>' (-d) */
             if (d++) {
-                fprintf(stderr, "%s: duplicated option `--data' (%c)\n", basename(argv[0]), opt);
+                fprintf(stderr, "%s: duplicated option `--dlc' (%c)\n", basename(argv[0]), opt);
                 return 1;
             }
-            if (sscanf(optarg, "%li", &data) != 1) {
-                fprintf(stderr, "%s: illegal argument for option `--data' (%c)\n", basename(argv[0]), opt);
+            if (sscanf(optarg, "%li", &dlc) != 1) {
+                fprintf(stderr, "%s: illegal argument for option `--dlc' (%c)\n", basename(argv[0]), opt);
                 return 1;
             }
 #if (OPTION_CAN_2_0_ONLY == 0)
-            if ((data < 0) || (CANFD_MAX_LEN < data)) {
+            if ((dlc < 0) || (CANFD_MAX_LEN < dlc)) {
 #else
-            if ((data < 0) || (CAN_MAX_LEN < data)) {
+            if ((dlc < 0) || (CAN_MAX_LEN < dlc)) {
 #endif
-                fprintf(stderr, "%s: illegal argument for option `--data' (%c)\n", basename(argv[0]), opt);
+                fprintf(stderr, "%s: illegal argument for option `--dlc' (%c)\n", basename(argv[0]), opt);
                 return 1;
             }
             break;
@@ -500,18 +497,18 @@ int main(int argc, const char * argv[]) {
         return 1;
     }
 #if (OPTION_CAN_2_0_ONLY == 0)
-    /* - check data length and make CAN FD DLC (0x0..0xF) */
-    if (!opMode.fdoe && (data > CAN_MAX_LEN)) {
-        fprintf(stderr, "%s: illegal combination of options `--mode' (m) and `--data' (d)\n", basename(argv[0]));
+    /* - check data length length and make CAN FD DLC (0x0..0xF) */
+    if (!opMode.fdoe && (dlc > CAN_MAX_LEN)) {
+        fprintf(stderr, "%s: illegal combination of options `--mode' (m) and `--dlc' (d)\n", basename(argv[0]));
         return 1;
     } else {
-        if (data > 48) data = 0xF;
-        else if (data > 32) data = 0xE;
-        else if (data > 24) data = 0xD;
-        else if (data > 20) data = 0xC;
-        else if (data > 16) data = 0xB;
-        else if (data > 12) data = 0xA;
-        else if (data > 8) data = 0x9;
+        if (dlc > 48) dlc = 0xF;
+        else if (dlc > 32) dlc = 0xE;
+        else if (dlc > 24) dlc = 0xD;
+        else if (dlc > 20) dlc = 0xC;
+        else if (dlc > 16) dlc = 0xB;
+        else if (dlc > 12) dlc = 0xA;
+        else if (dlc > 8) dlc = 0x9;
     }
 #endif
     /* - check operation mode flags */
@@ -586,6 +583,9 @@ int main(int argc, const char * argv[]) {
     if (retVal != CCANAPI::NoError) {
         fprintf(stdout, "FAILED!\n");
         fprintf(stderr, "+++ error: CAN Controller could not be initialized (%i)\n", retVal);
+        if (retVal == CCANAPI::NotSupported)
+            fprintf(stderr, " - possibly CAN operating mode %02Xh not supported", opMode.byte);
+        fputc('\n', stderr);
         goto finalize;
     }
     fprintf(stdout, "OK!\n");
@@ -623,16 +623,16 @@ int main(int argc, const char * argv[]) {
     /* - do your job well: */
     switch (mode) {
     case TxMODE:    /* transmitter test (duration) */
-        (void) canDriver.TransmitterTest((time_t)txtime, opMode, (uint32_t)id, (uint8_t)data, (uint32_t)delay, (uint64_t)number);
+        (void)canDriver.TransmitterTest((time_t)txtime, opMode, (uint32_t)id, (uint8_t)dlc, (uint32_t)delay, (uint64_t)number);
         break;
     case TxFRAMES:  /* transmitter test (frames) */
-        (void) canDriver.TransmitterTest((uint64_t)txframes, opMode, false, (uint32_t)id, (uint8_t)data, (uint32_t)delay, (uint64_t)number);
+        (void)canDriver.TransmitterTest((uint64_t)txframes, opMode, false, (uint32_t)id, (uint8_t)dlc, (uint32_t)delay, (uint64_t)number);
         break;
     case TxRANDOM:  /* transmitter test (random) */
-        (void) canDriver.TransmitterTest((uint64_t)txframes, opMode, true, (uint32_t)id, (uint8_t)data, (uint32_t)delay, (uint64_t)number);
+        (void)canDriver.TransmitterTest((uint64_t)txframes, opMode, true, (uint32_t)id, (uint8_t)dlc, (uint32_t)delay, (uint64_t)number);
         break;
     default:        /* receiver test (abort with Ctrl+C) */
-        (void) canDriver.ReceiverTest((bool)n, (uint64_t)number, (bool)stop_on_error);
+        (void)canDriver.ReceiverTest((bool)n, (uint64_t)number, (bool)stop_on_error);
         break;
     }
     /* - show interface information */
@@ -744,7 +744,7 @@ uint64_t CCanDriver::TransmitterTest(time_t duration, CANAPI_OpMode_t opMode, ui
     message.fdf = opMode.fdoe;
     message.brs = opMode.brse;
 #else
-    (void) opMode;
+    (void)opMode;
 #endif
     message.dlc = dlc;
     fprintf(stdout, "\nTransmitting message(s)...");
@@ -813,7 +813,7 @@ uint64_t CCanDriver::TransmitterTest(uint64_t count, CANAPI_OpMode_t opMode, boo
     message.fdf = opMode.fdoe;
     message.brs = opMode.brse;
 #else
-    (void) opMode;
+    (void)opMode;
 #endif
     message.dlc = dlc;
     fprintf(stdout, "\nTransmitting message(s)...");
@@ -991,7 +991,7 @@ static void usage(FILE *stream, const char *program)
     fprintf(stream, "     --random=<number>         optionally with random cycle time and data length\n");
     fprintf(stream, " -c, --cycle=<cycle>           cycle time in milliseconds (default=0) or\n");
     fprintf(stream, " -u, --usec=<cycle>            cycle time in microseconds (default=0)\n");
-    fprintf(stream, " -d, --data=<length>           send data of given length (default=8)\n");
+    fprintf(stream, " -d, --dlc=<length>            send messages of given length (default=8)\n");
     fprintf(stream, " -i, --id=<can-id>             use given identifier (default=100h)\n");
     fprintf(stream, " -n, --number=<number>         set first up-counting number (default=0)\n");
 #if (OPTION_CAN_2_0_ONLY == 0)

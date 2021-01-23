@@ -385,7 +385,7 @@ int main(int argc, const char * argv[]) {
 #ifdef SECOND_CHANNEL
         if ((retVal = mySecond.ReadMessage(message, 0U)) == CCANAPI::NoError) {
             if (option_echo) {
-                fprintf(stdout, ">>> %i\t", frames++);
+                fprintf(stdout, ">2> %i\t", frames++);
                 fprintf(stdout, "%7li.%04li\t", (long)message.timestamp.tv_sec, message.timestamp.tv_nsec / 100000);
                 if (!opMode.fdoe)
                     fprintf(stdout, "%03x\t%c%c [%i]", message.id, message.xtd ? 'X' : 'S', message.rtr ? 'R' : ' ', message.dlc);

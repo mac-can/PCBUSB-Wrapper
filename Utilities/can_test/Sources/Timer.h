@@ -1,7 +1,7 @@
 //
-//  Software for Industrial Communication, Motion Control, and Automation
+//  Software for Industrial Communication, Motion Control and Automation
 //
-//  Copyright (C) 2002-2020  Uwe Vogt, UV Software, Berlin (info@uv-software.com)
+//  Copyright (C) 2002-2021  Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 //
 //  This class is part of the SourceMedley repository.
 //
@@ -59,4 +59,4 @@ public:
 
 #endif // TIMER_H_INCLUDED
 
-// $Id: Timer.h 579 2020-03-14 16:08:36Z haumea $  Copyright (C) UV Software //
+// $Id: Timer.h 701 2021-01-20 13:43:05Z haumea $  Copyright (C) UV Software, Berlin //

@@ -16,6 +16,7 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
+#include "PCAN_Defines.h"
 #include "PCAN.h"
 #include "Timer.h"
 #include "Message.h"
@@ -34,7 +35,7 @@
 
 #include "build_no.h"
 #define VERSION_MAJOR    0
-#define VERSION_MINOR    1
+#define VERSION_MINOR    2
 #define VERSION_PATCH    0
 #define VERSION_BUILD    BUILD_NO
 #define VERSION_STRING   TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) " (" TOSTRING(BUILD_NO) ")"
@@ -46,8 +47,6 @@
 #define PLATFORM        "Linux"
 #elif defined(__APPLE__)
 #define PLATFORM        "macOS"
-#elif defined(__CYGWIN__)
-#define PLATFORM        "Cygwin"
 #else
 #error Unsupported architecture
 #endif
@@ -99,22 +98,22 @@ const CCanDriver::TCanVendor CCanDriver::m_CanVendors[] = {
     {EOF, NULL}
 };
 const CCanDriver::TCanDevice CCanDriver::m_CanDevices[] = {
-    {PCAN_LIBRARY_ID, 0x51, (char *)"PCAN-USB1" },
-    {PCAN_LIBRARY_ID, 0x52, (char *)"PCAN-USB2" },
-    {PCAN_LIBRARY_ID, 0x53, (char *)"PCAN-USB3" },
-    {PCAN_LIBRARY_ID, 0x54, (char *)"PCAN-USB4" },
-    {PCAN_LIBRARY_ID, 0x55, (char *)"PCAN-USB5" },
-    {PCAN_LIBRARY_ID, 0x56, (char *)"PCAN-USB6" },
-    {PCAN_LIBRARY_ID, 0x57, (char *)"PCAN-USB7" },
-    {PCAN_LIBRARY_ID, 0x58, (char *)"PCAN-USB8" },
-    {PCAN_LIBRARY_ID, 0x509, (char *)"PCAN-USB9" },
-    {PCAN_LIBRARY_ID, 0x50A, (char *)"PCAN-USB10" },
-    {PCAN_LIBRARY_ID, 0x50B, (char *)"PCAN-USB11" },
-    {PCAN_LIBRARY_ID, 0x50C, (char *)"PCAN-USB12" },
-    {PCAN_LIBRARY_ID, 0x50D, (char *)"PCAN-USB13" },
-    {PCAN_LIBRARY_ID, 0x50E, (char *)"PCAN-USB14" },
-    {PCAN_LIBRARY_ID, 0x50F, (char *)"PCAN-USB15" },
-    {PCAN_LIBRARY_ID, 0x510, (char *)"PCAN-USB16" },
+    {PCAN_LIBRARY_ID, PCAN_USB1, (char *)"PCAN-USB1" },
+    {PCAN_LIBRARY_ID, PCAN_USB2, (char *)"PCAN-USB2" },
+    {PCAN_LIBRARY_ID, PCAN_USB3, (char *)"PCAN-USB3" },
+    {PCAN_LIBRARY_ID, PCAN_USB4, (char *)"PCAN-USB4" },
+    {PCAN_LIBRARY_ID, PCAN_USB5, (char *)"PCAN-USB5" },
+    {PCAN_LIBRARY_ID, PCAN_USB6, (char *)"PCAN-USB6" },
+    {PCAN_LIBRARY_ID, PCAN_USB7, (char *)"PCAN-USB7" },
+    {PCAN_LIBRARY_ID, PCAN_USB8, (char *)"PCAN-USB8" },
+    {PCAN_LIBRARY_ID, PCAN_USB9, (char *)"PCAN-USB9" },
+    {PCAN_LIBRARY_ID, PCAN_USB10, (char *)"PCAN-USB10" },
+    {PCAN_LIBRARY_ID, PCAN_USB11, (char *)"PCAN-USB11" },
+    {PCAN_LIBRARY_ID, PCAN_USB12, (char *)"PCAN-USB12" },
+    {PCAN_LIBRARY_ID, PCAN_USB13, (char *)"PCAN-USB13" },
+    {PCAN_LIBRARY_ID, PCAN_USB14, (char *)"PCAN-USB14" },
+    {PCAN_LIBRARY_ID, PCAN_USB15, (char *)"PCAN-USB15" },
+    {PCAN_LIBRARY_ID, PCAN_USB16, (char *)"PCAN-USB16" },
     {EOF, EOF, NULL}
 };
 
@@ -169,26 +168,24 @@ int main(int argc, const char * argv[]) {
         {0, 0, 0, 0}
     };
     CCanDriver canDriver = CCanDriver();
-    CANAPI_Bitrate_t bitrate = {
-        .index = CANBTR_INDEX_250K
-    };
-    CANAPI_OpMode_t opMode = {
-        .byte = CANMODE_DEFAULT
-    };
+    CANAPI_Bitrate_t bitrate = {};
+    bitrate.index = CANBTR_INDEX_250K;
+    CANAPI_OpMode_t opMode = {};
+    opMode.byte = CANMODE_DEFAULT;
     CANAPI_Return_t retVal = 0;
 
     /* default bit-timing */
     CANAPI_BusSpeed_t speed = {};
-    (void) CCanDriver::MapIndex2Bitrate(bitrate.index, bitrate);
-    (void) CCanDriver::MapBitrate2Speed(bitrate, speed);
-    (void) op;
+    (void)CCanDriver::MapIndex2Bitrate(bitrate.index, bitrate);
+    (void)CCanDriver::MapBitrate2Speed(bitrate, speed);
+    (void)op;
 
     /* default format options */
-    (void) CCanMessage::SetTimestampFormat(modeTime);
-    (void) CCanMessage::SetIdentifierFormat(modeId);
-    (void) CCanMessage::SetDataFormat(modeData);
-    (void) CCanMessage::SetAsciiFormat(modeAscii);
-    (void) CCanMessage::SetWraparound(wraparound);
+    (void)CCanMessage::SetTimestampFormat(modeTime);
+    (void)CCanMessage::SetIdentifierFormat(modeId);
+    (void)CCanMessage::SetDataFormat(modeData);
+    (void)CCanMessage::SetAsciiFormat(modeAscii);
+    (void)CCanMessage::SetWraparound(wraparound);
 
     /* exclude list (11-bit IDs only) */
     for (int i = 0; i < MAX_ID; i++) {
@@ -565,6 +562,9 @@ int main(int argc, const char * argv[]) {
     if (retVal != CCANAPI::NoError) {
         fprintf(stdout, "FAILED!\n");
         fprintf(stderr, "+++ error: CAN Controller could not be initialized (%i)\n", retVal);
+        if (retVal == CCANAPI::NotSupported)
+            fprintf(stderr, " - possibly CAN operating mode %02Xh not supported", opMode.byte);
+        fputc('\n', stderr);
         goto finalize;
     }
     fprintf(stdout, "OK!\n");
@@ -706,7 +706,7 @@ uint64_t CCanDriver::ReceptionLoop() {
         if ((retVal = ReadMessage(message)) == CCANAPI::NoError) {
             if ((((message.id < MAX_ID) && can_id[message.id]) || ((message.id >= MAX_ID) && can_id_xtd)) &&
                 !message.sts) {
-                (void) CCanMessage::Format(message, ++frames, string, CANPROP_MAX_STRING_LENGTH);
+                (void)CCanMessage::Format(message, ++frames, string, CANPROP_MAX_STRING_LENGTH);
                 fprintf(stdout, "%s\n", string);
             }
         }
