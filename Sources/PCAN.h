@@ -40,7 +40,7 @@
 /// \brief  CAN API V3 driver for PEAK PCAN-Basic interfaces
 /// \note   See CCANAPI for a description of the overridden methods
 /// \{
-class CPCAN : public CCANAPI {
+class CANCPP CPCAN : public CCANAPI {
 private:
     CANAPI_OpMode_t m_OpMode;  ///< CAN operation mode
     CANAPI_Bitrate_t m_Bitrate;  ///< CAN bitrate settings
@@ -95,8 +95,8 @@ public:
     CANAPI_Return_t GetBitrate(CANAPI_Bitrate_t &bitrate);
     CANAPI_Return_t GetBusSpeed(CANAPI_BusSpeed_t &speed);
 
-    CANAPI_Return_t GetProperty(uint16_t param, void *value, uint32_t nbytes);
-    CANAPI_Return_t SetProperty(uint16_t param, const void *value, uint32_t nbytes);
+    CANAPI_Return_t GetProperty(uint16_t param, void *value, uint32_t nbyte);
+    CANAPI_Return_t SetProperty(uint16_t param, const void *value, uint32_t nbyte);
 
     char *GetHardwareVersion();  // (for compatibility reasons)
     char *GetFirmwareVersion();  // (for compatibility reasons)

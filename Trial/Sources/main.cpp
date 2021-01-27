@@ -98,6 +98,7 @@ int main(int argc, const char * argv[]) {
     int option_info = OPTION_NO;
     int option_stat = OPTION_NO;
     int option_test = OPTION_NO;
+    int option_exit = OPTION_NO;
     int option_echo = OPTION_YES;
 //    int option_stop = OPTION_NO;
 //    int option_check = OPTION_NO;
@@ -167,6 +168,7 @@ int main(int argc, const char * argv[]) {
         if (!strcmp(argv[i], "INFO")) option_info = OPTION_YES;
         if (!strcmp(argv[i], "STAT")) option_stat = OPTION_YES;
         if (!strcmp(argv[i], "TEST")) option_test = OPTION_YES;
+        if (!strcmp(argv[i], "EXIT")) option_exit = OPTION_YES;
         /* additional operation modes (bit field) */
         if (!strcmp(argv[i], "SHARED")) opMode.shrd = 1;
         if (!strcmp(argv[i], "MONITOR")) opMode.mon = 1;
@@ -202,7 +204,7 @@ int main(int argc, const char * argv[]) {
             fprintf(stderr, "+++ error: myDriver.GetProperty(PCAN_PROPERTY_PATCH_NO) returned %i\n", retVal);
         retVal = myDriver.GetProperty(PCAN_PROPERTY_BUILD_NO, (void *)&u32Val, sizeof(uint32_t));
         if (retVal == CCANAPI::NoError)
-            fprintf(stdout, ">>> myDriver.GetProperty(PCAN_PROPERTY_BUILD_NO): value = %" PRIx32 "\n", (uint32_t)u32Val);
+            fprintf(stdout, ">>> myDriver.GetProperty(PCAN_PROPERTY_BUILD_NO): value = 0x%" PRIx32 "\n", (uint32_t)u32Val);
         else
             fprintf(stderr, "+++ error: myDriver.GetProperty(PCAN_PROPERTY_BUILD_NO) returned %i\n", retVal);
         retVal = myDriver.GetProperty(PCAN_PROPERTY_LIBRARY_ID, (void *)&i32Val, sizeof(int32_t));
@@ -220,16 +222,25 @@ int main(int argc, const char * argv[]) {
             fprintf(stdout, ">>> myDriver.GetProperty(PCAN_PROPERTY_LIBRARY_VENDOR): value = '%s'\n", szVal);
         else
             fprintf(stderr, "+++ error: myDriver.GetProperty(PCAN_PROPERTY_LIBRARY_VENDOR) returned %i\n", retVal);
+        if (option_exit && !option_test)
+            return 0;
     }
     if (option_test) {
-        for (int32_t ch = (int32_t)PCAN_USB1; ch <= (int32_t)PCAN_USB16; ch = (ch == (int32_t)PCAN_USB8) ? (int32_t)PCAN_USB9 : ch + 1) {
-            retVal = CPCAN::ProbeChannel(ch, opMode, state);
-            fprintf(stdout, ">>> CCANAPI.ProbeChannel(%i): state = %s", ch,
-                            (state == CCANAPI::ChannelOccupied) ? "occupied" :
-                            (state == CCANAPI::ChannelAvailable) ? "available" :
-                            (state == CCANAPI::ChannelNotAvailable) ? "not available" : "not testable");
-            fprintf(stdout, "%s", (retVal == CCANAPI::IllegalParameter) ? " (waring: Op.-Mode not supported)\n" : "\n");
+        retVal = myDriver.SetProperty(CANPROP_SET_FIRST_CHANNEL, (void *)NULL, 0U);
+        while (retVal == CCANAPI::NoError) {
+            retVal = myDriver.GetProperty(CANPROP_GET_CHANNEL_TYPE, (void *)&i32Val, sizeof(int32_t));
+            if (retVal == CCANAPI::NoError) {
+                retVal = CPCAN::ProbeChannel(i32Val, opMode, state);
+                fprintf(stdout, ">>> CCANAPI.ProbeChannel(%i): state = %s", i32Val,
+                                (state == CCANAPI::ChannelOccupied) ? "occupied" :
+                                (state == CCANAPI::ChannelAvailable) ? "available" :
+                                (state == CCANAPI::ChannelNotAvailable) ? "not available" : "not testable");
+                fprintf(stdout, "%s", (retVal == CCANAPI::IllegalParameter) ? " (waring: Op.-Mode not supported)\n" : "\n");
+            }
+            retVal = myDriver.SetProperty(CANPROP_SET_NEXT_CHANNEL, (void *)NULL, 0U);
         }
+        if (option_exit)
+            return 0;
     }
     retVal = myDriver.InitializeChannel(channel, opMode);
     if (retVal != CCANAPI::NoError) {
@@ -468,11 +479,9 @@ static void verbose(const can_mode_t mode, const can_bitrate_t bitrate, const ca
     if(bitrate.btr.frequency > 0) {
         fprintf(stdout, "Baudrate: %.0fkbps@%.1f%%",
             speed.nominal.speed / 1000., speed.nominal.samplepoint * 100.);
-#if (OPTION_CAN_2_0_ONLY == 0)
         if(/*speed.data.brse*/mode.fdoe && mode.brse)
             fprintf(stdout, ":%.0fkbps@%.1f%%",
                 speed.data.speed / 1000., speed.data.samplepoint * 100.);
-#endif
         fprintf(stdout, " (f_clock=%i,nom_brp=%u,nom_tseg1=%u,nom_tseg2=%u,nom_sjw=%u,nom_sam=%u",
             bitrate.btr.frequency,
             bitrate.btr.nominal.brp,
@@ -480,14 +489,12 @@ static void verbose(const can_mode_t mode, const can_bitrate_t bitrate, const ca
             bitrate.btr.nominal.tseg2,
             bitrate.btr.nominal.sjw,
             bitrate.btr.nominal.sam);
-#if (OPTION_CAN_2_0_ONLY == 0)
         if(mode.fdoe && mode.brse)
             fprintf(stdout, ",data_brp=%u,data_tseg1=%u,data_tseg2=%u,data_sjw=%u",
                 bitrate.btr.data.brp,
                 bitrate.btr.data.tseg1,
                 bitrate.btr.data.tseg2,
                 bitrate.btr.data.sjw);
-#endif
         fprintf(stdout, ")\n");
     }
     else {

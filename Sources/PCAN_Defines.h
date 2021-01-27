@@ -18,17 +18,7 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with CAN API V3.  If not, see <http://www.gnu.org/licenses/>.
  */
- /** @file        CANAPI_PeakCAN.h
-  *
-  *  @brief       CAN API V3 for generic CAN Interfaces - PEAK PCAN Interface
-  *
-  *  @remarks     Only PCAN-USB devices are considered!
-  *
-  *  @author      $Author: haumea $
-  *
-  *  @version     $Rev: 951 $
-  *
-  *  @addtogroup  can_api
+ /** @addtogroup  can_api
   *  @{
   */
 #ifndef CANAPI_PEAKCAN_H_INCLUDED

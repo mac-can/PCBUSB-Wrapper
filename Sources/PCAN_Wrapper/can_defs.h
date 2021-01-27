@@ -1,7 +1,7 @@
 /*
  *  CAN Interface API, Version 3 (for PEAK PCAN-USB Interfaces)
  *
- *  Copyright (C) 2012-2021  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+ *  Copyright (C) 2005-2021  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
  *
  *  This file is part of PCBUSB-Wrapper.
  *
