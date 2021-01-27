@@ -22,9 +22,9 @@
  *
  *  @brief       CAN API V3 for generic CAN Interfaces - Data Types and Defines
  *
- *  @author      $Author: eris $
+ *  @author      $Author: haumea $
  *
- *  @version     $Rev: 969 $
+ *  @version     $Rev: 980 $
  *
  *  @addtogroup  can_api
  *  @{
@@ -51,11 +51,14 @@ extern "C" {
 /** @note  Set define OPTION_CANAPI_LIBRARY to a non-zero value to compile
  *         the master loader library (e.g. in the build environment). Or
  *         optionally set define OPTION_CANAPI_DRIVER to a non-zero value
- *         to compile a driver library.
+ *         to compile a driver/wrapper library.
  */
 /** @note  Set define OPTION_CAN_2_0_ONLY to a non-zero value to compile
  *         with CAN 2.0 frame format only (e.g. in the build environment).
  */
+#if (OPTION_CAN_2_0_ONLY != 0)
+#warning Compilation with with legacy CAN 2.0 frame format!
+#endif
 
 /*  -----------  defines  ------------------------------------------------
  */
@@ -265,7 +268,7 @@ extern "C" {
 #define CANPROP_GET_DEVICE_TYPE     10U /**< device type of the CAN interface (int32_t) */
 #define CANPROP_GET_DEVICE_NAME     11U /**< device name of the CAN interface (char[256]) */
 #define CANPROP_GET_DEVICE_VENDOR   12U /**< vendor name of the CAN interface (char[256]) */
-#define CANPROP_GET_DEVICE_DLLNAME  13U /**< file name of the CAN interface DLL(char[256]) */
+#define CANPROP_GET_DEVICE_DLLNAME  13U /**< file name of the CAN interface DLL (char[256]) */
 #define CANPROP_GET_DEVICE_PARAM    14U /**< device parameter of the CAN interface (char[256]) */
 #define CANPROP_GET_OP_CAPABILITY   15U /**< supported operation modes of the CAN controller (uint8_t) */
 #define CANPROP_GET_OP_MODE         16U /**< active operation mode of the CAN controller (uint8_t) */
@@ -325,7 +328,23 @@ extern "C" {
 #define CANPROP_SET_FMT_RX_PROMPT  162U /**< set formatter option: prompt for received messages (char[6+1]) */
 #define CANPROP_SET_FMT_TX_PROMPT  163U /**< set formatter option: prompt for sent messages (char[6+1]) */
 #endif
-#define CANPROP_GET_CPP_BACKDOOR   255U /**< get device handle from CCANAPI derived class (int32_t) */
+/* - -  access to vendor and interface list - - - - - - - - - - - - - - */
+#if (OPTION_CANAPI_LIBRARY != 0)
+#define CANPROP_SET_FIRST_VENDOR   224U /**< set index to the first entry in the vendor list (NULL) */
+#define CANPROP_SET_NEXT_VENDOR    225U /**< set index to the next entry in the vendor list (NULL) */
+#define CANPROP_GET_VENDOR_ID      226U /**< get library id at actual index in the vendor list (int32_t) */
+#define CANPROP_GET_VENDOR_NAME    227U /**< get vendor name at actual index in the vendor list (char[256]) */
+#define CANPROP_GET_VENDOR_DLLNAME 228U /**< get file name of the DLL at actual index in the vendor list (char[256]) */
+#endif
+#define CANPROP_SET_FIRST_CHANNEL  240U /**< set index to the first entry in the interface list (int32_t) */
+#define CANPROP_SET_NEXT_CHANNEL   241U /**< set index to the next entry in the interface list (NULL) */
+#define CANPROP_GET_CHANNEL_TYPE   242U /**< get device type at actual index in the interface list (int32_t) */
+#define CANPROP_GET_CHANNEL_NAME   243U /**< get device name at actual index in the interface list (char[256]) */
+#define CANPROP_GET_CHANNEL_DLLNAME 244U /**< get file name of the DLL at actual index in the interface list (char[256]) */
+#define CANPROP_GET_CHANNEL_VENDOR_ID 245U /**< get library id at actual index in the interface list (int32_t) */
+#define CANPROP_GET_CHANNEL_VENDOR_NAME 246U /**< get vendor name at actual index in the interface list (char[256]) */
+/* - -  access to device handle (for C++ wrapper classes) - - - - - - - */
+#define CANPROP_GET_CPP_BACKDOOR   255U /**< get device handle (int32_t) */
 /* - -  access to vendor-specific properties  - - - - - - - - - - - - - */
 #define CANPROP_GET_VENDOR_PROP    256U /**< get a vendor-specific property value (void*) */
 #define CANPROP_SET_VENDOR_PROP    512U /**< set a vendor-specific property value (void*) */

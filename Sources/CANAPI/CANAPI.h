@@ -37,14 +37,18 @@
 /// \note        Set define OPTION_CANAPI_LIBRARY to a non-zero value to compile
 ///              the master loader library (e.g. in the build environment). Or
 ///              optionally set define OPTION_CANAPI_DRIVER to a non-zero value
-///              to compile a driver library.
-//               
-/// \note        Set define OPTION_CAN_2_0_ONLY to a non-zero value to compile
-///              with CAN 2.0 frame format only (e.g. in the build environment).
+///              to compile a driver/wrapper library.
 //
+/// \note        Set define OPTION_CANCPP_DLLEXPORT to a non-zero value to compile
+///              as a dynamic link library (e.g. in the build environment).
+///              In your project set define OPTION_CANCPP_DLLIMPORT to a non-zero
+///              value to load the dynamic link library at run-time. Or set it to
+///              zero to compile your program with the CAN API source files or to
+///              link your program with the static library at compile-time.
+///
 /// \author      $Author: haumea $
 //
-/// \version     $Rev: 952 $
+/// \version     $Rev: 980 $
 //
 /// \defgroup    can_api CAN Interface API, Version 3
 /// \{
@@ -54,6 +58,22 @@
 
 #include "CANAPI_Defines.h"
 #include "CANAPI_Types.h"
+
+#if (CAN_API_SPEC != 0x300)
+#error Requires version 3.0 of CANAPI_Types.h
+#endif
+#if (OPTION_CANAPI_LIBRARY == 0)
+#if  (OPTION_CANAPI_DRIVER == 0)
+#define OPTION_CANAPI_DRIVER  1
+#endif
+#endif
+#if (OPTION_CANCPP_DLLEXPORT != 0)
+#define CANCPP  __declspec(dllexport)
+#elif (OPTION_CANCPP_DLLIMPORT != 0)
+#define CANCPP  __declspec(dllimport)
+#else
+#define CANCPP
+#endif
 
 /// \name   Aliases
 /// \brief  CAN API V3 Data-types.
@@ -95,7 +115,7 @@ typedef int CANAPI_Return_t;
 /// \name   CAN API V3
 /// \brief  An abstract class for CAN API V3 campatible CAN driver implementations.
 /// \{
-class CCANAPI {
+class CANCPP CCANAPI {
 public:
     /// \brief  CAN channel states
     enum EChannelState {
@@ -282,21 +302,21 @@ public:
     //
     /// \param[in]   param    - property id to be read
     /// \param[out]  value    - pointer to a buffer for the value to be read
-    /// \param[in]   nbytes   - size of the given buffer in bytes
+    /// \param[in]   nbyte   -  size of the given buffer in byte
     //
     /// \returns     0 if successful, or a negative value on error.
     //
-    virtual CANAPI_Return_t GetProperty(uint16_t param, void *value, uint32_t nbytes) = 0;
+    virtual CANAPI_Return_t GetProperty(uint16_t param, void *value, uint32_t nbyte) = 0;
 
     /// \brief       modifies a property value of the CAN interface.
     //
     /// \param[in]   param    - property id to be written
     /// \param[in]   value    - pointer to a buffer with the value to be written
-    /// \param[in]   nbytes   - size of the given buffer in bytes
+    /// \param[in]   nbyte   -  size of the given buffer in byte
     //
     /// \returns     0 if successful, or a negative value on error.
     //
-    virtual CANAPI_Return_t SetProperty(uint16_t param, const void *value, uint32_t nbytes) = 0;
+    virtual CANAPI_Return_t SetProperty(uint16_t param, const void *value, uint32_t nbyte) = 0;
 
     /// \brief       retrieves the hardware version of the CAN controller
     ///              board as a zero-terminated string.
@@ -363,4 +383,4 @@ public:
 /// \}
 #endif // CANAPI_H_INCLUDED
 /// \}
-// $Id: CANAPI.h 952 2021-01-17 13:41:26Z haumea $  Copyright (C) UV Software //
+// $Id: CANAPI.h 980 2021-01-27 10:15:44Z haumea $  Copyright (C) UV Software //
