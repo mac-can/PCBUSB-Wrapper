@@ -14,8 +14,9 @@
 static void sigterm(int signo);
 static volatile int running = 1;
 
+static CPCAN myDriver = CPCAN();
+
 int main(int argc, const char * argv[]) {
-    CPCAN myDriver = CPCAN();
     CANAPI_OpMode_t opMode = {};
     opMode.byte = CANMODE_DEFAULT;
     CANAPI_Bitrate_t bitrate = {};
@@ -70,7 +71,8 @@ teardown:
 }
 
 static void sigterm(int signo) {
-     //fprintf(stderr, "%s: got signal %d\n", __FILE__, signo);
-     running = 0;
-     (void)signo;
+    //fprintf(stderr, "%s: got signal %d\n", __FILE__, signo);
+    myDriver.SignalChannel();
+    running = 0;
+    (void)signo;
 }

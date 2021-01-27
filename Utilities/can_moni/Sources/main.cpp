@@ -16,23 +16,6 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include "PCAN_Defines.h"
-#include "PCAN.h"
-#include "Timer.h"
-#include "Message.h"
-
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <getopt.h>
-#include <signal.h>
-#include <errno.h>
-#include <time.h>
-
-#include <inttypes.h>
-
 #include "build_no.h"
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    2
@@ -50,12 +33,8 @@
 #else
 #error Unsupported architecture
 #endif
-#ifdef _DEBUG
-static const char APPLICATION[] = "CAN Monitor for PEAK PCAN-USB Interfaces, Version " VERSION_STRING " _DEBUG";
-#else
 static const char APPLICATION[] = "CAN Monitor for PEAK PCAN-USB Interfaces, Version " VERSION_STRING;
-#endif
-static const char COPYRIGHT[]   = "Copyright (C) 2007,2012-2021 by Uwe Vogt, UV Software, Berlin";
+static const char COPYRIGHT[]   = "Copyright (C) 2008-2010,2012-2021 by Uwe Vogt, UV Software, Berlin";
 static const char WARRANTY[]    = "This program comes with ABSOLUTELY NO WARRANTY!\n\n" \
                                   "This is free software, and you are welcome to redistribute it\n" \
                                   "under certain conditions; type `--version' for details.";
@@ -71,7 +50,30 @@ static const char LICENSE[]     = "This program is free software: you can redist
                                   "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 #define basename(x)  "can_moni" // FIXME: Where is my `basename' function?
 
-#define MAX_ID      (CAN_MAX_STD_ID + 1)
+#include "PCAN_Defines.h"
+#include "PCAN.h"
+#include "Timer.h"
+#include "Message.h"
+
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <getopt.h>
+#include <signal.h>
+#include <errno.h>
+#include <time.h>
+
+#include <inttypes.h>
+
+#ifdef _MSC_VER
+//not #if defined(_WIN32) || defined(_WIN64) because we have strncasecmp in mingw
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
+#endif
+
+#define MAX_ID  (CAN_MAX_STD_ID + 1)
 
 static int get_exclusion(const char *arg);  // TODO: make it a member function
 
@@ -121,10 +123,11 @@ static void sigterm(int signo);
 static void usage(FILE *stream, const char *program);
 static void version(FILE *stream, const char *program);
 
-static volatile int running = 1;
-
 static int can_id[MAX_ID];
 static int can_id_xtd = 1;
+static volatile int running = 1;
+
+static CCanDriver canDriver = CCanDriver();
 
 // TODO: this code could be made more C++ alike
 int main(int argc, const char * argv[]) {
@@ -140,7 +143,7 @@ int main(int argc, const char * argv[]) {
     int exclude = 0;
 //    char *script_file = NULL;
     int verbose = 0;
-    int num_boards;
+    int num_boards = 0;
     int show_version = 0;
     char *device, *firmware, *software;
     struct option long_options[] = {
@@ -167,7 +170,6 @@ int main(int argc, const char * argv[]) {
         {"version", no_argument, &show_version, 1},
         {0, 0, 0, 0}
     };
-    CCanDriver canDriver = CCanDriver();
     CANAPI_Bitrate_t bitrate = {};
     bitrate.index = CANBTR_INDEX_250K;
     CANAPI_OpMode_t opMode = {};
@@ -192,7 +194,7 @@ int main(int argc, const char * argv[]) {
         can_id[i] = 1;
     }
     /* signal handler */
-    if((signal(SIGINT, sigterm) == SIG_ERR) ||
+    if ((signal(SIGINT, sigterm) == SIG_ERR) ||
 #if !defined(_WIN32) && !defined(_WIN64)
        (signal(SIGHUP, sigterm) == SIG_ERR) ||
 #endif
@@ -427,7 +429,6 @@ int main(int argc, const char * argv[]) {
                 wraparound = CCanMessage::OptionWraparoundNo;
             else if (!strcasecmp(optarg, "8"))
                 wraparound = CCanMessage::OptionWraparound8;
-#if (OPTION_CAN_2_0_ONLY == 0)
             else if (!strcasecmp(optarg, "10"))
                 wraparound = CCanMessage::OptionWraparound10;
             else if (!strcasecmp(optarg, "16"))
@@ -436,7 +437,6 @@ int main(int argc, const char * argv[]) {
                 wraparound = CCanMessage::OptionWraparound32;
             else if (!strcasecmp(optarg, "64"))
                 wraparound = CCanMessage::OptionWraparound64;
-#endif
             else {
                     fprintf(stderr, "%s: illegal argument for option `--wrap' (%c)\n", basename(argv[0]), opt);
                     return 1;
@@ -525,19 +525,16 @@ int main(int argc, const char * argv[]) {
             fprintf(stdout, "Bit-rate=%.0fkbps@%.1f%%",
                 speed.nominal.speed / 1000.,
                 speed.nominal.samplepoint * 100.);
-#if (OPTION_CAN_2_0_ONLY == 0)
             if (speed.data.brse)
                 fprintf(stdout, ":%.0fkbps@%.1f%%",
                     speed.data.speed / 1000.,
                     speed.data.samplepoint * 100.);
-#endif
             fprintf(stdout, " (f_clock=%i,nom_brp=%u,nom_tseg1=%u,nom_tseg2=%u,nom_sjw=%u",
                 bitrate.btr.frequency,
                 bitrate.btr.nominal.brp,
                 bitrate.btr.nominal.tseg1,
                 bitrate.btr.nominal.tseg2,
                 bitrate.btr.nominal.sjw);
-#if (OPTION_CAN_2_0_ONLY == 0)
             if (speed.data.brse)
                 fprintf(stdout, ",data_brp=%u,data_tseg1=%u,data_tseg2=%u,data_sjw=%u",
                     bitrate.btr.data.brp,
@@ -545,7 +542,6 @@ int main(int argc, const char * argv[]) {
                     bitrate.btr.data.tseg2,
                     bitrate.btr.data.sjw);
             else
-#endif
                 fprintf(stdout, ",nom_sam=%u", bitrate.btr.nominal.sam);
             fprintf(stdout, ")\n\n");
         }
@@ -572,11 +568,9 @@ int main(int argc, const char * argv[]) {
     if (bitrate.btr.frequency > 0) {
         fprintf(stdout, "Bit-rate=%.0fkbps",
             speed.nominal.speed / 1000.);
-#if (OPTION_CAN_2_0_ONLY == 0)
         if (speed.data.brse)
             fprintf(stdout, ":%.0fkbps",
                 speed.data.speed / 1000.);
-#endif
         fprintf(stdout, "...");
     }
     else {
@@ -699,7 +693,7 @@ uint64_t CCanDriver::ReceptionLoop() {
     uint64_t frames = 0U;
 
     char string[CANPROP_MAX_STRING_LENGTH+1];
-    bzero(string, CANPROP_MAX_STRING_LENGTH+1);
+    memset(string, 0, CANPROP_MAX_STRING_LENGTH+1);
 
     fprintf(stderr, "\nPress ^C to abort.\n\n");
     while(running) {
@@ -790,7 +784,7 @@ static int get_exclusion(const char *arg)
 static void sigterm(int signo)
 {
     //fprintf(stderr, "%s: got signal %d\n", __FILE__, signo);
-    //(void)canDriver.SignalChannel();
+    (void)canDriver.SignalChannel();
     running = 0;
     (void)signo;
 }
@@ -808,14 +802,10 @@ static void usage(FILE *stream, const char *program)
     fprintf(stream, " -i  --id=(HEX|DEC|OCT)        display mode of CAN-IDs (default=HEX)\n");
     fprintf(stream, " -d, --data=(HEX|DEC|OCT)      display mode of data bytes (default=HEX)\n");
     fprintf(stream, " -a, --ascii=(ON|OFF)          display data bytes in ASCII (default=ON)\n");
-#if (OPTION_CAN_2_0_ONLY == 0)
     fprintf(stream, " -w, --wrap=(NO|8|10|16|32|64) wraparound after n data bytes (default=NO)\n");
-#endif
     fprintf(stream, " -x, --exclude=[~]<id-list>    exclude CAN-IDs: <id>[-<id>]{,<id>[-<id>]}\n");
 //    fprintf(stream, " -s, --script=<filename>       execute a script file\n"); // TODO: script engine
-#if (OPTION_CAN_2_0_ONLY == 0)
     fprintf(stream, " -m, --mode=(2.0|FDF[+BSR])    CAN operation mode: CAN 2.0 or CAN FD format\n");
-#endif
     fprintf(stream, "     --shared                  shared CAN controller access (when supported)\n");
     fprintf(stream, "     --listen-only             monitor mode (listen-only, transmitter is off)\n");
     fprintf(stream, "     --error-frames            allow reception of error frames\n");

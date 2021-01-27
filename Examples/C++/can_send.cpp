@@ -1,6 +1,9 @@
 #include <iostream>
+#if !defined(_WIN32) && !defined(_WIN64)
 #include <unistd.h>
-
+#else
+#include <windows.h>
+#endif
 #define OPTION_CANAPI_DRIVER  1
 #include "can_api.h"
 
@@ -45,7 +48,11 @@ int main(int argc, const char * argv[]) {
             goto reset;;
         }
     }
+#if !defined(_WIN32) && !defined(_WIN64)
     usleep(1000000);  // afterburner
+#else
+    Sleep(1000);    // wait a minute
+#endif
 reset:
     std::cout << i << " frame(s) sent" << std::endl;
     if ((result = can_reset(handle)) < 0)

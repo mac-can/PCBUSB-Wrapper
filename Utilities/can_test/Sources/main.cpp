@@ -1,7 +1,7 @@
 //
 //  CAN Tester for PEAK PCAN-USB Interfaces
 //
-//  Copyright (C) 2007,2012-2021  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+//  Copyright (C) 2008-2010,2012-2021  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -16,22 +16,6 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
-#include "PCAN_Defines.h"
-#include "PCAN.h"
-#include "Timer.h"
-
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <getopt.h>
-#include <signal.h>
-#include <errno.h>
-#include <time.h>
-
-#include <inttypes.h>
-
 #include "build_no.h"
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    2
@@ -49,12 +33,8 @@
 #else
 #error Unsupported architecture
 #endif
-#ifdef _DEBUG
-static const char APPLICATION[] = "CAN Tester for PEAK PCAN-USB Interfaces, Version " VERSION_STRING " _DEBUG";
-#else
 static const char APPLICATION[] = "CAN Tester for PEAK PCAN-USB Interfaces, Version " VERSION_STRING;
-#endif
-static const char COPYRIGHT[]   = "Copyright (C) 2007,2012-2021 by Uwe Vogt, UV Software, Berlin";
+static const char COPYRIGHT[]   = "Copyright (C) 2008-2010,2012-2021 by Uwe Vogt, UV Software, Berlin";
 static const char WARRANTY[]    = "This program comes with ABSOLUTELY NO WARRANTY!\n\n" \
                                   "This is free software, and you are welcome to redistribute it\n" \
                                   "under certain conditions; type `--version' for details.";
@@ -69,6 +49,28 @@ static const char LICENSE[]     = "This program is free software: you can redist
                                   "You should have received a copy of the GNU General Public License\n" \
                                   "along with this program.  If not, see <http://www.gnu.org/licenses/>.";
 #define basename(x)  "can_test" // FIXME: Where is my `basename' function?
+
+#include "PCAN_Defines.h"
+#include "PCAN.h"
+#include "Timer.h"
+
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <getopt.h>
+#include <signal.h>
+#include <errno.h>
+#include <time.h>
+
+#include <inttypes.h>
+
+#ifdef _MSC_VER
+//not #if defined(_WIN32) || defined(_WIN64) because we have strncasecmp in mingw
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
+#endif
 
 #define RxMODE  (0)
 #define TxMODE  (1)
@@ -126,6 +128,8 @@ static void version(FILE *stream, const char *program);
 static const char *prompt[4] = {"-\b", "/\b", "|\b", "\\\b"};
 static volatile int running = 1;
 
+static CCanDriver canDriver = CCanDriver();
+
 // TODO: this code could be made more C++ alike
 int main(int argc, const char * argv[]) {
     int opt;
@@ -170,7 +174,6 @@ int main(int argc, const char * argv[]) {
         {"version", no_argument, &show_version, 1},
         {0, 0, 0, 0}
     };
-    CCanDriver canDriver = CCanDriver();
     CANAPI_Bitrate_t bitrate = {};
     bitrate.index = CANBTR_INDEX_250K;
     CANAPI_OpMode_t opMode = {};
@@ -184,7 +187,7 @@ int main(int argc, const char * argv[]) {
     (void)op;
 
     /* signal handler */
-    if((signal(SIGINT, sigterm) == SIG_ERR) ||
+    if ((signal(SIGINT, sigterm) == SIG_ERR) ||
 #if !defined(_WIN32) && !defined(_WIN64)
        (signal(SIGHUP, sigterm) == SIG_ERR) ||
 #endif
@@ -496,7 +499,6 @@ int main(int argc, const char * argv[]) {
         fprintf(stderr, "%s: illegal argument `%s'\n", basename(argv[0]), argv[optind]);
         return 1;
     }
-#if (OPTION_CAN_2_0_ONLY == 0)
     /* - check data length length and make CAN FD DLC (0x0..0xF) */
     if (!opMode.fdoe && (dlc > CAN_MAX_LEN)) {
         fprintf(stderr, "%s: illegal combination of options `--mode' (m) and `--dlc' (d)\n", basename(argv[0]));
@@ -510,7 +512,11 @@ int main(int argc, const char * argv[]) {
         else if (dlc > 12) dlc = 0xA;
         else if (dlc > 8) dlc = 0x9;
     }
-#endif
+    /* - check bit-timing index (n/a for CAN FD) */
+    if (opMode.fdoe && (bitrate.btr.frequency <= 0)) {
+        fprintf(stderr, "%s: illegal combination of options `--mode' (m) and `--listen-only'\n", basename(argv[0]));
+        return 1;
+    }
     /* - check operation mode flags */
     if ((mode != RxMODE) && opMode.mon) {
         fprintf(stderr, "%s: illegal option `--listen-only' for transmitter test\n", basename(argv[0]));
@@ -546,19 +552,16 @@ int main(int argc, const char * argv[]) {
             fprintf(stdout, "Bit-rate=%.0fkbps@%.1f%%",
                 speed.nominal.speed / 1000.,
                 speed.nominal.samplepoint * 100.);
-#if (OPTION_CAN_2_0_ONLY == 0)
             if (speed.data.brse)
                 fprintf(stdout, ":%.0fkbps@%.1f%%",
                     speed.data.speed / 1000.,
                     speed.data.samplepoint * 100.);
-#endif
             fprintf(stdout, " (f_clock=%i,nom_brp=%u,nom_tseg1=%u,nom_tseg2=%u,nom_sjw=%u",
                 bitrate.btr.frequency,
                 bitrate.btr.nominal.brp,
                 bitrate.btr.nominal.tseg1,
                 bitrate.btr.nominal.tseg2,
                 bitrate.btr.nominal.sjw);
-#if (OPTION_CAN_2_0_ONLY == 0)
             if (speed.data.brse)
                 fprintf(stdout, ",data_brp=%u,data_tseg1=%u,data_tseg2=%u,data_sjw=%u",
                     bitrate.btr.data.brp,
@@ -566,7 +569,6 @@ int main(int argc, const char * argv[]) {
                     bitrate.btr.data.tseg2,
                     bitrate.btr.data.sjw);
             else
-#endif
                 fprintf(stdout, ",nom_sam=%u", bitrate.btr.nominal.sam);
             fprintf(stdout, ")\n\n");
         }
@@ -593,11 +595,9 @@ int main(int argc, const char * argv[]) {
     if (bitrate.btr.frequency > 0) {
         fprintf(stdout, "Bit-rate=%.0fkbps",
             speed.nominal.speed / 1000.);
-#if (OPTION_CAN_2_0_ONLY == 0)
         if (speed.data.brse)
             fprintf(stdout, ":%.0fkbps",
                 speed.data.speed / 1000.);
-#endif
         fprintf(stdout, "...");
     }
     else {
@@ -740,12 +740,8 @@ uint64_t CCanDriver::TransmitterTest(time_t duration, CANAPI_OpMode_t opMode, ui
     message.id  = id;
     message.xtd = 0;
     message.rtr = 0;
-#if (OPTION_CAN_2_0_ONLY == 0)
     message.fdf = opMode.fdoe;
     message.brs = opMode.brse;
-#else
-    (void)opMode;
-#endif
     message.dlc = dlc;
     fprintf(stdout, "\nTransmitting message(s)...");
     fflush (stdout);
@@ -758,9 +754,7 @@ uint64_t CCanDriver::TransmitterTest(time_t duration, CANAPI_OpMode_t opMode, ui
         message.data[5] = (uint8_t)((frames + offset) >> 40);
         message.data[6] = (uint8_t)((frames + offset) >> 48);
         message.data[7] = (uint8_t)((frames + offset) >> 56);
-#if (OPTION_CAN_2_0_ONLY == 0)
         memset(&message.data[8], 0, CANFD_MAX_LEN - 8);
-#endif
         /* transmit message (repeat when busy) */
 retry_tx_test:
         calls++;
@@ -809,12 +803,8 @@ uint64_t CCanDriver::TransmitterTest(uint64_t count, CANAPI_OpMode_t opMode, boo
     message.id  = id;
     message.xtd = 0;
     message.rtr = 0;
-#if (OPTION_CAN_2_0_ONLY == 0)
     message.fdf = opMode.fdoe;
     message.brs = opMode.brse;
-#else
-    (void)opMode;
-#endif
     message.dlc = dlc;
     fprintf(stdout, "\nTransmitting message(s)...");
     fflush (stdout);
@@ -827,14 +817,9 @@ uint64_t CCanDriver::TransmitterTest(uint64_t count, CANAPI_OpMode_t opMode, boo
         message.data[5] = (uint8_t)((frames + offset) >> 40);
         message.data[6] = (uint8_t)((frames + offset) >> 48);
         message.data[7] = (uint8_t)((frames + offset) >> 56);
-#if (OPTION_CAN_2_0_ONLY == 0)
         memset(&message.data[8], 0, CANFD_MAX_LEN - 8);
         if (random)
             message.dlc = dlc + (uint8_t)(rand() % ((CANFD_MAX_DLC - dlc) + 1));
-#else
-        if (random)
-            message.dlc = dlc + (uint8_t)(rand() % ((CAN_MAX_DLC - dlc) + 1));
-#endif
         /* transmit message (repeat when busy) */
 retry_tx_test:
         calls++;
@@ -957,7 +942,7 @@ uint64_t CCanDriver::ReceiverTest(bool checkCounter, uint64_t expectedNumber, bo
 static void sigterm(int signo)
 {
     //fprintf(stderr, "%s: got signal %d\n", __FILE__, signo);
-    //(void)canDriver.SignalChannel();
+    (void)canDriver.SignalChannel();
     running = 0;
     (void)signo;
 }
