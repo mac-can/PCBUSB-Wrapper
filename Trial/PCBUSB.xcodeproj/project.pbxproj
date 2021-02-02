@@ -117,7 +117,7 @@
 		0FE14B0F25AEEA4900E87475 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1230;
+				LastUpgradeCheck = 1240;
 				TargetAttributes = {
 					0FE14B1625AEEA4900E87475 = {
 						CreatedOnToolsVersion = 12.3;
@@ -291,6 +291,7 @@
 		0FE14B1F25AEEA4900E87475 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -299,6 +300,7 @@
 		0FE14B2025AEEA4900E87475 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

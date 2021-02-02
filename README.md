@@ -108,13 +108,13 @@ Type `can_test --help` to display all program options.
 
 - Apple´s macOS (x86_64)
 
-### Development Environment
+### Development Environments
 
 #### macOS Big Sur
 
-- macOS Big Sur (11.1) on a MacBook Pro (2019)
-- Apple clang version 12.0.0 (clang-1200.0.32.28)
-- Xcode Version 12.3 (12C33)
+- macOS Big Sur (11.2) on a MacBook Pro (2019)
+- Apple clang version 12.0.0 (clang-1200.0.32.29)
+- Xcode Version 12.4 (12D4e)
 
 #### macOS High Sierra
 
