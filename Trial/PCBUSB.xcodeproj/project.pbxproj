@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		0FB7FEA125AEEBBA00A2B7B1 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0FB7FEA025AEEBBA00A2B7B1 /* main.cpp */; };
-		0FB7FEA625AEEBE100A2B7B1 /* PCAN.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0FB7FEA525AEEBE100A2B7B1 /* PCAN.cpp */; };
-		0FB7FEAB25AEED0F00A2B7B1 /* can_api.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FB7FEA825AEED0F00A2B7B1 /* can_api.c */; };
 		0FB7FEB225AEED5500A2B7B1 /* can_btr.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FB7FEB125AEED5500A2B7B1 /* can_btr.c */; };
+		0FC6171925CC66F30010B15D /* PeakCAN.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0FC6171725CC66F30010B15D /* PeakCAN.cpp */; };
+		0FC6171E25CC67360010B15D /* can_api.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FC6171D25CC67360010B15D /* can_api.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,20 +26,20 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0F86FB2F25BC24AF009844F5 /* PCAN_Defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PCAN_Defines.h; path = ../Sources/PCAN_Defines.h; sourceTree = "<group>"; };
 		0F86FB3025BC24C4009844F5 /* CANAPI_Defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CANAPI_Defines.h; path = ../Sources/CANAPI/CANAPI_Defines.h; sourceTree = "<group>"; };
 		0FB7FEA025AEEBBA00A2B7B1 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = Sources/main.cpp; sourceTree = "<group>"; };
-		0FB7FEA325AEEBE100A2B7B1 /* PCAN.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PCAN.h; path = ../Sources/PCAN.h; sourceTree = "<group>"; };
 		0FB7FEA425AEEBE100A2B7B1 /* build_no.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = build_no.h; path = ../Sources/build_no.h; sourceTree = "<group>"; };
-		0FB7FEA525AEEBE100A2B7B1 /* PCAN.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PCAN.cpp; path = ../Sources/PCAN.cpp; sourceTree = "<group>"; };
-		0FB7FEA825AEED0F00A2B7B1 /* can_api.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = can_api.c; path = ../Sources/PCAN_Wrapper/can_api.c; sourceTree = "<group>"; };
-		0FB7FEA925AEED0F00A2B7B1 /* PCBUSB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PCBUSB.h; path = ../Sources/PCAN_Wrapper/PCBUSB.h; sourceTree = "<group>"; };
-		0FB7FEAA25AEED0F00A2B7B1 /* can_defs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = can_defs.h; path = ../Sources/PCAN_Wrapper/can_defs.h; sourceTree = "<group>"; };
 		0FB7FEAD25AEED5500A2B7B1 /* CANAPI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CANAPI.h; path = ../Sources/CANAPI/CANAPI.h; sourceTree = "<group>"; };
 		0FB7FEAE25AEED5500A2B7B1 /* CANAPI_Types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CANAPI_Types.h; path = ../Sources/CANAPI/CANAPI_Types.h; sourceTree = "<group>"; };
 		0FB7FEAF25AEED5500A2B7B1 /* can_api.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = can_api.h; path = ../Sources/CANAPI/can_api.h; sourceTree = "<group>"; };
 		0FB7FEB025AEED5500A2B7B1 /* can_btr.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = can_btr.h; path = ../Sources/CANAPI/can_btr.h; sourceTree = "<group>"; };
 		0FB7FEB125AEED5500A2B7B1 /* can_btr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = can_btr.c; path = ../Sources/CANAPI/can_btr.c; sourceTree = "<group>"; };
+		0FC6171625CC66F30010B15D /* PeakCAN.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PeakCAN.h; path = ../Sources/PeakCAN.h; sourceTree = "<group>"; };
+		0FC6171725CC66F30010B15D /* PeakCAN.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PeakCAN.cpp; path = ../Sources/PeakCAN.cpp; sourceTree = "<group>"; };
+		0FC6171825CC66F30010B15D /* PeakCAN_Defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PeakCAN_Defines.h; path = ../Sources/PeakCAN_Defines.h; sourceTree = "<group>"; };
+		0FC6171B25CC67360010B15D /* can_defs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = can_defs.h; path = ../Sources/Wrapper/can_defs.h; sourceTree = "<group>"; };
+		0FC6171C25CC67360010B15D /* PCBUSB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PCBUSB.h; path = ../Sources/Wrapper/PCBUSB.h; sourceTree = "<group>"; };
+		0FC6171D25CC67360010B15D /* can_api.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = can_api.c; path = ../Sources/Wrapper/can_api.c; sourceTree = "<group>"; };
 		0FE14B1725AEEA4900E87475 /* PCBUSB */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PCBUSB; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -57,18 +57,18 @@
 		0FB7FE9F25AEEB9900A2B7B1 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				0FC6171C25CC67360010B15D /* PCBUSB.h */,
+				0FC6171B25CC67360010B15D /* can_defs.h */,
+				0FC6171D25CC67360010B15D /* can_api.c */,
 				0FB7FEAF25AEED5500A2B7B1 /* can_api.h */,
 				0FB7FEB125AEED5500A2B7B1 /* can_btr.c */,
 				0FB7FEB025AEED5500A2B7B1 /* can_btr.h */,
 				0FB7FEAD25AEED5500A2B7B1 /* CANAPI.h */,
 				0FB7FEAE25AEED5500A2B7B1 /* CANAPI_Types.h */,
 				0F86FB3025BC24C4009844F5 /* CANAPI_Defines.h */,
-				0FB7FEA825AEED0F00A2B7B1 /* can_api.c */,
-				0FB7FEAA25AEED0F00A2B7B1 /* can_defs.h */,
-				0F86FB2F25BC24AF009844F5 /* PCAN_Defines.h */,
-				0FB7FEA525AEEBE100A2B7B1 /* PCAN.cpp */,
-				0FB7FEA325AEEBE100A2B7B1 /* PCAN.h */,
-				0FB7FEA925AEED0F00A2B7B1 /* PCBUSB.h */,
+				0FC6171825CC66F30010B15D /* PeakCAN_Defines.h */,
+				0FC6171725CC66F30010B15D /* PeakCAN.cpp */,
+				0FC6171625CC66F30010B15D /* PeakCAN.h */,
 				0FB7FEA425AEEBE100A2B7B1 /* build_no.h */,
 				0FB7FEA025AEEBBA00A2B7B1 /* main.cpp */,
 			);
@@ -147,9 +147,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0FC6171925CC66F30010B15D /* PeakCAN.cpp in Sources */,
+				0FC6171E25CC67360010B15D /* can_api.c in Sources */,
 				0FB7FEA125AEEBBA00A2B7B1 /* main.cpp in Sources */,
-				0FB7FEAB25AEED0F00A2B7B1 /* can_api.c in Sources */,
-				0FB7FEA625AEEBE100A2B7B1 /* PCAN.cpp in Sources */,
 				0FB7FEB225AEED5500A2B7B1 /* can_btr.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -220,7 +220,7 @@
 					./Sources,
 					../Sources,
 					../Sources/CANAPI,
-					../Sources/PCAN_Wrapper,
+					../Sources/Wrapper,
 				);
 			};
 			name = Debug;
@@ -283,7 +283,7 @@
 					./Sources,
 					../Sources,
 					../Sources/CANAPI,
-					../Sources/PCAN_Wrapper,
+					../Sources/Wrapper,
 				);
 			};
 			name = Release;

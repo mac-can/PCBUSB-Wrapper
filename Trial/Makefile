@@ -28,13 +28,13 @@ MAIN_DIR = ./Sources
 
 SOURCE_DIR = $(HOME_DIR)/Sources
 CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
-PCBUSB_DIR = $(HOME_DIR)/Sources/PCAN_Wrapper
+PCBUSB_DIR = $(HOME_DIR)/Sources/Wrapper
 
-OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/PCAN.o \
+OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/PeakCAN.o \
 	$(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o
 
 
-ifeq ($(current_OS),Darwin) # macOS - libPCAN.dylib
+ifeq ($(current_OS),Darwin) # macOS - libPeakCAN.dylib
 
 VERSION = 0
 
@@ -102,7 +102,7 @@ install:
 $(OUTDIR)/main.o: $(MAIN_DIR)/main.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
-$(OUTDIR)/PCAN.o: $(SOURCE_DIR)/PCAN.cpp
+$(OUTDIR)/PeakCAN.o: $(SOURCE_DIR)/PeakCAN.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 $(OUTDIR)/can_api.o: $(PCBUSB_DIR)/can_api.c

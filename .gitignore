@@ -5,8 +5,8 @@ Trial/.objects
 Trial/pcb_test
 Libraries/CANAPI/.objects
 Libraries/CANAPI/libUVCANPCB.*
-Libraries/UVPCAN/.objects
-Libraries/UVPCAN/libUVPCAN.*
+Libraries/PeakCAN/.objects
+Libraries/PeakCAN/libPeakCAN.*
 Utilities/can_moni/.objects
 Utilities/can_moni/can_moni
 Utilities/can_test/.objects

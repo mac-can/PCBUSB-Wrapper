@@ -27,7 +27,7 @@ HOME_DIR = ../..
 
 SOURCE_DIR = $(HOME_DIR)/Sources
 CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
-PCBUSB_DIR = $(HOME_DIR)/Sources/PCAN_Wrapper
+PCBUSB_DIR = $(HOME_DIR)/Sources/Wrapper
 
 OBJECTS = $(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o
 
@@ -113,7 +113,7 @@ bindir:
 
 incdir:
 	@mkdir -p $(INCDIR)
-	@cp $(SOURCE_DIR)/PCAN_Defines.h $(INCDIR)
+	@cp $(SOURCE_DIR)/PeakCAN_Defines.h $(INCDIR)
 	@cp $(CANAPI_DIR)/can_api.h $(INCDIR)
 	@cp $(CANAPI_DIR)/CANAPI_Types.h $(INCDIR)
 	@cp $(CANAPI_DIR)/CANAPI_Defines.h $(INCDIR)

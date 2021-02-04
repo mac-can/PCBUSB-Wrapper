@@ -26,13 +26,13 @@ MAIN_DIR = ./Sources
 
 SOURCE_DIR = $(HOME_DIR)/Sources
 CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
-PCBUSB_DIR = $(HOME_DIR)/Sources/PCAN_Wrapper
+PCBUSB_DIR = $(HOME_DIR)/Sources/Wrapper
 
-OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o  $(BINDIR)/libUVPCAN.a \
+OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o  $(BINDIR)/libPeakCAN.a \
 	$(OUTDIR)/Message.o $(OUTDIR)/can_msg.o
 
 
-ifeq ($(current_OS),Darwin) # macOS - libUVPCAN.dylib
+ifeq ($(current_OS),Darwin) # macOS - libPeakCAN.dylib
 
 VERSION = 0
 
