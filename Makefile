@@ -23,28 +23,28 @@ all:
 	@echo "\033[1mBuilding PCBUSB-Wrapper...\033[0m"
 	$(MAKE) -C Trial $@
 	$(MAKE) -C Libraries/CANAPI $@
-	$(MAKE) -C Libraries/UVPCAN $@
+	$(MAKE) -C Libraries/PeakCAN $@
 	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Utilities/can_moni $@
 
 clean:
 	$(MAKE) -C Trial $@
 	$(MAKE) -C Libraries/CANAPI $@
-	$(MAKE) -C Libraries/UVPCAN $@
+	$(MAKE) -C Libraries/PeakCAN $@
 	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Utilities/can_moni $@
 
 distclean:
 	$(MAKE) -C Trial $@
 	$(MAKE) -C Libraries/CANAPI $@
-	$(MAKE) -C Libraries/UVPCAN $@
+	$(MAKE) -C Libraries/PeakCAN $@
 	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Utilities/can_moni $@
 
 install:
 	$(MAKE) -C Trial $@
 	$(MAKE) -C Libraries/CANAPI $@
-	$(MAKE) -C Libraries/UVPCAN $@
+	$(MAKE) -C Libraries/PeakCAN $@
 #	$(MAKE) -C Utilities/can_test $@
 #	$(MAKE) -C Utilities/can_moni $@
 

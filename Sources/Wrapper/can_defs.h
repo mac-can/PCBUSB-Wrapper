@@ -28,22 +28,22 @@
  */
 
 #include "CANAPI_Defines.h"
-#include "PCAN_Defines.h"
+#include "PeakCAN_Defines.h"
 
 
 /*  -----------  options  ------------------------------------------------
  */
-/* note: all options move into header PCAN_Defines.h */
+/* note: all options move into header PeakCAN_Defines.h */
 
 
 /*  -----------  defines  ------------------------------------------------
  */
-/* note: all defines move into header PCAN_Defines.h */
+/* note: all defines move into header PeakCAN_Defines.h */
 
 
 /*  -----------  types  --------------------------------------------------
  */
-/* note: all type definitions move into header PCAN_Defines.h */
+/* note: all type definitions move into header PeakCAN_Defines.h */
 
 
 #endif /* CAN_DEFS_H_INCLUDED */
