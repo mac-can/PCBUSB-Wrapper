@@ -22,9 +22,9 @@
  *
  *  @brief       CAN Message Formatter
  *
- *  @author      $Author: haumea $
+ *  @author      $Author: eris $
  *
- *  @version     $Rev: 980 $
+ *  @version     $Rev: 987 $
  *
  *  @defgroup    can_msg CAN Message Formatter
  *  @{
@@ -59,7 +59,7 @@ extern "C" {
  *         with CAN 2.0 frame format only (e.g. in the build environment).
  */
 #if (OPTION_CAN_2_0_ONLY != 0)
-#warning Compilation with with legacy CAN 2.0 frame format!
+#warning Compilation with legacy CAN 2.0 frame format!
 #endif
 
 /*  -----------  defines  ------------------------------------------------

@@ -67,6 +67,7 @@ int main(int argc, const char * argv[]) {
 teardown:
     if ((retVal = myDriver.TeardownChannel()) != CCANAPI::NoError)
         std::cerr << "+++ error: interface could not be shutdown" << std::endl;
+    std::cerr << "Cheers!" << std::endl;
     return retVal;
 }
 

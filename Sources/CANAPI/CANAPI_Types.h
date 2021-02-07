@@ -22,9 +22,9 @@
  *
  *  @brief       CAN API V3 for generic CAN Interfaces - Data Types and Defines
  *
- *  @author      $Author: haumea $
+ *  @author      $Author: eris $
  *
- *  @version     $Rev: 984 $
+ *  @version     $Rev: 986 $
  *
  *  @addtogroup  can_api
  *  @{
@@ -57,7 +57,7 @@ extern "C" {
  *         with CAN 2.0 frame format only (e.g. in the build environment).
  */
 #if (OPTION_CAN_2_0_ONLY != 0)
-#warning Compilation with with legacy CAN 2.0 frame format!
+#warning Compilation with legacy CAN 2.0 frame format!
 #endif
 
 /*  -----------  defines  ------------------------------------------------

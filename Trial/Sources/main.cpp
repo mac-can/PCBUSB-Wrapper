@@ -87,7 +87,7 @@ int main(int argc, const char * argv[]) {
     CANAPI_Return_t retVal = 0;
     int32_t channel = (int32_t)PCAN_USB1;
     uint16_t timeout = CANREAD_INFINITE;
-    useconds_t delay = 0U;
+    unsigned int delay = 0U;
     CCANAPI::EChannelState state;
     char szVal[CANPROP_MAX_BUFFER_SIZE];
     uint16_t u16Val;
@@ -150,8 +150,8 @@ int main(int argc, const char * argv[]) {
         if (!strcmp(argv[i], "BLOCKING")) timeout = CANREAD_INFINITE;
         /* transmit messages */
         if ((sscanf(argv[i], "%i", &opt) == 1) && (opt > 0)) option_transmit = opt;
-        if (!strncmp(argv[i], "C:", 2) && sscanf(argv[i], "C:%i", &opt) == 1) delay = (useconds_t)opt * 1000U;
-        if (!strncmp(argv[i], "U:", 2) && sscanf(argv[i], "U:%i", &opt) == 1) delay = (useconds_t)opt;
+        if (!strncmp(argv[i], "C:", 2) && sscanf(argv[i], "C:%i", &opt) == 1) delay = (unsigned int)opt * 1000U;
+        if (!strncmp(argv[i], "U:", 2) && sscanf(argv[i], "U:%i", &opt) == 1) delay = (unsigned int)opt;
         /* receive messages */
 //        if (!strcmp(argv[i], "STOP")) option_stop = OPTION_YES;
 //        if (!strcmp(argv[i], "CHECK")) option_check = OPTION_YES;
