@@ -66,7 +66,7 @@ MAJOR = 0
 MINOR = 2
 PATCH = 1
 
-VERSION = $(MAJOR).$(MINOR)
+VERSION = $(MAJOR).$(MINOR).$(PATCH)
 TARGET  = $(LIBRARY).$(VERSION).dylib
 STATIC  = $(LIBRARY).a
 
@@ -146,11 +146,12 @@ incdir:
 	@cp $(CANAPI_DIR)/CANAPI_Defines.h $(INCDIR)
 
 clean:
-	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
+	$(RM) $(TARGET) $(STATIC) $(OUTDIR)/*.o $(OUTDIR)/*.d
 
 pristine:
-	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
+	$(RM) $(TARGET) $(STATIC) $(OUTDIR)/*.o $(OUTDIR)/*.d
 	$(RM) $(BINDIR)/$(TARGET) $(BINDIR)/$(STATIC) $(BINDIR)/$(LIBRARY).dylib
+	$(RM) $(INCDIR)/*.h
 
 install:
 	@echo "Copying library file..."
