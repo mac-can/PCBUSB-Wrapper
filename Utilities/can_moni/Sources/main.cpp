@@ -1,7 +1,7 @@
 //
 //  CAN Monitor for PEAK PCAN-USB Interfaces
 //
-//  Copyright (C) 2007,2012-2021  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+//  Copyright (c) 2007,2012-2021 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@
 #error Unsupported architecture
 #endif
 static const char APPLICATION[] = "CAN Monitor for PEAK PCAN-USB Interfaces, Version " VERSION_STRING;
-static const char COPYRIGHT[]   = "Copyright (C) 2008-2010,2012-2021 by Uwe Vogt, UV Software, Berlin";
+static const char COPYRIGHT[]   = "Copyright (c) 2008-2010,2012-2021 by Uwe Vogt, UV Software, Berlin";
 static const char WARRANTY[]    = "This program comes with ABSOLUTELY NO WARRANTY!\n\n" \
                                   "This is free software, and you are welcome to redistribute it\n" \
                                   "under certain conditions; type `--version' for details.";
@@ -505,6 +505,11 @@ int main(int argc, const char * argv[]) {
     }
     if (CCanDriver::m_CanDevices[channel].adapter == EOF) {
         fprintf(stderr, "%s: illegal argument `%s'\n", basename(argv[0]), argv[optind]);
+        return 1;
+    }
+    /* - check bit-timing index (n/a for CAN FD) */
+    if (opMode.fdoe && (bitrate.btr.frequency <= 0)) {
+        fprintf(stderr, "%s: illegal combination of options `--mode' (m) and `--bitrate'\n", basename(argv[0]));
         return 1;
     }
     /* CAN Monitor for PEAK PCAN-Basic interfaces */

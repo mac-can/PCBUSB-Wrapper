@@ -1,7 +1,7 @@
 //
 //  CAN Tester for PEAK PCAN-USB Interfaces
 //
-//  Copyright (C) 2008-2010,2012-2021  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+//  Copyright (c) 2008-2010,2012-2021 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #include "build_no.h"
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    2
-#define VERSION_PATCH    0
+#define VERSION_PATCH    1
 #define VERSION_BUILD    BUILD_NO
 #define VERSION_STRING   TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) " (" TOSTRING(BUILD_NO) ")"
 #if defined(_WIN64)
@@ -34,7 +34,7 @@
 #error Unsupported architecture
 #endif
 static const char APPLICATION[] = "CAN Tester for PEAK PCAN-USB Interfaces, Version " VERSION_STRING;
-static const char COPYRIGHT[]   = "Copyright (C) 2008-2010,2012-2021 by Uwe Vogt, UV Software, Berlin";
+static const char COPYRIGHT[]   = "Copyright (c) 2008-2010,2012-2021 by Uwe Vogt, UV Software, Berlin";
 static const char WARRANTY[]    = "This program comes with ABSOLUTELY NO WARRANTY!\n\n" \
                                   "This is free software, and you are welcome to redistribute it\n" \
                                   "under certain conditions; type `--version' for details.";
@@ -514,7 +514,7 @@ int main(int argc, const char * argv[]) {
     }
     /* - check bit-timing index (n/a for CAN FD) */
     if (opMode.fdoe && (bitrate.btr.frequency <= 0)) {
-        fprintf(stderr, "%s: illegal combination of options `--mode' (m) and `--listen-only'\n", basename(argv[0]));
+        fprintf(stderr, "%s: illegal combination of options `--mode' (m) and `--bitrate'\n", basename(argv[0]));
         return 1;
     }
     /* - check operation mode flags */
