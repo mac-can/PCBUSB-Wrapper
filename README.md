@@ -21,7 +21,7 @@ In case of doubt the source code:
 
 ```C++
 /// \name   PeakCAN API
-/// \brief  CAN API V3 driver for PEAK PCAN-USB interfaces
+/// \brief  CAN API V3 wrapper for PEAK PCAN-USB interfaces
 /// \note   See CCANAPI for a description of the overridden methods
 /// \{
 class CPeakCAN : public CCANAPI {
@@ -34,7 +34,7 @@ public:
     static CANAPI_Return_t ProbeChannel(int32_t channel, CANAPI_OpMode_t opMode, const void *param, EChannelState &state);
     static CANAPI_Return_t ProbeChannel(int32_t channel, CANAPI_OpMode_t opMode, EChannelState &state);
 
-    CANAPI_Return_t InitializeChannel(int32_t channel, can_mode_t opMode, const void *param = NULL);
+    CANAPI_Return_t InitializeChannel(int32_t channel, CANAPI_OpMode_t opMode, const void *param = NULL);
     CANAPI_Return_t TeardownChannel();
     CANAPI_Return_t SignalChannel();
 
@@ -108,13 +108,13 @@ Type `can_test --help` to display all program options.
 
 - Apple´s macOS (x86_64)
 
-### Development Environments
+### Development Environment
 
 #### macOS Big Sur
 
-- macOS Big Sur (11.2) on a MacBook Pro (2019)
-- Apple clang version 12.0.0 (clang-1200.0.32.29)
-- Xcode Version 12.4 (12D4e)
+- macOS Big Sur (11.3.1) on a MacBook Pro (2019)
+- Apple clang version 12.0.5 (clang-1205.0.22.9)
+- Xcode Version 12.5 (12E262)
 
 #### macOS High Sierra
 
@@ -122,7 +122,7 @@ Type `can_test --help` to display all program options.
 - Apple LLVM version 10.0.0 (clang-1000.11.45.5)
 - Xcode Version 10.1 (10B61)
 
-### Supported CAN Hardware
+### CAN Hardware
 
 - PCAN-USB - single channel, CAN 2.0 (Peak´s item no.: IPEH-002021, IPEH-002021)
 - PCAN-USB FD - single channel, CAN 2.0 and CAN FD (Peak´s item no.: IPEH-004022)
@@ -130,54 +130,32 @@ Type `can_test --help` to display all program options.
 
 ### Required PCBUSB Library
 
-- `libPCBUSB.x.y.dylib` - Version 0.9 or later _(Latest is Greatest!)_
+- `libPCBUSB.x.y.dylib` - Version 0.10 or later _(Latest is Greatest!)_
 
 ## Known Bugs and Caveats
 
-- For a list of bugs and caveats in the underlying PCBUSB library read the documentation of the appropriated library version.
+- For a list of known bugs and caveats see tab [Issues](https://github.com/mac-can/PCBUSB-Wrapper/issues) in the GitHub repo.
+- For a list of known bugs and caveats in the underlying PCBUSB library read the documentation of the appropriated library version.
 - PCAN-USB Pro FD devices are supported since version 0.10 of the PCBUSB library, _but only the first channel_ (CAN1).
 
 ## This and That
 
-The PCBUSB library can be downloaded form the [MacCAN](https://mac-can.com/) website (binaries only).
+The PCBUSB library can be downloaded form the [MacCAN](https://mac-can.com/) website (binaries only). \
 Please note the copyright and license agreements.
 
-### Licenses
+### Dual-License
 
-#### CAN API V3 License
+This work is dual-licensed under the terms of the BSD 2-Clause "Simplified" License
+and under the terms of the GNU General Public License v3.0 (or any later version).
+You can choose between one of them if you use this work in whole or in part.
 
-CAN API V3 is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-CAN API V3 is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with CAN API V3.  If not, see <http://www.gnu.org/licenses/>.
-
-#### PCBUSB-Wrapper License
-
-PCBUSB-Wrapper is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-PCBUSB-Wrapper is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with PCBUSB-Wrapper.  If not, see <http://www.gnu.org/licenses/>.
+`SPDX-License-Identifier: BSD-2-Clause OR GPL-3.0-or-later`
 
 ### Trademarks
 
 Mac and macOS are trademarks of Apple Inc., registered in the U.S. and other countries. \
-PCAN is a registered trademark of PEAK-System Technik GmbH, Darmstadt, Germany.
+PCAN is a registered trademark of PEAK-System Technik GmbH, Darmstadt, Germany. \
+All other company, product and service names mentioned herein are trademarks, registered trademarks or service marks of their respective owners.
 
 ### Hazard Note
 
