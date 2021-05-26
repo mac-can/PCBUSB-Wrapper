@@ -1,7 +1,7 @@
 #
 #	CAN Tester for PEAK PCAN-USB Interfaces
 #
-#	Copyright (C) 2008-2010,2012-2021  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+#	Copyright (c) 2008-2010,2012-2021  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 #
 #	This program is free software: you can redistribute it and/or modify
 #	it under the terms of the GNU General Public License as published by
@@ -95,7 +95,7 @@ incdir:
 clean:
 	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
 
-distclean:
+pristine:
 	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
 	$(RM) $(BINDIR)/$(TARGET)
 
