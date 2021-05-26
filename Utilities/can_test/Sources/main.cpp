@@ -514,7 +514,7 @@ int main(int argc, const char * argv[]) {
     }
     /* - check bit-timing index (n/a for CAN FD) */
     if (opMode.fdoe && (bitrate.btr.frequency <= 0)) {
-        fprintf(stderr, "%s: illegal combination of options `--mode' (m) and `--listen-only'\n", basename(argv[0]));
+        fprintf(stderr, "%s: illegal combination of options `--mode' (m) and `--bitrate'\n", basename(argv[0]));
         return 1;
     }
     /* - check operation mode flags */

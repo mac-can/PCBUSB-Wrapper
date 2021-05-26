@@ -507,6 +507,11 @@ int main(int argc, const char * argv[]) {
         fprintf(stderr, "%s: illegal argument `%s'\n", basename(argv[0]), argv[optind]);
         return 1;
     }
+    /* - check bit-timing index (n/a for CAN FD) */
+    if (opMode.fdoe && (bitrate.btr.frequency <= 0)) {
+        fprintf(stderr, "%s: illegal combination of options `--mode' (m) and `--bitrate'\n", basename(argv[0]));
+        return 1;
+    }
     /* CAN Monitor for PEAK PCAN-Basic interfaces */
     fprintf(stdout, "%s\n%s\n\n%s\n\n", APPLICATION, COPYRIGHT, WARRANTY);
 
