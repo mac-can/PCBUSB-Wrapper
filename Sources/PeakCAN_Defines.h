@@ -149,7 +149,7 @@ extern "C" {
  *  @brief More or less useful stuff
  *  @{ */
 #define PCAN_LIB_VENDOR         "PEAK-System Technik GmbH, Darmstadt"
-#define PCAN_LIB_WEBSITE        "www.peak-system.com"
+#define PCAN_LIB_WEBSITE        "https://www.peak-system.com/"
 #define PCAN_LIB_HAZARD_NOTE    "Do not connect your CAN device to a real CAN network when using this program.\n" \
                                 "This can damage your application."
 /** @} */

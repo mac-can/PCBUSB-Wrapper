@@ -56,10 +56,10 @@
 #define PEAKCAN_LIBRARY_ID  CANLIB_PCANBASIC
 #define PEAKCAN_LIBRARY_NAME  CANDLL_PCANBASIC
 #define PEAKCAN_LIBRARY_VENDOR  "UV Software, Berlin"
-#define PEAKCAN_LIBRARY_LICENSE  "GNU Lesser General Public License, Version 3"
-#define PEAKCAN_LIBRARY_COPYRIGHT  "Copyright (C) 2010-2021  Uwe Vogt, UV Software, Berlin"
+#define PEAKCAN_LIBRARY_LICENSE  "BSD-2-Clause OR GPL-3.0-or-later"
+#define PEAKCAN_LIBRARY_COPYRIGHT  "Copyright (c) 2012-2021 Uwe Vogt, UV Software, Berlin"
 #define PEAKCAN_LIBRARY_HAZARD_NOTE  "If you connect your CAN device to a real CAN network when using this library,\n" \
-                                  "you might damage your application."
+                                     "you might damage your application."
 /// \}
 
 
