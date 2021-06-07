@@ -109,9 +109,9 @@ ARFLAGS = r
 endif
 
 
-CXX = g++
-CC = gcc
-LD = gcc
+CXX = clang++
+CC = clang
+LD = clang
 AR = ar
 RM = rm -f
 CP = cp -f

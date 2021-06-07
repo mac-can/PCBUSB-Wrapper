@@ -1,22 +1,7 @@
 #
-#	CAN Interface API, Version 3 (for PEAK PCAN-USB Interfaces)
-#
-#	Copyright (C) 2010-2021  Uwe Vogt, UV Software, Berlin (info@uv-software.com)
-#
-#	This library is part of PCBUSB-Wrapper.
-#
-#	PCBUSB-Wrapper is free software: you can redistribute it and/or modify
-#	it under the terms of the GNU Lesser General Public License as published by
-#	the Free Software Foundation, either version 3 of the License, or
-#	(at your option) any later version.
-#
-#	PCBUSB-Wrapper is distributed in the hope that it will be useful,
-#	but WITHOUT ANY WARRANTY; without even the implied warranty of
-#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#	GNU Lesser General Public License for more details.
-#
-#	You should have received a copy of the GNU Lesser General Public License
-#	along with PCBUSB-Wrapper.  If not, see <http://www.gnu.org/licenses/>.
+#	Trial Program
+#	MacCAN-KvaserCAN
+#	Bart Simpson didn´t do it
 #
 current_OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown OS')
 current_OS := $(patsubst CYGWIN%,Cygwin,$(current_OS))
@@ -67,9 +52,9 @@ LDFLAGS  += -lpthread
 endif
 
 
-CXX = g++
-CC = gcc
-LD = g++
+CXX = clang++
+CC = clang
+LD = clang++
 RM = rm -f
 CP = cp -f
 
@@ -98,6 +83,8 @@ pristine:
 install:
 	$(CP) $(TARGET) $(INSTALL)
 
+test: info outdir $(TARGET)
+	./$(TARGET) INFO EXIT
 
 $(OUTDIR)/main.o: $(MAIN_DIR)/main.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
