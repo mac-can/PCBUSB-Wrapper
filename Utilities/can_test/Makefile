@@ -33,7 +33,7 @@ OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o  $(BINDIR)/libPeakCAN.a
 
 ifeq ($(current_OS),Darwin) # macOS - libPeakCAN.dylib
 
-VERSION = 0
+VERSION = 0.2
 
 TARGET  = can_test
 
@@ -63,9 +63,9 @@ LDFLAGS  += -lpthread
 endif
 
 
-CXX = g++
-CC = gcc
-LD = g++
+CXX = clang++
+CC = clang
+LD = clang++
 RM = rm -f
 CP = cp -f
 
