@@ -610,14 +610,21 @@ int can_write(int handle, const can_msg_t *msg, uint16_t timeout)
     if(can[handle].status.can_stopped)  // must be running
         return CANERR_OFFLINE;
 
-    if(msg->xtd) {
-        if(msg->id > CAN_MAX_XTD_ID)    // valid 29-bit identifier
+    if(msg->id > (uint32_t)(msg->xtd ? CAN_MAX_XTD_ID : CAN_MAX_STD_ID))
+        return CANERR_ILLPARA;          // invalid identifier
+    if(msg->xtd && can[handle].mode.nxtd)
+        return CANERR_ILLPARA;          // suppress extended frames
+    if(msg->rtr && can[handle].mode.nrtr)
+        return CANERR_ILLPARA;          // suppress remote frames
+    if(msg->fdf && !can[handle].mode.fdoe)
+        return CANERR_ILLPARA;          // long frames only with CAN FD
+    if(msg->brs && !can[handle].mode.brse)
+        return CANERR_ILLPARA;          // fast frames only with CAN FD
+    if(msg->brs && !msg->fdf)
             return CANERR_ILLPARA;
-    }
-    else {
-        if(msg->id > CAN_MAX_STD_ID)    // valid 11-bit identifier
+    if(msg->sts)
             return CANERR_ILLPARA;
-    }
+
     if(!can[handle].mode.fdoe) {
         if(msg->dlc > CAN_MAX_LEN)      //   data length 0 .. 8
             return CANERR_ILLPARA;
@@ -1366,32 +1373,32 @@ static int drv_parameter(int handle, uint16_t param, void *value, size_t nbyte)
         }
         break;
     case CANPROP_GET_BITRATE:           // active bit-rate of the CAN controller (can_bitrate_t)
-        if(((rc = can_bitrate(handle, &bitrate, NULL)) == CANERR_NOERROR) || (rc == CANERR_OFFLINE)) {
-            if(nbyte >= sizeof(can_bitrate_t)) {
+        if(nbyte >= sizeof(can_bitrate_t)) {
+            if(((rc = can_bitrate(handle, &bitrate, NULL)) == CANERR_NOERROR) || (rc == CANERR_OFFLINE)) {
                 memcpy(value, &bitrate, sizeof(can_bitrate_t));
                 rc = CANERR_NOERROR;
             }
         }
         break;
     case CANPROP_GET_SPEED:             // active bus speed of the CAN controller (can_speed_t)
-        if(((rc = can_bitrate(handle, NULL, &speed)) == CANERR_NOERROR) || (rc == CANERR_OFFLINE)) {
-            if(nbyte >= sizeof(can_speed_t)) {
+        if(nbyte >= sizeof(can_speed_t)) {
+            if(((rc = can_bitrate(handle, NULL, &speed)) == CANERR_NOERROR) || (rc == CANERR_OFFLINE)) {
                 memcpy(value, &speed, sizeof(can_speed_t));
                 rc = CANERR_NOERROR;
             }
         }
         break;
     case CANPROP_GET_STATUS:            // current status register of the CAN controller (uint8_t)
-        if((rc = can_status(handle, &status)) == CANERR_NOERROR) {
-            if(nbyte >= sizeof(uint8_t)) {
+        if(nbyte >= sizeof(uint8_t)) {
+            if((rc = can_status(handle, &status)) == CANERR_NOERROR) {
                 *(uint8_t*)value = (uint8_t)status;
                 rc = CANERR_NOERROR;
             }
         }
         break;
     case CANPROP_GET_BUSLOAD:           // current bus load of the CAN controller (uint8_t)
-        if((rc = can_busload(handle, &load, NULL)) == CANERR_NOERROR) {
-            if(nbyte >= sizeof(uint8_t)) {
+        if(nbyte >= sizeof(uint8_t)) {
+            if((rc = can_busload(handle, &load, NULL)) == CANERR_NOERROR) {
                 *(uint8_t*)value = (uint8_t)load;
                 rc = CANERR_NOERROR;
             }
