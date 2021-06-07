@@ -52,18 +52,26 @@
     Interface API for various CAN interfaces from different
     vendors running under multiple operating systems.
 
-    $Author: haumea $
+    $Author: eris $
 
-    $Rev: 924 $
+    $Rev: 999 $
 """
 from ctypes import *
 import platform
 import argparse
 import sys
 
+#-- FIXME: This fix will not work here ---
+#if platform.system() == "Darwin":
+#    # To solve an issue with file system relative paths that are not allowed
+#    # in hardened programs in Python 2.7 (under macOS).
+#    # Installation path on macOS is '/usr/local/lib'
+#    from ctypes.util import find_library
+#-- END ---
+
 # CAN API V3 - Python Wrapper
 #
-CAN_API_V3_PYTHON = {'major': 0, 'minor': 1, 'patch': 0}
+CAN_API_V3_PYTHON = {'major': 0, 'minor': 1, 'patch': 1}
 
 # CAN Identifier Ranges
 #
@@ -398,7 +406,13 @@ class CANAPI:
         # constructor: loads the given CAN API V3 driver library
         #
         try:
-            self.__m_library = cdll.LoadLibrary(library)
+            if platform.system() == 'Windows':
+                self.__m_library = windll.LoadLibrary(library)
+            elif platform.system() == 'Darwin':
+#                self.__m_library = cdll.LoadLibrary(find_library(library))
+                self.__m_library = cdll.LoadLibrary(library)  # FIXME: doesnot work with Python 2.x
+            else:
+                self.__m_library = cdll.LoadLibrary(library)
         except Exception as e:
             print('+++ exception: {}'.format(e))
             raise
@@ -534,7 +548,7 @@ class CANAPI:
           :param timeout: time to wait for the transmission of the message:
                             0 means the function returns immediately,
                             65535 means blocking write, and any other
-                            value means the time to wait im milliseconds
+                            value means the time to wait in milliseconds
           :return: 0 if successful, or a negative value on error
         """
         try:
@@ -555,7 +569,7 @@ class CANAPI:
           :param timeout: time to wait for the reception of the message:
                             0 means the function returns immediately,
                             65535 means blocking read, and any other
-                            value means the time to wait im milliseconds
+                            value means the time to wait in milliseconds
           :return: result, message
             result: 0 if successful, or a negative value on error
             message: the message read from the message queue or None
@@ -751,5 +765,5 @@ if __name__ == '__main__':
     # have a great time
     print('Bye, bye!')
 
-# * $Id: CANAPI.py 924 2021-01-09 15:54:05Z haumea $ *** (C) UV Software, Berlin ***
+# * $Id: CANAPI.py 999 2021-06-02 15:28:37Z eris $ *** (c) UV Software, Berlin ***
 #
