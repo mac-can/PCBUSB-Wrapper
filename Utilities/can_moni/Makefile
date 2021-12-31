@@ -26,15 +26,13 @@ MAIN_DIR = ./Sources
 
 SOURCE_DIR = $(HOME_DIR)/Sources
 CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
-PCBUSB_DIR = $(HOME_DIR)/Sources/Wrapper
+WRAPPER_DIR = $(HOME_DIR)/Sources/Wrapper
 
 OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o  $(BINDIR)/libPeakCAN.a \
 	$(OUTDIR)/Message.o $(OUTDIR)/can_msg.o
 
 
 ifeq ($(current_OS),Darwin) # macOS - libPeakCAN.dylib
-
-VERSION = 0.2
 
 TARGET  = can_moni
 
@@ -43,10 +41,10 @@ INSTALL = ~/bin
 DEFINES = -DOPTION_CANAPI_DRIVER=1 \
 	-DOPTION_CANAPI_COMPANIONS=1
 
-HEADERS = -I$(MAIN_DIR) \
-	-I$(SOURCE_DIR) \
+HEADERS = -I$(SOURCE_DIR) \
 	-I$(CANAPI_DIR) \
-	-I$(PCBUSB_DIR)
+	-I$(WRAPPER_DIR) \
+	-I$(MAIN_DIR)
 
 CFLAGS += -O2 -Wall -Wno-parentheses \
 	-fno-strict-aliasing \
@@ -61,23 +59,30 @@ LIBRARIES =
 
 LDFLAGS  += -lpthread
 
+ifeq ($(BINARY),UNIVERSAL)
+CFLAGS += -arch arm64 -arch x86_64
+CXXFLAGS += -arch arm64 -arch x86_64
+LDFLAGS += -arch arm64 -arch x86_64
+endif
 endif
 
 
 CXX = clang++
 CC = clang
 LD = clang++
+LT = libtool
 RM = rm -f
 CP = cp -f
+LN = ln -s
 
 OUTDIR = .objects
 BINDIR = $(HOME_DIR)/Binaries
 INCDIR = $(HOME_DIR)/Includes
 
-.PHONY: info outdir bindir incdir
+.PHONY: info outdir bindir
 
 
-all: info outdir bindir incdir $(TARGET)
+all: info outdir bindir $(TARGET)
 
 info:
 	@echo $(CXX)" on "$(current_OS)
@@ -89,9 +94,6 @@ outdir:
 
 bindir:
 	@mkdir -p $(BINDIR)
-
-incdir:
-	@mkdir -p $(INCDIR)
 
 clean:
 	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
@@ -120,5 +122,5 @@ $(OUTDIR)/can_msg.o: $(CANAPI_DIR)/can_msg.c
 
 $(TARGET): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
-	$(CP) $(TARGET) $(BINDIR)
+	@lipo -archs $@
 	@echo "\033[1mTarget '"$@"' successfully build\033[0m"
