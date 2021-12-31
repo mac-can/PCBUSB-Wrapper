@@ -70,6 +70,7 @@
 /// \{
 class CANCPP CPeakCAN : public CCanApi {
 private:
+    CANAPI_Handle_t m_Handle;  ///< CAN interface handle
     CANAPI_OpMode_t m_OpMode;  ///< CAN operation mode
     CANAPI_Bitrate_t m_Bitrate;  ///< CAN bitrate settings
     struct {
@@ -77,14 +78,11 @@ private:
         uint64_t u64RxMessages;  ///< number of received CAN messages
         uint64_t u64ErrorFrames;  ///< number of received status messages
     } m_Counter;
-    // opaque data type
-    struct SCAN;  ///< C++ forward declaration
-    SCAN *m_pCAN;  ///< PCAN-USB interface
 public:
     // constructor / destructor
     CPeakCAN();
     ~CPeakCAN();
-    // CPCAN-specific error codes (CAN API V3 extension)
+    // CPeakCAN-specific error codes (CAN API V3 extension)
     enum EErrorCodes {
         // note: range 0...-99 is reserved by CAN API V3
         GeneralError = VendorSpecific, ///< mapped PCAN-Basic error codes
@@ -143,7 +141,7 @@ public:
 };
 /// \}
 
-/// \name   PCAN Property IDs
+/// \name   PeakCAN Property IDs
 /// \brief  Properties that can be read (or written)
 /// \{
 #define PEAKCAN_PROPERTY_CANAPI              (CANPROP_GET_SPEC)

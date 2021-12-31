@@ -101,9 +101,16 @@ static const char version[] = "CAN API V3 for PEAK PCAN-USB Interfaces, Version 
 
 /*  -----------  options  ------------------------------------------------
  */
-
-#ifdef OPTION_CANAPI_PCBUSB_DYLIB
-#define EXPORT __attribute__((visibility("default")))
+#if (OPTION_CANAPI_PCBUSB_DYLIB != 0)
+__attribute__((constructor))
+static void _initializer() {
+    // default initializer
+}
+__attribute__((destructor))
+static void _finalizer() {
+    // default finalizer
+}
+#define EXPORT  __attribute__((visibility("default")))
 #else
 #define EXPORT
 #endif
@@ -210,26 +217,11 @@ static const uint8_t dlc_table[16] = {  // DLC to length
     0,1,2,3,4,5,6,7,8,12,16,20,24,32,48,64
 };
 static can_interface_t can[PCAN_MAX_HANDLES]; // interface handles
-static int init = 0;                    // initialization flag
+static int init =  0;  // initialization flag
 
 
 /*  -----------  functions  ----------------------------------------------
  */
-
-#ifdef _CANAPI_SHARED_LIBRARY
-__attribute__((constructor))
-static void _initializer()
-{
-    return;
-}
-
-__attribute__((destructor))
-static void _finalizer()
-{
-    return;
-}
-#endif
-
 EXPORT
 int can_test(int32_t board, uint8_t mode, const void *param, int *result)
 {
