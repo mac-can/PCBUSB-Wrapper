@@ -48,6 +48,7 @@
 #ifndef PEAKCAN_H_INCLUDED
 #define PEAKCAN_H_INCLUDED
 
+#include "PeakCAN_Defines.h"
 #include "CANAPI.h"
 
 /// \name   PeakCAN
@@ -57,7 +58,7 @@
 #define PEAKCAN_LIBRARY_NAME  CANDLL_PCANBASIC
 #define PEAKCAN_LIBRARY_VENDOR  "UV Software, Berlin"
 #define PEAKCAN_LIBRARY_LICENSE  "BSD-2-Clause OR GPL-3.0-or-later"
-#define PEAKCAN_LIBRARY_COPYRIGHT  "Copyright (c) 2012-2021 Uwe Vogt, UV Software, Berlin"
+#define PEAKCAN_LIBRARY_COPYRIGHT  "Copyright (c) 2012-2021  Uwe Vogt, UV Software, Berlin"
 #define PEAKCAN_LIBRARY_HAZARD_NOTE  "If you connect your CAN device to a real CAN network when using this library,\n" \
                                      "you might damage your application."
 /// \}
@@ -65,9 +66,9 @@
 
 /// \name   PeakCAN API
 /// \brief  CAN API V3 driver for PEAK PCAN-USB interfaces
-/// \note   See CCANAPI for a description of the overridden methods
+/// \note   See CCanApi for a description of the overridden methods
 /// \{
-class CANCPP CPeakCAN : public CCANAPI {
+class CANCPP CPeakCAN : public CCanApi {
 private:
     CANAPI_OpMode_t m_OpMode;  ///< CAN operation mode
     CANAPI_Bitrate_t m_Bitrate;  ///< CAN bitrate settings
@@ -102,11 +103,11 @@ public:
         Caution                = -289, ///< PCAN_ERROR_CAUTION: an operation was successfully carried out, however, irregularities were registered
         UnkownError            = -299  ///< PCAN_ERROR_UNKNOWN: unknown error
     };
-    // CCANAPI overrides
-    static CANAPI_Return_t ProbeChannel(int32_t channel, CANAPI_OpMode_t opMode, const void *param, EChannelState &state);
-    static CANAPI_Return_t ProbeChannel(int32_t channel, CANAPI_OpMode_t opMode, EChannelState &state);
+    // CCanApi overrides
+    static CANAPI_Return_t ProbeChannel(int32_t channel, const CANAPI_OpMode_t &opMode, const void *param, EChannelState &state);
+    static CANAPI_Return_t ProbeChannel(int32_t channel, const CANAPI_OpMode_t &opMode, EChannelState &state);
 
-    CANAPI_Return_t InitializeChannel(int32_t channel, can_mode_t opMode, const void *param = NULL);
+    CANAPI_Return_t InitializeChannel(int32_t channel, const CANAPI_OpMode_t &opMode, const void *param = NULL);
     CANAPI_Return_t TeardownChannel();
     CANAPI_Return_t SignalChannel();
 
@@ -137,8 +138,8 @@ private:
     CANAPI_Return_t MapBitrate2Sja1000(CANAPI_Bitrate_t bitrate, uint16_t &btr0btr1);
     CANAPI_Return_t MapSja10002Bitrate(uint16_t btr0btr1, CANAPI_Bitrate_t &bitrate);
 public:
-    static uint8_t DLc2Len(uint8_t dlc);
-    static uint8_t Len2Dlc(uint8_t len);
+    static uint8_t Dlc2Len(uint8_t dlc) { return CCanApi::Dlc2Len(dlc); }
+    static uint8_t Len2Dlc(uint8_t len) { return CCanApi::Len2Dlc(len); }
 };
 /// \}
 
@@ -155,24 +156,24 @@ public:
 #define PEAKCAN_PROPERTY_DEVICE_TYPE         (CANPROP_GET_DEVICE_TYPE)
 #define PEAKCAN_PROPERTY_DEVICE_NAME         (CANPROP_GET_DEVICE_NAME)
 #define PEAKCAN_PROPERTY_DEVICE_VENDOR       (CANPROP_GET_DEVICE_VENDOR)
-#define PEAKCAN_PROPERTY_DEVICE_DLLNAME      (CANPROP_GET_DEVICE_DLLNAME)
+#define PEAKCAN_PROPERTY_DEVICE_DRIVER       (CANPROP_GET_DEVICE_DLLNAME)
 #define PEAKCAN_PROPERTY_OP_CAPABILITY       (CANPROP_GET_OP_CAPABILITY)
 #define PEAKCAN_PROPERTY_OP_MODE             (CANPROP_GET_OP_MODE)
 #define PEAKCAN_PROPERTY_BITRATE             (CANPROP_GET_BITRATE)
 #define PEAKCAN_PROPERTY_SPEED               (CANPROP_GET_SPEED)
 #define PEAKCAN_PROPERTY_STATUS              (CANPROP_GET_STATUS)
 #define PEAKCAN_PROPERTY_BUSLOAD             (CANPROP_GET_BUSLOAD)
+#define PEAKCAN_PROPERTY_NUM_CHANNELS        (CANPROP_GET_NUM_CHANNELS)
+#define PEAKCAN_PROPERTY_CAN_CHANNEL         (CANPROP_GET_CAN_CHANNEL)
+#define PEAKCAN_PROPERTY_CAN_CLOCKS          (CANPROP_GET_CAN_CLOCKS)
 #define PEAKCAN_PROPERTY_TX_COUNTER          (CANPROP_GET_TX_COUNTER)
 #define PEAKCAN_PROPERTY_RX_COUNTER          (CANPROP_GET_RX_COUNTER)
 #define PEAKCAN_PROPERTY_ERR_COUNTER         (CANPROP_GET_ERR_COUNTER)
-#define PEAKCAN_PROPERTY_DEVICE_ID           (CANPROP_GET_VENDOR_PROP + 0x01U)
-#define PEAKCAN_PROPERTY_API_VERSION         (CANPROP_GET_VENDOR_PROP + 0x05U)
-#define PEAKCAN_PROPERTY_CHANNEL_VERSION     (CANPROP_GET_VENDOR_PROP + 0x06U)
-#define PEAKCAN_PROPERTY_HARDWARE_NAME       (CANPROP_GET_VENDOR_PROP + 0x0EU)
-//#define PEAKCAN_PROPERTY_BOOTLOADER_VERSION  (CANPROP_GET_VENDOR_PROP + 0x??U)
-//#define PEAKCAN_PROPERTY_SERIAL_NUMBER       (CANPROP_GET_VENDOR_PROP + 0x??U)
-//#define PEAKCAN_PROPERTY_VID_PID             (CANPROP_GET_VENDOR_PROP + 0x??U)
-//#define PEAKCAN_PROPERTY_CLOCK_DOMAIN        (CANPROP_GET_VENDOR_PROP + 0x??U)
-// TODO: insert coin here
+#define PEAKCAN_PROPERTY_DEVICE_ID           (PCAN_PROP_DEVICE_ID)
+#define PEAKCAN_PROPERTY_API_VERSION         (PCAN_PROP_API_VERSION)
+#define PEAKCAN_PROPERTY_CHANNEL_VERSION     (PCAN_PROP_CHANNEL_VERSION)
+#define PEAKCAN_PROPERTY_HARDWARE_NAME       (PCAN_PROP_HARDWARE_NAME)
+//#define PEAKCAN_PROPERTY_SERIAL_NUMBER       (PCAN_PROP_SERIAL_NUMBER)
+//#define PEAKCAN_PROPERTY_CLOCK_DOMAIN        (PCAN_PROP_CLOCK_DOMAIN)
 /// \}
 #endif // PEAKCAN_H_INCLUDED
