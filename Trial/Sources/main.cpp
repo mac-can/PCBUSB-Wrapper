@@ -134,18 +134,18 @@ int main(int argc, const char * argv[]) {
         if (!strcmp(argv[i], "BD:7") || !strcmp(argv[i], "BD:20")) bitrate.index = CANBTR_INDEX_20K;
         if (!strcmp(argv[i], "BD:8") || !strcmp(argv[i], "BD:10")) bitrate.index = CANBTR_INDEX_10K;
         /* CAN FD operation */
-        if(!strcmp(argv[i], "CANFD") || !strcmp(argv[i], "FD")) opMode.fdoe = 1;
-        if(!strcmp(argv[i], "FDF")) opMode.fdoe = 1;
-        if(!strcmp(argv[i], "BRS")) opMode.brse = 1;
+        if (!strcmp(argv[i], "CANFD") || !strcmp(argv[i], "FD")) opMode.fdoe = 1;
+        if (!strcmp(argv[i], "FDF")) opMode.fdoe = 1;
+        if (!strcmp(argv[i], "BRS")) opMode.brse = 1;
         /* bit rate (CAN FD) */
-        if(!strcmp(argv[i], "BR:125K1M")) BITRATE_125K1M(bitrate);
-        if(!strcmp(argv[i], "BR:250K2M")) BITRATE_250K2M(bitrate);
-        if(!strcmp(argv[i], "BR:500K4M")) BITRATE_500K4M(bitrate);
-        if(!strcmp(argv[i], "BR:1M8M")) BITRATE_1M8M(bitrate);
-        if(!strcmp(argv[i], "BR:125K")) BITRATE_125K(bitrate);
-        if(!strcmp(argv[i], "BR:250K")) BITRATE_250K(bitrate);
-        if(!strcmp(argv[i], "BR:500K")) BITRATE_500K(bitrate);
-        if(!strcmp(argv[i], "BR:1M")) BITRATE_1M(bitrate);
+        if (!strcmp(argv[i], "BR:125K1M")) BITRATE_125K1M(bitrate);
+        if (!strcmp(argv[i], "BR:250K2M")) BITRATE_250K2M(bitrate);
+        if (!strcmp(argv[i], "BR:500K4M")) BITRATE_500K4M(bitrate);
+        if (!strcmp(argv[i], "BR:1M8M")) BITRATE_1M8M(bitrate);
+        if (!strcmp(argv[i], "BR:125K")) BITRATE_125K(bitrate);
+        if (!strcmp(argv[i], "BR:250K")) BITRATE_250K(bitrate);
+        if (!strcmp(argv[i], "BR:500K")) BITRATE_500K(bitrate);
+        if (!strcmp(argv[i], "BR:1M")) BITRATE_1M(bitrate);
         /* asynchronous IO */
         if (!strcmp(argv[i], "POLLING")) timeout = 0U;
         if (!strcmp(argv[i], "BLOCKING")) timeout = CANREAD_INFINITE;
@@ -237,7 +237,7 @@ int main(int argc, const char * argv[]) {
             retVal = myDriver.GetProperty(CANPROP_GET_CHANNEL_NO, (void *)&i32Val, sizeof(int32_t));
             if (retVal == CCanApi::NoError) {
                 retVal = CPeakCAN::ProbeChannel(i32Val, opMode, state);
-                fprintf(stdout, ">>> CCANAPI.ProbeChannel(%i): state = %s", i32Val,
+                fprintf(stdout, ">>> CCanApi.ProbeChannel(%i): state = %s", i32Val,
                                 (state == CCanApi::ChannelOccupied) ? "occupied" :
                                 (state == CCanApi::ChannelAvailable) ? "available" :
                                 (state == CCanApi::ChannelNotAvailable) ? "not available" : "not testable");
@@ -285,6 +285,7 @@ int main(int argc, const char * argv[]) {
             fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_DEVICE_DLLNAME): value = '%s'\n", szVal);
         else
             fprintf(stderr, "+++ error: myDriver.GetProperty(CANPROP_GET_DEVICE_DLLNAME) returned %i\n", retVal);
+#if (1)
         retVal = myDriver.GetProperty(CANPROP_GET_NUM_CHANNELS, (void *)&u8Val, sizeof(uint8_t));
         if (retVal == CCanApi::NoError)
             fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_NUM_CHANNELS): value = %d\n", u8Val);
@@ -295,6 +296,7 @@ int main(int argc, const char * argv[]) {
             fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_CAN_CHANNEL): value = %u\n", u8Val + 1U);
         else
             fprintf(stderr, "+++ error: myDriver.GetProperty(CANPROP_GET_CAN_CHANNEL) returned %i\n", retVal);
+#endif
         // vendor-specific properties
         retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_DEVICE_ID, (void *)&u32Val, sizeof(uint32_t));
         if (retVal == CCanApi::NoError)
@@ -417,26 +419,26 @@ retry:
                 }
                 fprintf(stdout, "\n");
             } else {
-                if(!(frames++ % 2048)) {
+                if (!(frames++ % 2048)) {
                     fprintf(stdout, ".");
                     fflush(stdout);
                 }
             }
             if (option_check && !message.sts) {
                 received = 0;
-                if(message.dlc > 0) received |= (uint64_t)message.data[0] << 0;
-                if(message.dlc > 1) received |= (uint64_t)message.data[1] << 8;
-                if(message.dlc > 2) received |= (uint64_t)message.data[2] << 16;
-                if(message.dlc > 3) received |= (uint64_t)message.data[3] << 24;
-                if(message.dlc > 4) received |= (uint64_t)message.data[4] << 32;
-                if(message.dlc > 5) received |= (uint64_t)message.data[5] << 40;
-                if(message.dlc > 6) received |= (uint64_t)message.data[6] << 48;
-                if(message.dlc > 7) received |= (uint64_t)message.data[7] << 56;
-                if(received != expected) {
+                if (message.dlc > 0) received |= (uint64_t)message.data[0] << 0;
+                if (message.dlc > 1) received |= (uint64_t)message.data[1] << 8;
+                if (message.dlc > 2) received |= (uint64_t)message.data[2] << 16;
+                if (message.dlc > 3) received |= (uint64_t)message.data[3] << 24;
+                if (message.dlc > 4) received |= (uint64_t)message.data[4] << 32;
+                if (message.dlc > 5) received |= (uint64_t)message.data[5] << 40;
+                if (message.dlc > 6) received |= (uint64_t)message.data[6] << 48;
+                if (message.dlc > 7) received |= (uint64_t)message.data[7] << 56;
+                if (received != expected) {
                     fprintf(stderr, "+++ error: received data is not equal to expected data (%" PRIu64 " : %" PRIu64 ")\n", received, expected);
-                    if(expected > received)
+                    if (expected > received)
                         fprintf(stderr, "           issue #198: old messages read again (offset -%" PRIu64 ")\a\n", expected - received);
-                    if(option_stop)
+                    if (option_stop)
                         goto teardown;
                 }
                 expected = received + 1;
@@ -535,10 +537,10 @@ static void verbose(const can_mode_t &mode, const can_bitrate_t &bitrate, const 
 {
     fprintf(stdout, "Op.-Mode: 0x%02X (fdoe=%u,brse=%u,niso=%u,shrd=%u,nxtd=%u,nrtr=%u,err=%u,mon=%u)\n",
             mode.byte, mode.fdoe, mode.brse, mode.niso, mode.shrd, mode.nxtd, mode.nrtr, mode.err, mode.mon);
-    if(bitrate.btr.frequency > 0) {
+    if (bitrate.btr.frequency > 0) {
         fprintf(stdout, "Baudrate: %.0fkbps@%.1f%%",
             speed.nominal.speed / 1000., speed.nominal.samplepoint * 100.);
-        if(/*speed.data.brse*/mode.fdoe && mode.brse)
+        if (/*speed.data.brse*/mode.fdoe && mode.brse)
             fprintf(stdout, ":%.0fkbps@%.1f%%",
                 speed.data.speed / 1000., speed.data.samplepoint * 100.);
         fprintf(stdout, " (f_clock=%i,nom_brp=%u,nom_tseg1=%u,nom_tseg2=%u,nom_sjw=%u,nom_sam=%u",
@@ -548,7 +550,7 @@ static void verbose(const can_mode_t &mode, const can_bitrate_t &bitrate, const 
             bitrate.btr.nominal.tseg2,
             bitrate.btr.nominal.sjw,
             bitrate.btr.nominal.sam);
-        if(mode.fdoe && mode.brse)
+        if (mode.fdoe && mode.brse)
             fprintf(stdout, ",data_brp=%u,data_tseg1=%u,data_tseg2=%u,data_sjw=%u",
                 bitrate.btr.data.brp,
                 bitrate.btr.data.tseg1,

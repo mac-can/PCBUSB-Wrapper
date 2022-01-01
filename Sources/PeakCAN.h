@@ -2,7 +2,7 @@
 //
 //  CAN Interface API, Version 3 (for PEAK PCAN-USB Interfaces)
 //
-//  Copyright (c) 2012-2021 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+//  Copyright (c) 2012-2022 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 //  All rights reserved.
 //
 //  This file is part of PCBUSB-Wrapper.
@@ -58,7 +58,7 @@
 #define PEAKCAN_LIBRARY_NAME  CANDLL_PCANBASIC
 #define PEAKCAN_LIBRARY_VENDOR  "UV Software, Berlin"
 #define PEAKCAN_LIBRARY_LICENSE  "BSD-2-Clause OR GPL-3.0-or-later"
-#define PEAKCAN_LIBRARY_COPYRIGHT  "Copyright (c) 2012-2021  Uwe Vogt, UV Software, Berlin"
+#define PEAKCAN_LIBRARY_COPYRIGHT  "Copyright (c) 2012-2022  Uwe Vogt, UV Software, Berlin"
 #define PEAKCAN_LIBRARY_HAZARD_NOTE  "If you connect your CAN device to a real CAN network when using this library,\n" \
                                      "you might damage your application."
 /// \}
@@ -151,7 +151,7 @@ public:
 #define PEAKCAN_PROPERTY_LIBRARY_ID          (CANPROP_GET_LIBRARY_ID)
 #define PEAKCAN_PROPERTY_LIBRARY_NAME        (CANPROP_GET_LIBRARY_DLLNAME)
 #define PEAKCAN_PROPERTY_LIBRARY_VENDOR      (CANPROP_GET_LIBRARY_VENDOR)
-#define PEAKCAN_PROPERTY_DEVICE_TYPE         (CANPROP_GET_DEVICE_TYPE)
+#define PEAKCAN_PROPERTY_DEVICE_CHANNEL      (CANPROP_GET_DEVICE_CHANNEL)
 #define PEAKCAN_PROPERTY_DEVICE_NAME         (CANPROP_GET_DEVICE_NAME)
 #define PEAKCAN_PROPERTY_DEVICE_VENDOR       (CANPROP_GET_DEVICE_VENDOR)
 #define PEAKCAN_PROPERTY_DEVICE_DRIVER       (CANPROP_GET_DEVICE_DLLNAME)
@@ -167,6 +167,9 @@ public:
 #define PEAKCAN_PROPERTY_TX_COUNTER          (CANPROP_GET_TX_COUNTER)
 #define PEAKCAN_PROPERTY_RX_COUNTER          (CANPROP_GET_RX_COUNTER)
 #define PEAKCAN_PROPERTY_ERR_COUNTER         (CANPROP_GET_ERR_COUNTER)
+//#define PEAKCAN_PROPERTY_RCV_QUEUE_SIZE      (CANPROP_GET_RCV_QUEUE_SIZE)
+//#define PEAKCAN_PROPERTY_RCV_QUEUE_HIGH      (CANPROP_GET_RCV_QUEUE_HIGH)
+//#define PEAKCAN_PROPERTY_RCV_QUEUE_OVFL      (CANPROP_GET_RCV_QUEUE_OVFL)
 #define PEAKCAN_PROPERTY_DEVICE_ID           (CANPROP_GET_VENDOR_PROP + PCAN_DEVICE_ID)
 #define PEAKCAN_PROPERTY_API_VERSION         (CANPROP_GET_VENDOR_PROP + PCAN_API_VERSION)
 #define PEAKCAN_PROPERTY_CHANNEL_VERSION     (CANPROP_GET_VENDOR_PROP + PCAN_CHANNEL_VERSION)
