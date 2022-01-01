@@ -115,7 +115,7 @@ static void _finalizer() {
 #define EXPORT
 #endif
 #define ISSUE_303_WORKAROUND    // PCBUSB issue #303: first transmit message will be swallowed
-#define ISSUE_276_UNSOVED       // PCBUSB issue #276: parameter PCAN_RECEIVE_STATUS reverted
+#define ISSUE_276_UNSOLVED      // PCBUSB issue #276: parameter PCAN_RECEIVE_STATUS reverted
 
 
 /*  -----------  defines  ------------------------------------------------
@@ -338,7 +338,7 @@ int can_init(int32_t board, uint8_t mode, const void *param)
         return CANERR_ILLPARA;
     /* to start the CAN controller initially in reset state, we have switch OFF
      * the receiver and the transmitter and then to call CAN_Initialize[FD]() */
-#ifndef ISSUE_276_UNSOVED
+#ifndef ISSUE_276_UNSOLVED
     value = PCAN_PARAMETER_OFF;         // receiver OFF
     if ((rc = CAN_SetValue((TPCANHandle)board, PCAN_RECEIVE_STATUS,
                           (void*)&value, sizeof(value))) != PCAN_ERROR_OK)
@@ -569,7 +569,7 @@ int can_reset(int handle)
 
     if (can[handle].status.can_stopped) { // when running then go bus off
         /* note: we turn off the receiver and the transmitter to do that! */
-#ifndef ISSUE_276_UNSOVED
+#ifndef ISSUE_276_UNSOLVED
         value = PCAN_PARAMETER_OFF;     //   receiver off
         if ((rc = CAN_SetValue(can[handle].board, PCAN_RECEIVE_STATUS, (void*)&value, sizeof(value))) != PCAN_ERROR_OK)
             return pcan_error(rc);
