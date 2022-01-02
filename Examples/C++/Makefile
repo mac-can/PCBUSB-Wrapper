@@ -12,8 +12,8 @@ DEFINES2 = -DCHANNEL=0x52 -DBAUDRATE=CANBTR_INDEX_250K
 CXXFLAGS =
 LDFLAGS =
 
-CXX = g++
-LD = g++
+CXX = clang++
+LD = clangg++
 RM = rm -f
 
 all: $(TARGET1) $(TARGET2)
