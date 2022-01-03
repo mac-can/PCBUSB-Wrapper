@@ -19,7 +19,7 @@
 #include <inttypes.h>
 
 //#define SECOND_CHANNEL
-#define ISSUE_198   (0)
+#define ISSUE_198   (1)
 
 #define BITRATE_DEFAULT(x) do {x.btr.frequency=80000000;x.btr.nominal.brp=20;x.btr.nominal.tseg1=12;x.btr.nominal.tseg2=3;x.btr.nominal.sjw=1; \
                                                         x.btr.data.brp=4;x.btr.data.tseg1=7;x.btr.data.tseg2=2;x.btr.data.sjw=1} while(0)
