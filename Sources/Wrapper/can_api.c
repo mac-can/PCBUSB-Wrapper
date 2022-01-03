@@ -1633,8 +1633,16 @@ static void *hLibrary = NULL;
 
 static int LoadLibrary(void)
 {
+    char filename[PCAN_MAX_BUFFER_SIZE+1] = PCAN_LIB_BASIC;
+#if (OPTION_XCODE_TESTING != 0)
+    /*
+     * note: workaround for Xcode testing.
+     */
+    strncpy(filename, "/usr/local/lib/", PCAN_MAX_BUFFER_SIZE);
+    strncat(filename, PCAN_LIB_BASIC, PCAN_MAX_BUFFER_SIZE);
+#endif
     if(!hLibrary) {
-        hLibrary = dlopen(PCAN_LIB_BASIC, RTLD_LAZY);
+        hLibrary = dlopen(filename, RTLD_LAZY);
         if(!hLibrary)
             return -1;
         if((_CAN_Initialize = (CAN_Initialize_t)dlsym(hLibrary, "CAN_Initialize")) == NULL)
