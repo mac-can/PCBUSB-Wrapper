@@ -807,6 +807,7 @@ int can_status(int handle, uint8_t *status)
         can[handle].status.warning_level = (rc & PCAN_ERROR_BUSWARNING) != PCAN_ERROR_OK;
         can[handle].status.message_lost |= (rc & (PCAN_ERROR_OVERRUN | PCAN_ERROR_QOVERRUN)) != PCAN_ERROR_OK;
         can[handle].status.transmitter_busy |= (rc & (PCAN_ERROR_XMTFULL | PCAN_ERROR_QXMTFULL)) != PCAN_ERROR_OK;
+        // TODO: can[handle].status.queue_overrun = ...
     }
     if (status)                         // status-register
       *status = can[handle].status.byte;
@@ -911,8 +912,7 @@ char *can_hardware(int handle)
     if (can[handle].board == PCAN_NONEBUS) // must be an opened handle
         return NULL;
 
-#ifndef PCAN_EXT_HARDWARE_VERSION
-    if (CAN_GetValue(can[handle].board, PCAN_CHANNEL_VERSION, (void*)str, 256) != PCAN_ERROR_OK)
+    if (CAN_GetValue(can[handle].board, PCAN_HARDWARE_NAME, (void*)str, 256) != PCAN_ERROR_OK)
         return NULL;
     if ((ptr = strchr(str, '\n')) != NULL)
        *ptr = '\0';
@@ -921,38 +921,44 @@ char *can_hardware(int handle)
     {
         if (CAN_GetValue(can[handle].board, PCAN_DEVICE_NUMBER, (void*)&dev, 4) != PCAN_ERROR_OK)
             return NULL;
-        snprintf(hardware, 256, "%s (Device %02lXh)", str, dev);
+        snprintf(hardware, 256, "%s, Device-Id. %02Xh", str, dev);
     }
     else
-        strncpy(hardware, str, 256);
-#else
-    if (CAN_GetValue(can[handle].board, PCAN_EXT_HARDWARE_VERSION, (void*)str, 256) != PCAN_ERROR_OK)
-        return NULL;
-    (void)dev;
-    (void)ptr;
-    strncpy(hardware, str, 256);
-#endif
+        strcpy(hardware, str);
+
     return (char*)hardware;             // hardware version
 }
 
 EXPORT
-char *can_software(int handle)
+char *can_firmware(int handle)
 {
     static char software[256] = "";     // software version
-    char  str[256] = "PCAN-Basic API "; // info string
+    char  str[256], *ptr;               // info string
+    char  ver[256];                     // version
 
     if (!init)                          // must be initialized
         return NULL;
-    (void)handle;                       // handle not needed here
+    if (!IS_HANDLE_VALID(handle))       // must be a valid handle
+        return NULL;
+    if (can[handle].board == PCAN_NONEBUS) // must be an opened handle
+        return NULL;
 
-#ifndef PCAN_EXT_SOFTWARE_VERSION
-    if (CAN_GetValue(PCAN_NONEBUS, PCAN_API_VERSION, (void*)&str[15], 256-15) != PCAN_ERROR_OK)
+#if (0)
+    // TODO: activate this code snippet once parameter PCAN_FIRMWARE_VERSION is realized
+    if (CAN_GetValue(can[handle].board, PCAN_HARDWARE_NAME, (void*)str, 256) != PCAN_ERROR_OK)
         return NULL;
+    if ((ptr = strchr(str, '\n')) != NULL)
+        *ptr = '\0';
+    if (CAN_GetValue(can[handle].board, PCAN_FIRMWARE_VERSION, (void*)ver, 256) != PCAN_ERROR_OK)
+        return NULL;
+    snprintf(firmware, 256, "%s, Firmware %s", str, ver);
 #else
-    if(CAN_GetValue(PCAN_NONEBUS, PCAN_EXT_SOFTWARE_VERSION, (void*)str, 256) != PCAN_ERROR_OK)
+    if(CAN_GetValue(can[handle].board, PCAN_EXT_HARDWARE_VERSION, (void*)str, 256) != PCAN_ERROR_OK)
         return NULL;
-#endif
+    (void)ver;
+    (void)ptr;
     strncpy(software, str, 256);
+#endif
 
     return (char*)software;             // software version
 }
