@@ -51,8 +51,8 @@
 #include "build_no.h"
 #ifdef _MSC_VER
 #define VERSION_MAJOR    0
-#define VERSION_MINOR    0
-#define VERSION_PATCH    0
+#define VERSION_MINOR    4
+#define VERSION_PATCH    2
 #else
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    2
@@ -932,7 +932,7 @@ char *can_hardware(int handle)
 EXPORT
 char *can_firmware(int handle)
 {
-    static char software[256] = "";     // software version
+    static char firmware[256] = "";     // firmware version
     char  str[256], *ptr;               // info string
     char  ver[256];                     // version
 
@@ -957,10 +957,10 @@ char *can_firmware(int handle)
         return NULL;
     (void)ver;
     (void)ptr;
-    strncpy(software, str, 256);
+    strncpy(firmware, str, 256);
 #endif
 
-    return (char*)software;             // software version
+    return (char*)firmware;             // firmware version
 }
 
 /*  -----------  local functions  ----------------------------------------
