@@ -138,9 +138,13 @@ extern "C" {
 #if defined(_WIN32) || defined (_WIN64)
  #define PCAN_LIB_BASIC         "PCANBasic.dll"
  #define PCAN_LIB_WRAPPER       "u3canpcb.dll"
+ #define PCAN_LIB_MIN_MAJOR      4U
+ #define PCAN_LIB_MIN_MINOR      0U
 #elif defined(__APPLE__)
  #define PCAN_LIB_BASIC         "libPCBUSB.dylib"
  #define PCAN_LIB_WRAPPER       "libUVCANPCB.dylib"
+ #define PCAN_LIB_MIN_MAJOR      0U
+ #define PCAN_LIB_MIN_MINOR      9U
 #else
 #error Platform not supported
 #endif

@@ -174,6 +174,7 @@ typedef struct {                        // PCAN interface:
  */
 
 static int pcan_error(TPCANStatus);     // PCAN specific errors
+static int pcan_compatibility(void);    // PCAN compatibility check
 static TPCANStatus pcan_capability(TPCANHandle board, can_mode_t *capability);
 
 static int map_index2bitrate(int index, can_bitrate_t* bitrate);
@@ -329,6 +330,9 @@ int can_init(int32_t board, uint8_t mode, const void *param)
     if (!IS_HANDLE_VALID(i))             // no free handle found
         return CANERR_HANDLE;
 
+    /* check for minimum required library version */
+    if ((rc = pcan_compatibility()) != PCAN_ERROR_OK)
+        return rc;
     /* get operation capabilit from channel check with given operation mode */
     if ((rc = pcan_capability((TPCANHandle)board, &capa)) != PCAN_ERROR_OK)
         return pcan_error(rc);
@@ -998,17 +1002,35 @@ static int pcan_error(TPCANStatus status)
     return PCAN_ERR_UNKNOWN;
 }
 
+static int pcan_compatibility(void) {
+    TPCANStatus sts;                    // channel status
+    unsigned int major = 0, minor = 0;  // channel version
+    char version[256] = "PCBUSB library, version 0.0.0.0";
+    
+    /* (§1) get library version (as a string) */
+    if ((sts = CAN_GetValue(PCAN_NONEBUS, PCAN_EXT_SOFTWARE_VERSION, (void*)version, 256)) != PCAN_ERROR_OK)
+        return pcan_error(sts);
+    /* (§2) extract major and minor revision */
+    if (sscanf(version, "PCBUSB library, version %u.%u", &major, &minor) != 2)
+        return CANERR_FATAL;
+    /* (§3) check for minimal required version */
+    if ((major != PCAN_LIB_MIN_MAJOR) || (minor < PCAN_LIB_MIN_MINOR))
+        return CANERR_LIBRARY;
+
+    return CANERR_NOERROR;
+}
+
 static TPCANStatus pcan_capability(TPCANHandle board, can_mode_t *capability)
 {
-    TPCANStatus rc;                     // return value
+    TPCANStatus sts;                    // channel status
     DWORD features;                     // channel features
 
     assert(capability);
     capability->byte = 0x00U;
 
-    if ((rc = CAN_GetValue((TPCANHandle)board, PCAN_CHANNEL_FEATURES,
-                          (void*)&features, sizeof(features))) != PCAN_ERROR_OK)
-        return rc;
+    if ((sts = CAN_GetValue((TPCANHandle)board, PCAN_CHANNEL_FEATURES,
+                            (void*)&features, sizeof(features))) != PCAN_ERROR_OK)
+        return sts;
 
     capability->fdoe = (features & FEATURE_FD_CAPABLE) ? 1 : 0;
     capability->brse = (features & FEATURE_FD_CAPABLE) ? 1 : 0;
