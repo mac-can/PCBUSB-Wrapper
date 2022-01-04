@@ -87,6 +87,7 @@
     XCTAssertFalse(status.can_stopped);
     // @- send some frames to DUT2 and receive some frames from DUT2
     CTester tester;
+    NSLog(@"Be patient...");
     XCTAssertEqual(TEST_TRAFFIC, tester.SendSomeFrames(handle, DUT2, TEST_TRAFFIC));
     XCTAssertEqual(TEST_TRAFFIC, tester.ReceiveSomeFrames(handle, DUT2, TEST_TRAFFIC));
     // @- get status of DUT1 and check to be in RUNNING state
@@ -120,4 +121,4 @@
 
 @end
 
-// $Id: Testing.mm 1035 2021-12-21 12:03:27Z makemake $  Copyright (c) UV Software, Berlin //
+// $Id: Testing.mm 1074 2022-01-04 16:57:50Z makemake $  Copyright (c) UV Software, Berlin //
