@@ -175,7 +175,7 @@
 
 // @xctest TC04.3: Read a CAN message when interface is not initialized.
 //
-// @expected: CANERR_HANDLE
+// @expected: CANERR_NOTINIT
 //
 - (void)testWhenInterfaceNotInitialized {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -187,13 +187,13 @@
     // @test:
     // @- try to read a message from DUT1 with invalid handle -1
     rc = can_read(INVALID_HANDLE, &message, 0U);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
     // @- try to read a message from DUT1 with invalid handle INT32_MIN
     rc = can_read(INT32_MIN, &message, 0U);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
     // @- try to read a message from DUT1 with invalid handle INT32_MIN
     rc = can_read(INT32_MIN, &message, 0U);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
 
     // @post:
     // @- initialize DUT1 with configured settings
@@ -344,7 +344,7 @@
 
 // @xctest TC04.6: Read a CAN message when interface already shutdown.
 //
-// @expected: CANERR_HANDLE
+// @expected: CANERR_NOTINIT
 //
 - (void)testWhenInterfaceShutdown {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -392,7 +392,7 @@
     // @test:
     // @- try to read a message from DUT1
     rc = can_read(handle, &message, 0U);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
 }
 
 // @xctest TC04.7: Read a CAN message when reception queue is empty.
@@ -593,4 +593,4 @@
 //
 @end
 
-// $Id: test_can_read.mm 1073 2022-01-03 18:52:16Z eris $  Copyright (c) UV Software, Berlin //
+// $Id: test_can_read.mm 1075 2022-01-04 22:00:43Z makemake $  Copyright (c) UV Software, Berlin //

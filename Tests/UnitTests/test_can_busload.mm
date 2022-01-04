@@ -292,7 +292,7 @@
 
 // @xctest TC10.5: Get CAN bus load when interface is not initialized.
 //
-// @expected: CANERR_HANDLE
+// @expected: CANERR_NOTINIT
 //
 - (void)testWhenInterfaceNotInitialized {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -304,13 +304,13 @@
     // @test:
     // @- try to get bus-load of DUT1 with invalid handle -1
     rc = can_busload(INVALID_HANDLE, &load, &status.byte);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
     // @- try to get bus-load of DUT1 with invalid handle INT32_MIN
     rc = can_busload(INT32_MAX, &load, &status.byte);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
     // @- try to get bus-load of DUT1 with invalid handle INT32_MIN
     rc = can_busload(INT32_MIN, &load, &status.byte);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
 
     // @post:
     // @- initialize DUT1 with configured settings
@@ -530,7 +530,7 @@
 
 // @xctest TC10.9: Get CAN bus load when interface already shutdown.
 //
-// @expected: CANERR_HANDLE
+// @expected: CANERR_NOTINIT
 //
 - (void)testWhenInterfaceShutdown {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -578,7 +578,7 @@
     // @test:
     // @- try to get bus-load of DUT1 again
     rc = can_busload(handle, &load, &status.byte);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
 }
 
 // @xctest TC10.10: tbd.
@@ -625,4 +625,4 @@
 
 @end
 
-// $Id: test_can_busload.mm 1073 2022-01-03 18:52:16Z eris $  Copyright (c) UV Software, Berlin //
+// $Id: test_can_busload.mm 1075 2022-01-04 22:00:43Z makemake $  Copyright (c) UV Software, Berlin //

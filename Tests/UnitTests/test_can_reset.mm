@@ -138,7 +138,7 @@
 
 // @xctest TC06.2: Stop CAN controller when interface is not initialized.
 //
-// @expected: CANERR_HANDLE
+// @expected: CANERR_NOTINIT
 //
 - (void)testWhenInterfaceNotInitialized {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -149,13 +149,13 @@
     // @test:
     // @- try to stop DUT1 with invalid handle -1
     rc = can_reset(INVALID_HANDLE);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
     // @- try to stop DUT1 with invalid handle INT32_MIN
     rc = can_reset(INT32_MAX);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
     // @- try to stop DUT1 with invalid handle INT32_MIN
     rc = can_reset(INT32_MIN);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
 
     // @post:
     // @- initialize DUT1 with configured settings
@@ -324,7 +324,7 @@
 
 // @xctest TC06.5: Stop CAN controller when interface already shutdown.
 //
-// @expected: CANERR_HANDLE
+// @expected: CANERR_NOTINIT
 //
 - (void)testWhenInterfaceShutdown {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -371,9 +371,9 @@
     // @test:
     // @- try to stop/reset DUT1 again
     rc = can_reset(handle);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
 }
 
 @end
 
-// $Id: test_can_reset.mm 1073 2022-01-03 18:52:16Z eris $  Copyright (c) UV Software, Berlin //
+// $Id: test_can_reset.mm 1075 2022-01-04 22:00:43Z makemake $  Copyright (c) UV Software, Berlin //

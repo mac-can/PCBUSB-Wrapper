@@ -128,7 +128,7 @@
 
 // @xctest TC08.2: Try to shutdown interface when it is not initialized.
 //
-// @expected: CANERR_HANDLE
+// @expected: CANERR_NOTINIT
 //
 - (void)testWhenInterfaceNotInitialized {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -139,13 +139,13 @@
     // @test:
     // @- try to shutdown DUT1 with invalid handle -1
     rc = can_exit(INVALID_HANDLE);
-    XCTAssertEqual(CANERR_NOERROR, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
     // @- try to shutdown DUT1 with invalid handle INT32_MIN
     rc = can_exit(INT32_MAX);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
     // @- try to shutdown DUT1 with invalid handle INT32_MIN
     rc = can_exit(INT32_MIN);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
     // TODO: loop over list of valid handles
 
     // @post:
@@ -187,7 +187,7 @@
 
 // @xctest TC08.3: Shutdown interface when it is initializes (but CAN controller not started).
 //
-// @expected: CANERR_HANDLE
+// @expected: CANERR_NOERROR
 //
 - (void)testWhenInterfaceInitialized {
     can_status_t status = { CANSTAT_RESET };
@@ -209,7 +209,7 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
     // @- get status of DUT1 (should return an error)
     rc = can_status(handle, &status.byte);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
 }
 
 // @xctest TC08.4: Shutdown interface when CAN controller is started.
@@ -253,7 +253,7 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
     // @- get status of DUT1 (should return an error)
     rc = can_status(handle, &status.byte);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
 }
 
 // @xctest TC08.5: Shutdown interface after CAN controller is stopped.
@@ -305,12 +305,12 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
     // @- get status of DUT1 (should return an error)
     rc = can_status(handle, &status.byte);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
 }
 
 // @xctest TC08.6: Shutdown interface when already shutdown.
 //
-// @expected: CANERR_HANDLE
+// @expected: CANERR_NOTINIT
 //
 - (void)testWhenInterfaceShutdown {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -357,10 +357,10 @@
     // @test:
     // @- try to shutdown DUT1 again
     rc = can_exit(handle);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
     // @- get status of DUT1 (should return an error)
     rc = can_status(handle, &status.byte);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
 }
 
 // @xctest TC08.7: Shutdown all initialized interfaces at once.
@@ -403,12 +403,12 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
     // @- get status of DUT2 (should return an error)
     rc = can_status(handle2, &status.byte);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
     // @- get status of DUT1 (should return an error)
     rc = can_status(handle1, &status.byte);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
 }
 
 @end
 
-// $Id: test_can_exit.mm 1073 2022-01-03 18:52:16Z eris $  Copyright (c) UV Software, Berlin //
+// $Id: test_can_exit.mm 1075 2022-01-04 22:00:43Z makemake $  Copyright (c) UV Software, Berlin //

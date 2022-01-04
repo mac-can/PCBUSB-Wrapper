@@ -188,7 +188,7 @@
 
 // @xctest TC03.3: Start CAN controller when interface is not initialized.
 //
-// @expected: CANERR_HANDLE
+// @expected: CANERR_NOTINIT
 //
 - (void)testWhenInterfaceNotInitialized {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -199,8 +199,8 @@
     // @test:
     // @- try to start DUT1 with configured bit-rate settings
     rc = can_start(handle, &bitrate);
-    XCTAssertEqual(CANERR_HANDLE, rc);
-
+    XCTAssertEqual(CANERR_NOTINIT, rc);
+    
     // @post:
     // @- initialize DUT1 with configured settings
     handle = can_init(DUT1, TEST_CANMODE, NULL);
@@ -372,7 +372,7 @@
 
 // @xctest TC03.6: Start CAN controller when interface already shutdown.
 //
-// @expected: CANERR_HANDLE
+// @expected: CANERR_NOTINIT
 //
 - (void)testWhenInterfaceShutdown {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -419,7 +419,7 @@
     // @test:
     // @- try to start DUT1 again with configured bit-rate settings
     rc = can_start(handle, &bitrate);
-    XCTAssertEqual(CANERR_HANDLE, rc);
+    XCTAssertEqual(CANERR_NOTINIT, rc);
 }
 
 // @xctest TC03.7: Start CAN controller with CiA bit-timing index 0 (1000kbps).
@@ -1254,4 +1254,4 @@
 
 @end
 
-// $Id: test_can_start.mm 1073 2022-01-03 18:52:16Z eris $  Copyright (c) UV Software, Berlin //
+// $Id: test_can_start.mm 1075 2022-01-04 22:00:43Z makemake $  Copyright (c) UV Software, Berlin //
