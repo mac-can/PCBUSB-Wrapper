@@ -110,6 +110,7 @@ const CCanDriver::TCanDevice CCanDriver::m_CanDevices[] = {
     {PEAKCAN_LIBRARY_ID, PCAN_USB6, (char *)"PCAN-USB6" },
     {PEAKCAN_LIBRARY_ID, PCAN_USB7, (char *)"PCAN-USB7" },
     {PEAKCAN_LIBRARY_ID, PCAN_USB8, (char *)"PCAN-USB8" },
+#ifndef __APPLE__
     {PEAKCAN_LIBRARY_ID, PCAN_USB9, (char *)"PCAN-USB9" },
     {PEAKCAN_LIBRARY_ID, PCAN_USB10, (char *)"PCAN-USB10" },
     {PEAKCAN_LIBRARY_ID, PCAN_USB11, (char *)"PCAN-USB11" },
@@ -118,6 +119,7 @@ const CCanDriver::TCanDevice CCanDriver::m_CanDevices[] = {
     {PEAKCAN_LIBRARY_ID, PCAN_USB14, (char *)"PCAN-USB14" },
     {PEAKCAN_LIBRARY_ID, PCAN_USB15, (char *)"PCAN-USB15" },
     {PEAKCAN_LIBRARY_ID, PCAN_USB16, (char *)"PCAN-USB16" },
+#endif
     {EOF, EOF, NULL}
 };
 
