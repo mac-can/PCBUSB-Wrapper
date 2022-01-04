@@ -1,6 +1,6 @@
 ### macOS® Wrapper Library for PCAN-USB Interfaces from Peak-System
 
-_Copyright &copy; 2005-2010, 2012-2021   Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
+_Copyright &copy; 2005-2010, 2012-2022 Uwe Vogt, UV Software, Berlin (info@mac-can.com)_ \
 _All rights reserved._
 
 # Deployment
@@ -29,8 +29,10 @@ _All rights reserved._
   - `$(PROJROOT)/Libraries/PeakCAN/Makefile`<sup>*</sup>
   - `$(PROJROOT)/Utilities/can_moni/Sources/main.cpp`
   - `$(PROJROOT)/Utilities/can_moni/Makefile`
+  - `$(PROJROOT)/Utilities/can_moni/README.md`
   - `$(PROJROOT)/Utilities/can_test/Sources/main.cpp`
   - `$(PROJROOT)/Utilities/can_test/Makefile`
+  - `$(PROJROOT)/Utilities/can_test/README.md`
 
   <sup>*</sup>_) Set variable_ `CURRENT_VERSION` _and_ `COMPATIBILITY_VERSION` _accordingly._
 
@@ -42,16 +44,19 @@ _All rights reserved._
 2. Open the trial program with Xcode and run a code analysis.
   - _**There should not be any serious finding.**_
   - _If there are findings then fix them or create an issue in the repo._
-3. Run the `Makefile` in the project root directory.
+3. Select the Xcode Testing target and run all test cases:
+  - _**There should be no failed test case.**_
+  - _If there are failed tests then fix the root cause or define a workaround._
+4. Run the `Makefile` in the project root directory.
   - _**There should be absolute no compiler or linker error!**_
   - _If there are compiler or linker warnings then think twice._
-4. Try out the trial program with different options.
+5. Try out the trial program with different options.
   - _**There should be no crash, hangup, or any other error.**_
   - _If there is an error then fix it or create an issue in the repo._
-5. Try out the utilities with different options.
+6. Try out the utilities with different options.
   - _**There should be no crash, hangup, or any other error.**_
   - _If there is an error then fix it or create an issue in the repo._
-6. Build and try out the examples (repair them when necessary);
+7. Build and try out the examples (repair them when necessary);
   - `$(PROJROOT)/Examples/C++`
   - `$(PROJROOT)/Examples/Python`
 
@@ -59,7 +64,7 @@ _All rights reserved._
 
 1. Update the `README.md` (e.g. development environment, supported devices, etc.).
 2. Push the feature branch onto the remote repo.
-3. Create a pull request and name it somehow like '**Release Candidate #**_n_'.
+3. Create a pull request and name it somehow like '**Release Candidate _n_ for**...'.
 4. Review the changes and merge the feature branch into the default branch.
 
 ## Release Tag
