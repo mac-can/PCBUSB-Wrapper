@@ -106,15 +106,21 @@ Type `can_test --help` to display all program options.
 
 ### Target Platform
 
-- Apple´s macOS (x86_64)
+- macOS 11.0 and later (Intel and Apple silicon)
 
 ### Development Environment
 
+#### macOS Monterey
+
+- macOS Monterey (12.1) on a Mac mini (M1, 2020)
+- Apple clang version 13.0.0 (clang-1300.0.29.30)
+- Xcode Version 13.2.1 (13C100)
+
 #### macOS Big Sur
 
-- macOS Big Sur (11.4) on a MacBook Pro (2019)
-- Apple clang version 12.0.5 (clang-1205.0.22.9)
-- Xcode Version 12.5 (12E262)
+- macOS Big Sur (11.6.1) on a MacBook Pro (2019)
+- Apple clang version 13.0.0 (clang-1300.0.29.30)
+- Xcode Version 13.2.1 (13C100)
 
 #### macOS High Sierra
 
@@ -122,15 +128,15 @@ Type `can_test --help` to display all program options.
 - Apple LLVM version 10.0.0 (clang-1000.11.45.5)
 - Xcode Version 10.1 (10B61)
 
-### CAN Hardware
-
-- PCAN-USB - single channel, CAN 2.0 (Peak´s item no.: IPEH-002021, IPEH-002022)
-- PCAN-USB FD - single channel, CAN 2.0 and CAN FD (Peak´s item no.: IPEH-004022)
-- PCAN-USB Pro FD - dual channel, CAN 2.0 and CAN FD (Peak´s item no.: IPEH-004061)
-
 ### Required PCBUSB Library
 
 - `libPCBUSB.x.y.dylib` - Version 0.10 or later _(Latest is Greatest!)_
+
+### Testing
+
+The XCode project for the trial program includes a xctest target with one test suite for each CAN API V3 **C** interface function.
+To run the test suites or single test cases two CAN devices are required.
+General test settings can be change in the file `Settings.h`.
 
 ## Known Bugs and Caveats
 
