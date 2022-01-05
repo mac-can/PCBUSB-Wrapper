@@ -1,6 +1,6 @@
-### macOS® Wrapper Library for PCAN-USB Interfaces from Peak-System
+### macOS&reg; Wrapper Library for PCAN-USB Interfaces from Peak-System
 
-_Copyright &copy; 2005-2010, 2012-2021   Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
+_Copyright &copy; 2005-2010, 2012-2022   Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
 
 # CAN API V3 for PCAN-USB Interfaces
 
@@ -22,19 +22,19 @@ In case of doubt the source code:
 ```C++
 /// \name   PeakCAN API
 /// \brief  CAN API V3 wrapper for PEAK PCAN-USB interfaces
-/// \note   See CCANAPI for a description of the overridden methods
+/// \note   See CCanApi for a description of the overridden methods
 /// \{
-class CPeakCAN : public CCANAPI {
+class CPeakCAN : public CCanApi {
 public:
     // constructor / destructor
     CPeakCAN();
     ~CPeakCAN();
 
-    // CCANAPI overrides
-    static CANAPI_Return_t ProbeChannel(int32_t channel, CANAPI_OpMode_t opMode, const void *param, EChannelState &state);
-    static CANAPI_Return_t ProbeChannel(int32_t channel, CANAPI_OpMode_t opMode, EChannelState &state);
+    // CCanApi overrides
+    static CANAPI_Return_t ProbeChannel(int32_t channel, const CANAPI_OpMode_t &opMode, const void *param, EChannelState &state);
+    static CANAPI_Return_t ProbeChannel(int32_t channel, const CANAPI_OpMode_t &opMode, EChannelState &state);
 
-    CANAPI_Return_t InitializeChannel(int32_t channel, CANAPI_OpMode_t opMode, const void *param = NULL);
+    CANAPI_Return_t InitializeChannel(int32_t channel, const CANAPI_OpMode_t &opMode, const void *param = NULL);
     CANAPI_Return_t TeardownChannel();
     CANAPI_Return_t SignalChannel();
 
@@ -106,15 +106,21 @@ Type `can_test --help` to display all program options.
 
 ### Target Platform
 
-- Apple´s macOS (x86_64)
+- macOS 11.0 and later (Intel and Apple silicon)
 
 ### Development Environment
 
+#### macOS Monterey
+
+- macOS Monterey (12.1) on a Mac mini (M1, 2020)
+- Apple clang version 13.0.0 (clang-1300.0.29.30)
+- Xcode Version 13.2.1 (13C100)
+
 #### macOS Big Sur
 
-- macOS Big Sur (11.4) on a MacBook Pro (2019)
-- Apple clang version 12.0.5 (clang-1205.0.22.9)
-- Xcode Version 12.5 (12E262)
+- macOS Big Sur (11.6.1) on a MacBook Pro (2019)
+- Apple clang version 13.0.0 (clang-1300.0.29.30)
+- Xcode Version 13.2.1 (13C100)
 
 #### macOS High Sierra
 
@@ -122,15 +128,15 @@ Type `can_test --help` to display all program options.
 - Apple LLVM version 10.0.0 (clang-1000.11.45.5)
 - Xcode Version 10.1 (10B61)
 
-### CAN Hardware
-
-- PCAN-USB - single channel, CAN 2.0 (Peak´s item no.: IPEH-002021, IPEH-002021)
-- PCAN-USB FD - single channel, CAN 2.0 and CAN FD (Peak´s item no.: IPEH-004022)
-- PCAN-USB Pro FD - dual channel, CAN 2.0 and CAN FD (Peak´s item no.: IPEH-004061)
-
 ### Required PCBUSB Library
 
 - `libPCBUSB.x.y.dylib` - Version 0.10 or later _(Latest is Greatest!)_
+
+### Testing
+
+The XCode project for the trial program includes a xctest target with one test suite for each CAN API V3 **C** interface function.
+To run the test suites or single test cases two CAN devices are required.
+General test settings can be change in the file `Settings.h`.
 
 ## Known Bugs and Caveats
 
@@ -142,6 +148,8 @@ Type `can_test --help` to display all program options.
 
 The PCBUSB library can be downloaded form the [MacCAN](https://mac-can.com/) website (binaries only). \
 Please note the copyright and license agreements.
+
+A Windows&reg; version can be downloaded from / cloned at [GitHub](https://github.com/uv-software/PCANBasic-Wrapper).
 
 ### Dual-License
 
@@ -155,6 +163,7 @@ You can choose between one of them if you use this work in whole or in part.
 
 Mac and macOS are trademarks of Apple Inc., registered in the U.S. and other countries. \
 PCAN is a registered trademark of PEAK-System Technik GmbH, Darmstadt, Germany. \
+Windows is a registered trademark of Microsoft Corporation in the United States and/or other countries. \
 All other company, product and service names mentioned herein are trademarks, registered trademarks or service marks of their respective owners.
 
 ### Hazard Note
@@ -164,6 +173,4 @@ _If you connect your CAN device to a real CAN network when using this library, y
 ### Contact
 
 E-Mail: mailto://info@mac.can.com \
-Internet: https://www.mac-can.com
-
-##### *Enjoy!*
+Internet: https://www.mac-can.net

@@ -53,7 +53,7 @@ HOME_DIR = ../..
 
 SOURCE_DIR = $(HOME_DIR)/Sources
 CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
-PCBUSB_DIR = $(HOME_DIR)/Sources/Wrapper
+WRAPPER_DIR = $(HOME_DIR)/Sources/Wrapper
 
 OBJECTS = $(OUTDIR)/PeakCAN.o $(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o
 
@@ -64,7 +64,7 @@ LIBRARY = libPeakCAN
 
 MAJOR = 0
 MINOR = 2
-PATCH = 1
+PATCH = 2
 
 VERSION = $(MAJOR).$(MINOR).$(PATCH)
 TARGET  = $(LIBRARY).$(VERSION).dylib
@@ -78,14 +78,13 @@ INSTALL = /usr/local/lib
 
 INCLUDE = /usr/local/include
 
-DEFINES = -DOPTION_CAN_2_0_ONLY=0 \
-	-DOPTION_PCAN_DYLIB=1 \
+DEFINES = -DOPTION_PCAN_DYLIB=1 \
 	-DOPTION_CANAPI_DRIVER=1 \
 	-DOPTION_CANAPI_COMPANIONS=1
 
 HEADERS = -I$(SOURCE_DIR) \
 	-I$(CANAPI_DIR) \
-	-I$(PCBUSB_DIR)
+	-I$(WRAPPER_DIR)
 
 CFLAGS += -O2 -Wall -Wno-parentheses \
 	-fno-strict-aliasing \
@@ -104,15 +103,20 @@ LDFLAGS  += -lpthread \
 	-current_version $(CURRENT_VERSION) \
 	-compatibility_version $(COMPATIBILITY_VERSION)
 
-ARFLAGS = r
+LTFLAGS += -static
 
+ifeq ($(BINARY),UNIVERSAL)
+CFLAGS += -arch arm64 -arch x86_64
+CXXFLAGS += -arch arm64 -arch x86_64
+LDFLAGS += -arch arm64 -arch x86_64
+endif
 endif
 
 
 CXX = clang++
 CC = clang
 LD = clang++
-AR = ar
+LT = libtool
 RM = rm -f
 CP = cp -f
 LN = ln -s
@@ -149,8 +153,8 @@ clean:
 	$(RM) $(TARGET) $(STATIC) $(OUTDIR)/*.o $(OUTDIR)/*.d
 
 pristine:
-	$(RM) $(TARGET) $(STATIC) $(OUTDIR)/*.o $(OUTDIR)/*.d
-	$(RM) $(BINDIR)/$(TARGET) $(BINDIR)/$(STATIC) $(BINDIR)/$(LIBRARY).dylib
+	$(RM) *.dylib *.a $(OUTDIR)/*.o $(OUTDIR)/*.d
+	$(RM) $(BINDIR)/*.dylib $(BINDIR)/*.a
 	$(RM) $(INCDIR)/*.h
 
 install:
@@ -168,19 +172,22 @@ endif
 $(OUTDIR)/PeakCAN.o: $(SOURCE_DIR)/PeakCAN.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
-$(OUTDIR)/can_api.o: $(PCBUSB_DIR)/can_api.c
+$(OUTDIR)/can_api.o: $(WRAPPER_DIR)/can_api.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 $(OUTDIR)/can_btr.o: $(CANAPI_DIR)/can_btr.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 
+
 $(STATIC): $(OBJECTS)
-	$(AR) $(ARFLAGS) $@ $(OBJECTS) $(LIBRARIES)
-	$(CP) $(STATIC) $(BINDIR)
+	$(LT) $(LTFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
+	$(CP) $@ $(BINDIR)
+	@lipo -archs $@
+	@echo "\033[1mTarget '"$@"' successfully build\033[0m"
 
 $(TARGET): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
-	$(CP) $(TARGET) $(BINDIR)
-	$(RM) $(BINDIR)/$(LIBRARY).dylib ; $(LN) $(BINDIR)/$(TARGET) $(BINDIR)/$(LIBRARY).dylib
+	$(CP) $@ $(BINDIR)
+	@lipo -archs $@
 	@echo "\033[1mTarget '"$@"' successfully build\033[0m"

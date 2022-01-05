@@ -1,5 +1,5 @@
-__CAN Monitor for PEAK PCAN-USB Interfaces, Version 0.2.0__ \
-Copyright &copy; 2008-2010,2012-2021 by Uwe Vogt, UV Software, Berlin
+__CAN Monitor for PEAK PCAN-USB Interfaces, Version 0.2.2__ \
+Copyright &copy; 2008-2010,2012-2022 by Uwe Vogt, UV Software, Berlin
 
 ```
 Usage: can_moni <interface> [<option>...]

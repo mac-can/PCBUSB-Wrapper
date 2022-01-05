@@ -48,9 +48,9 @@ int main(int argc, const char * argv[]) {
             result = can_write(handle, &message, 0U);
         } while (result == CANERR_TX_BUSY);
         if (result < CANERR_NOERROR) {
-                std::cerr << "\n+++ error: message could not be sent" << std::endl;
+            std::cerr << "\n+++ error: message could not be sent" << std::endl;
             goto reset;
-            }
+        }
     }
 #if !defined(_WIN32) && !defined(_WIN64)
     usleep(1000000);  // afterburner

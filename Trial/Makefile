@@ -1,6 +1,6 @@
 #
 #	Trial Program
-#	MacCAN-KvaserCAN
+#	PCBUSB-Wrapper
 #	Bart Simpson didn´t do it
 #
 current_OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown OS')
@@ -13,15 +13,13 @@ MAIN_DIR = ./Sources
 
 SOURCE_DIR = $(HOME_DIR)/Sources
 CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
-PCBUSB_DIR = $(HOME_DIR)/Sources/Wrapper
+WRAPPER_DIR = $(HOME_DIR)/Sources/Wrapper
 
-OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/PeakCAN.o \
-	$(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o
+OBJECTS = $(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o \
+	$(OUTDIR)/PeakCAN.o $(OUTDIR)/main.o
 
 
 ifeq ($(current_OS),Darwin) # macOS - libPeakCAN.dylib
-
-VERSION = 0
 
 TARGET	= pcb_test
 
@@ -33,7 +31,7 @@ DEFINES = -DOPTION_CAN_2_0_ONLY=0 \
 
 HEADERS = -I$(SOURCE_DIR) \
 	-I$(CANAPI_DIR) \
-	-I$(PCBUSB_DIR) \
+	-I$(WRAPPER_DIR) \
 	-I$(MAIN_DIR)
 
 CFLAGS += -O2 -Wall -Wno-parentheses \
@@ -49,17 +47,25 @@ LIBRARIES =
 
 LDFLAGS  += -lpthread
 
+ifeq ($(BINARY),UNIVERSAL)
+CFLAGS += -arch arm64 -arch x86_64
+CXXFLAGS += -arch arm64 -arch x86_64
+LDFLAGS += -arch arm64 -arch x86_64
+endif
 endif
 
 
 CXX = clang++
 CC = clang
 LD = clang++
+LT = libtool
 RM = rm -f
 CP = cp -f
+LN = ln -s
 
 OUTDIR = .objects
-
+BINDIR = $(HOME_DIR)/Binaries
+INCDIR = $(HOME_DIR)/Includes
 
 .PHONY: info outdir
 
@@ -86,19 +92,21 @@ install:
 test: info outdir $(TARGET)
 	./$(TARGET) INFO EXIT
 
-$(OUTDIR)/main.o: $(MAIN_DIR)/main.cpp
-	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
-$(OUTDIR)/PeakCAN.o: $(SOURCE_DIR)/PeakCAN.cpp
-	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
-
-$(OUTDIR)/can_api.o: $(PCBUSB_DIR)/can_api.c
+$(OUTDIR)/can_api.o: $(WRAPPER_DIR)/can_api.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 $(OUTDIR)/can_btr.o: $(CANAPI_DIR)/can_btr.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
+$(OUTDIR)/PeakCAN.o: $(SOURCE_DIR)/PeakCAN.cpp
+	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/main.o: $(MAIN_DIR)/main.cpp
+	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
+
 
 $(TARGET): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
+	@lipo -archs $@
 	@echo "\033[1mTarget '"$@"' successfully build\033[0m"
