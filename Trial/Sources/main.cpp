@@ -84,6 +84,7 @@ int main(int argc, const char * argv[]) {
     int32_t channel = (int32_t)PCAN_USB1;
     uint16_t timeout = CANREAD_INFINITE;
     useconds_t delay = 0U;
+    CCanApi::SChannelInfo info;
     CCanApi::EChannelState state;
     //int32_t clocks[CANPROP_MAX_BUFFER_SIZE/sizeof(int32_t)];
     char szVal[CANPROP_MAX_BUFFER_SIZE];
@@ -232,12 +233,24 @@ int main(int argc, const char * argv[]) {
             return 0;
     }
     if (option_test) {
+#if (1)
+        bool result = CPeakCAN::GetFirstChannel(info);
+        while (result) {
+            retVal = CPeakCAN::ProbeChannel(info.m_nChannelNo, opMode, state);
+            fprintf(stdout, ">>> CCanAPI::ProbeChannel(%i): state = %s", info.m_nChannelNo,
+                            (state == CCanApi::ChannelOccupied) ? "occupied" :
+                            (state == CCanApi::ChannelAvailable) ? "available" :
+                            (state == CCanApi::ChannelNotAvailable) ? "not available" : "not testable");
+            fprintf(stdout, "%s", (retVal == CCanApi::IllegalParameter) ? " (warning: Op.-Mode not supported)\n" : "\n");
+            result = CPeakCAN::GetNextChannel(info);
+        }
+#else
         retVal = myDriver.SetProperty(CANPROP_SET_FIRST_CHANNEL, (void *)NULL, 0U);
         while (retVal == CCanApi::NoError) {
-            retVal = myDriver.GetProperty(CANPROP_GET_CHANNEL_NO, (void *)&i32Val, sizeof(int32_t));
+            retVal = myDriver.GetProperty(CANPROP_GET_CHANNEL_TYPE, (void *)&i32Val, sizeof(int32_t));
             if (retVal == CCanApi::NoError) {
                 retVal = CPeakCAN::ProbeChannel(i32Val, opMode, state);
-                fprintf(stdout, ">>> CCanApi.ProbeChannel(%i): state = %s", i32Val,
+                fprintf(stdout, ">>> CCanApi::ProbeChannel(%i): state = %s", i32Val,
                                 (state == CCanApi::ChannelOccupied) ? "occupied" :
                                 (state == CCanApi::ChannelAvailable) ? "available" :
                                 (state == CCanApi::ChannelNotAvailable) ? "not available" : "not testable");
@@ -245,6 +258,7 @@ int main(int argc, const char * argv[]) {
             }
             retVal = myDriver.SetProperty(CANPROP_SET_NEXT_CHANNEL, (void *)NULL, 0U);
         }
+#endif
         if (option_exit)
             return 0;
     }
@@ -498,7 +512,7 @@ retry:
         if ((myDriver.GetProperty(CANPROP_GET_RCV_QUEUE_SIZE, (void *)&u32QueSize, sizeof(uint32_t)) == CCanApi::NoError) &&
             (myDriver.GetProperty(CANPROP_GET_RCV_QUEUE_HIGH, (void *)&u32QueHigh, sizeof(uint32_t)) == CCanApi::NoError) &&
             (myDriver.GetProperty(CANPROP_GET_RCV_QUEUE_OVFL, (void *)&u64QueOvfl, sizeof(uint64_t)) == CCanApi::NoError))
-            fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_QUEUE_*): size = %" PRIu32 " high = %" PRIu32 " overflows = %" PRIu64 "\n", u32QueSize, u32QueHigh, u64QueOvfl);
+            fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_QUEUE_*): SIZE = %" PRIu32 " HIGH = %" PRIu32 " OVFL = %" PRIu64 "\n", u32QueSize, u32QueHigh, u64QueOvfl);
     }
     if (option_info) {
         char *hardware = myDriver.GetHardwareVersion();
