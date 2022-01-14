@@ -56,7 +56,7 @@
 #else
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    2
-#define VERSION_PATCH    2
+#define VERSION_PATCH    99
 #endif
 #define VERSION_BUILD    BUILD_NO
 #define VERSION_STRING   TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) " (" TOSTRING(BUILD_NO) ")"
@@ -1020,7 +1020,7 @@ static int pcan_compatibility(void) {
     TPCANStatus sts;                    // channel status
     unsigned int major = 0, minor = 0;  // channel version
     char version[256] = "PCBUSB library, version 0.0.0.0";
-    
+
     /* (§1) get library version (as a string) */
     if ((sts = CAN_GetValue(PCAN_NONEBUS, PCAN_EXT_SOFTWARE_VERSION, (void*)version, 256)) != PCAN_ERROR_OK)
         return pcan_error(sts);
@@ -1273,6 +1273,7 @@ static int lib_parameter(uint16_t param, void *value, size_t nbyte)
             rc = CANERR_NOERROR;
         }
         break;
+    // TODO: activate this again
 	/* *** **
     case CANPROP_GET_DEVICE_VENDOR:     // vendor name of the CAN interface (char[256])
         if ((nbyte > strlen(PCAN_LIB_VENDOR)) && (nbyte <= CANPROP_MAX_BUFFER_SIZE)) {
@@ -1428,7 +1429,7 @@ static int drv_parameter(int handle, uint16_t param, void *value, size_t nbyte)
     switch (param) {
     case CANPROP_GET_DEVICE_TYPE:       // device type of the CAN interface (int32_t)
         if (nbyte >= sizeof(int32_t)) {
-            *(int32_t*)value = (int32_t)can[handle].board;
+            *(int32_t*)value = (int32_t)PCAN_BOARD_TYPE(can[handle].board);
             rc = CANERR_NOERROR;
         }
         break;

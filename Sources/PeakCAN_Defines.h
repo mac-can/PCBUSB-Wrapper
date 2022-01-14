@@ -91,6 +91,8 @@ extern "C" {
 #define PCAN_USB15             0x50FU   /**< PCAN-USB interface, channel 15 */
 #define PCAN_USB16             0x510U   /**< PCAN-USB interface, channel 16 */
 #define PCAN_BOARDS              16     /**< number of PCAN interface boards */
+
+#define PCAN_BOARD_TYPE(x)     ((((x) > 0x0FFU) ? (x) >> 8 : (x) >> 4) & 0xFU)
 /** @} */
 
 /** @name  CAN API Error Codes
