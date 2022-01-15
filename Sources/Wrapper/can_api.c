@@ -101,6 +101,11 @@ static const char version[] = "CAN API V3 for PEAK PCAN-USB Interfaces, Version 
 
 /*  -----------  options  ------------------------------------------------
  */
+
+#if (OPTION_CAN_2_0_ONLY != 0)
+#error Compilation with legacy CAN 2.0 frame format!
+#endif
+
 #if (OPTION_CANAPI_PCBUSB_DYLIB != 0)
 __attribute__((constructor))
 static void _initializer() {
@@ -712,6 +717,9 @@ int can_read(int handle, can_msg_t *msg, uint16_t timeout)
         return CANERR_NULLPTR;
     if (can[handle].status.can_stopped) // must be running
         return CANERR_OFFLINE;
+    memset(msg, 0, sizeof(can_msg_t));  // invalidate the message
+    msg->id = 0xFFFFFFFFU;
+    msg->sts = 1;
 
     // blocking read
 #if !defined(_WIN32) && !defined(_WIN64)
@@ -747,6 +755,7 @@ retry:
     }
     if (!can[handle].mode.fdoe) {       // CAN 2.0 message:
         if ((can_msg.MSGTYPE & PCAN_MESSAGE_STATUS)) {
+            // TODO: encode status message (status)
             can[handle].status.bus_off = (can_msg.DATA[3] & PCAN_ERROR_BUSOFF) != PCAN_ERROR_OK;
             can[handle].status.bus_error = (can_msg.DATA[3] & PCAN_ERROR_BUSPASSIVE) != PCAN_ERROR_OK;
             can[handle].status.warning_level = (can_msg.DATA[3] & PCAN_ERROR_BUSWARNING) != PCAN_ERROR_OK;
@@ -755,6 +764,7 @@ retry:
             return CANERR_RX_EMPTY;     //   receiver empty
         }
         if ((can_msg.MSGTYPE & PCAN_MESSAGE_ERRFRAME))  {
+            // TODO: encode status message (error frame)
             can[handle].status.receiver_empty = 1;
             can[handle].counters.err++;
             return CANERR_ERR_FRAME;    //   error frame received
@@ -765,6 +775,7 @@ retry:
         msg->fdf = 0;
         msg->brs = 0;
         msg->esi = 0;
+        msg->sts = 0;
         msg->dlc = (uint8_t)can_msg.LEN;
         memcpy(msg->data, can_msg.DATA, CAN_MAX_LEN);
         msec = ((uint64_t)timestamp.millis_overflow << 32) + (uint64_t)timestamp.millis;
@@ -791,6 +802,7 @@ retry:
         msg->fdf = (can_msg_fd.MSGTYPE & PCAN_MESSAGE_FD) ? 1 : 0;
         msg->brs = (can_msg_fd.MSGTYPE & PCAN_MESSAGE_BRS) ? 1 : 0;
         msg->esi = (can_msg_fd.MSGTYPE & PCAN_MESSAGE_ESI) ? 1 : 0;
+        msg->sts = 0;
         msg->dlc = (uint8_t)can_msg_fd.DLC;
         memcpy(msg->data, can_msg_fd.DATA, CANFD_MAX_LEN);
         msg->timestamp.tv_sec = (time_t)(timestamp_fd / 1000000ull);
@@ -1363,10 +1375,9 @@ static int lib_parameter(uint16_t param, void *value, size_t nbyte)
     case CANPROP_GET_BITRATE:           // active bit-rate of the CAN controller (can_bitrate_t)
     case CANPROP_GET_SPEED:             // active bus speed of the CAN controller (can_speed_t)
     case CANPROP_GET_STATUS:            // current status register of the CAN controller (uint8_t)
-    case CANPROP_GET_BUSLOAD:           // current bus load of the CAN controller (uint8_t)
+    case CANPROP_GET_BUSLOAD:           // current bus load of the CAN controller (uint16_t)
     case CANPROP_GET_NUM_CHANNELS:      // numbers of CAN channels on the CAN interface (uint8_t)
     case CANPROP_GET_CAN_CHANNEL:       // active CAN channel on the CAN interface (uint8_t)
-    case CANPROP_GET_CAN_CLOCKS:        // supported CAN clocks (in [Hz]) (int32_t[64])
     case CANPROP_GET_TX_COUNTER:        // total number of sent messages (uint64_t)
     case CANPROP_GET_RX_COUNTER:        // total number of reveiced messages (uint64_t)
     case CANPROP_GET_ERR_COUNTER:       // total number of reveiced error frames (uint64_t)
@@ -1496,13 +1507,21 @@ static int drv_parameter(int handle, uint16_t param, void *value, size_t nbyte)
             }
         }
         break;
-    case CANPROP_GET_BUSLOAD:           // current bus load of the CAN controller (uint8_t)
+    case CANPROP_GET_BUSLOAD:           // current bus load of the CAN controller (uint16_t)
         if (nbyte >= sizeof(uint8_t)) {
             if ((rc = can_busload(handle, &load, NULL)) == CANERR_NOERROR) {
-                *(uint8_t*)value = (uint8_t)load;
+                if (nbyte > sizeof(uint8_t))
+                    *(uint16_t*)value = (uint16_t)load * 100U;  // 0 - 10000 ==> 0.00% - 100.00%
+                else
+                    *(uint8_t*)value = (uint8_t)load;           // 0  -  100 ==> 0.00% - 100.00%
                 rc = CANERR_NOERROR;
             }
         }
+        break;
+    case CANPROP_GET_NUM_CHANNELS:      // numbers of CAN channels on the CAN interface (uint8_t)
+    case CANPROP_GET_CAN_CHANNEL:       // active CAN channel on the CAN interface (uint8_t)
+        // TODO: insert coin here
+        rc = CANERR_NOTSUPP;
         break;
     case CANPROP_GET_TX_COUNTER:        // total number of sent messages (uint64_t)
         if (nbyte >= sizeof(uint64_t)) {
@@ -1521,6 +1540,12 @@ static int drv_parameter(int handle, uint16_t param, void *value, size_t nbyte)
             *(uint64_t*)value = (uint64_t)can[handle].counters.err;
             rc = CANERR_NOERROR;
         }
+        break;
+    case CANPROP_GET_RCV_QUEUE_SIZE:    // maximum number of message the receive queue can hold (uint32_t)
+    case CANPROP_GET_RCV_QUEUE_HIGH:    // maximum number of message the receive queue has hold (uint32_t)
+    case CANPROP_GET_RCV_QUEUE_OVFL:    // overflow counter of the receive queue (uint64_t)
+        // note: cannot be determined
+        rc = CANERR_NOTSUPP;  // FIXME: ?
         break;
     default:
         if ((CANPROP_GET_VENDOR_PROP <= param) &&  // get a vendor-specific property value (void*)

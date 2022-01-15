@@ -731,6 +731,8 @@ uint64_t CCanDriver::TransmitterTest(time_t duration, CANAPI_OpMode_t opMode, ui
     uint64_t errors = 0;
     uint64_t calls = 0;
 
+    memset(&message, 0, sizeof(CANAPI_Message_t));
+
     fprintf(stderr, "\nPress ^C to abort.\n");
     message.id  = id;
     message.xtd = 0;
@@ -793,6 +795,7 @@ uint64_t CCanDriver::TransmitterTest(uint64_t count, CANAPI_OpMode_t opMode, boo
     uint64_t calls = 0;
 
     srand((unsigned int)time(NULL));
+    memset(&message, 0, sizeof(CANAPI_Message_t));
 
     fprintf(stderr, "\nPress ^C to abort.\n");
     message.id  = id;
@@ -1005,5 +1008,5 @@ static void version(FILE *stream, const char *program)
 {
     fprintf(stdout, "%s\n%s\n\n%s\n\n", APPLICATION, COPYRIGHT, LICENSE);
     (void)program;
-    fprintf(stream, "Written by Uwe Vogt, UV Software, Berlin <http://www.uv-software.com/>\n");
+    fprintf(stream, "Written by Uwe Vogt, UV Software, Berlin <https://www.mac-can.net/>\n");
 }
