@@ -1,6 +1,6 @@
 ### macOS&reg; Wrapper Library for PCAN-USB Interfaces from Peak-System
 
-_Copyright &copy; 2005-2010, 2012-2022   Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
+_Copyright &copy; 2005-2010, 2012-2022 Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
 
 # CAN API V3 for PCAN-USB Interfaces
 
@@ -31,6 +31,9 @@ public:
     ~CPeakCAN();
 
     // CCanApi overrides
+    static bool GetFirstChannel(SChannelInfo &info, void *param = NULL);
+    static bool GetNextChannel(SChannelInfo &info, void *param = NULL);
+
     static CANAPI_Return_t ProbeChannel(int32_t channel, const CANAPI_OpMode_t &opMode, const void *param, EChannelState &state);
     static CANAPI_Return_t ProbeChannel(int32_t channel, const CANAPI_OpMode_t &opMode, EChannelState &state);
 
