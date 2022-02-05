@@ -52,7 +52,6 @@
 		0F8328CB27820ABC00BE8BBA /* Tester.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Tester.h; path = ../Tests/UnitTests/Tester.h; sourceTree = "<group>"; };
 		0F8328CC27820ABC00BE8BBA /* Tester.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Tester.cpp; path = ../Tests/UnitTests/Tester.cpp; sourceTree = "<group>"; };
 		0F8328CD27820ABC00BE8BBA /* Settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Settings.h; path = ../Tests/UnitTests/Settings.h; sourceTree = "<group>"; };
-		0F8328CE27820ABC00BE8BBA /* Template.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Template.h; path = ../Tests/UnitTests/Template.h; sourceTree = "<group>"; };
 		0F8328D527822DE400BE8BBA /* test_can_write.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = test_can_write.mm; path = ../Tests/UnitTests/test_can_write.mm; sourceTree = "<group>"; };
 		0F8328D627822DE400BE8BBA /* test_can_start.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = test_can_start.mm; path = ../Tests/UnitTests/test_can_start.mm; sourceTree = "<group>"; };
 		0F8328D727822DE400BE8BBA /* test_can_firmware.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = test_can_firmware.mm; path = ../Tests/UnitTests/test_can_firmware.mm; sourceTree = "<group>"; };
@@ -81,6 +80,7 @@
 		0FC6171C25CC67360010B15D /* PCBUSB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PCBUSB.h; path = ../Sources/Wrapper/PCBUSB.h; sourceTree = "<group>"; };
 		0FC6171D25CC67360010B15D /* can_api.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = can_api.c; path = ../Sources/Wrapper/can_api.c; sourceTree = "<group>"; };
 		0FE14B1725AEEA4900E87475 /* PCBUSB */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PCBUSB; sourceTree = BUILT_PRODUCTS_DIR; };
+		44FAED34279200C000B44E88 /* Driver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Driver.h; path = ../Tests/UnitTests/Driver.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,8 +104,8 @@
 		0F8328C727820A0900BE8BBA /* Testing */ = {
 			isa = PBXGroup;
 			children = (
+				44FAED34279200C000B44E88 /* Driver.h */,
 				0F8328CD27820ABC00BE8BBA /* Settings.h */,
-				0F8328CE27820ABC00BE8BBA /* Template.h */,
 				0F8328CA27820ABC00BE8BBA /* Testing.mm */,
 				0F8328DC27822DE400BE8BBA /* test_can_test.mm */,
 				0F8328DB27822DE400BE8BBA /* test_can_init.mm */,
