@@ -1,7 +1,7 @@
 #
 #	CAN Interface API, Version 3 (for PEAK PCAN-USB Interfaces)
 #
-#	Copyright (c) 2010-2021 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
+#	Copyright (c) 2010-2023 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 #	All rights reserved.
 #
 #	This library is part of PCBUSB-Wrapper.
@@ -64,7 +64,7 @@ LIBRARY = libPeakCAN
 
 MAJOR = 0
 MINOR = 2
-PATCH = 3
+PATCH = 4
 
 VERSION = $(MAJOR).$(MINOR).$(PATCH)
 TARGET  = $(LIBRARY).$(VERSION).dylib
