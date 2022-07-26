@@ -52,7 +52,7 @@
 #ifdef _MSC_VER
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    4
-#define VERSION_PATCH    3
+#define VERSION_PATCH    4
 #else
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    2
@@ -71,7 +71,7 @@
 #else
 #error Unsupported architecture
 #endif
-static const char version[] = "CAN API V3 for PEAK PCAN-USB Interfaces, Version " VERSION_STRING;
+static const char version[] = "CAN API V3 for PEAK PCAN Interfaces, Version " VERSION_STRING;
 
 
 /*  -----------  includes  -----------------------------------------------
@@ -500,6 +500,8 @@ int can_start(int handle, const can_bitrate_t *bitrate)
         case CANBTR_INDEX_10K: btr0btr1 = PCAN_BAUD_10K; break;
         default: return CANERR_BAUDRATE;
         }
+        if (can[handle].mode.fdoe)      //   btr0btr1 not in CAN FD
+            return CANERR_BAUDRATE;
     }
     else if (!can[handle].mode.fdoe) {  // btr0btr1 for CAN 2.0
         if (map_bitrate2register(bitrate, &btr0btr1) != CANERR_NOERROR)
@@ -916,6 +918,7 @@ EXPORT
 int can_property(int handle, uint16_t param, void *value, uint32_t nbyte)
 {
     if (!init || !IS_HANDLE_VALID(handle)) {
+        // note: library properties can be queried w/o a handle
         return lib_parameter(param, value, (size_t)nbyte);
     }
     if (!init)                          // must be initialized
@@ -924,7 +927,7 @@ int can_property(int handle, uint16_t param, void *value, uint32_t nbyte)
         return CANERR_HANDLE;
     if (can[handle].board == PCAN_NONEBUS) // must be an opened handle
         return CANERR_HANDLE;
-
+    // note: device properties must be queried with a valid handle
     return drv_parameter(handle, param, value, (size_t)nbyte);
 }
 
@@ -1511,9 +1514,9 @@ static int drv_parameter(int handle, uint16_t param, void *value, size_t nbyte)
         if (nbyte >= sizeof(uint8_t)) {
             if ((rc = can_busload(handle, &load, NULL)) == CANERR_NOERROR) {
                 if (nbyte > sizeof(uint8_t))
-                    *(uint16_t*)value = (uint16_t)load * 100U;  // 0 - 10000 ==> 0.00% - 100.00%
+                    *(uint16_t*)value = (uint16_t)load * 100U;  // 0..10000 ==> 0.00%..100.00%
                 else
-                    *(uint8_t*)value = (uint8_t)load;           // 0  -  100 ==> 0.00% - 100.00%
+                    *(uint8_t*)value = (uint8_t)load;           // 0..100% (legacy resolution)
                 rc = CANERR_NOERROR;
             }
         }
