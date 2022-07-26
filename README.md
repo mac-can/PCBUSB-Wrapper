@@ -17,11 +17,9 @@ Note: _The PCBUSB library is not included in this repo, and must be installed se
 
 ### CAN Interface API, Version 3
 
-In case of doubt the source code:
-
 ```C++
 /// \name   PeakCAN API
-/// \brief  CAN API V3 wrapper for PEAK PCAN-USB interfaces
+/// \brief  CAN API V3 wrapper for Peak-System PCAN-USB interfaces
 /// \note   See CCanApi for a description of the overridden methods
 /// \{
 class CPeakCAN : public CCanApi {
@@ -59,28 +57,37 @@ public:
     char *GetHardwareVersion();  // (for compatibility reasons)
     char *GetFirmwareVersion();  // (for compatibility reasons)
     static char *GetVersion();  // (for compatibility reasons)
+
+    static CANAPI_Return_t MapIndex2Bitrate(int32_t index, CANAPI_Bitrate_t &bitrate);
+    static CANAPI_Return_t MapString2Bitrate(const char *string, CANAPI_Bitrate_t &bitrate);
+    static CANAPI_Return_t MapBitrate2String(CANAPI_Bitrate_t bitrate, char *string, size_t length);
+    static CANAPI_Return_t MapBitrate2Speed(CANAPI_Bitrate_t bitrate, CANAPI_BusSpeed_t &speed);
+
+    static uint8_t Dlc2Len(uint8_t dlc) { return CCanApi::Dlc2Len(dlc); }
+    static uint8_t Len2Dlc(uint8_t len) { return CCanApi::Len2Dlc(len); }
 };
 /// \}
 ```
 See header file `PeakCAN.h` for a description of the provided methods.
 
-## Build Targets
+### Build Targets
 
-Important note: _To build any of the following build targets run the script_ `build_no.sh` _to generate a pseudo build number._
+_Important note_: To build any of the following build targets run the script `build_no.sh` to generate a pseudo build number.
 ```
 uv-pc013mac:~ eris$ cd ~/Projects/CAN/Drivers/PeakCAN
 uv-pc013mac:PeakCAN eris$ ./build_no.sh
 ```
 Repeat this step after each `git commit`, `git pull`, `git clone`, etc.
 
-Then go back to the root folder and compile the whole _bleep_ by typing the usual commands:
+Then you can build all targets by typing the usual commands:
 ```
 uv-pc013mac:~ eris$ cd ~/Projects/CAN/Drivers/PeakCAN
 uv-pc013mac:PeakCAN eris$ make clean
 uv-pc013mac:PeakCAN eris$ make all
 uv-pc013mac:PeakCAN eris$ sudo make install
+uv-pc013mac:PeakCAN eris$
 ```
-_(The version number of the libraries can be adapted by editing the `Makefile`s in the subfolders and changing the variable `VERSION` accordingly.  Don´t forget to set the version number also in the source files.)_
+_(The version number of the library can be adapted by editing the appropriated `Makefile` and changing the variable `VERSION` accordingly. Don´t forget to set the version number also in the source files.)_
 
 #### libPeakCAN
 
@@ -109,19 +116,19 @@ Type `can_test --help` to display all program options.
 
 ### Target Platform
 
-- macOS 11.0 and later (Intel and Apple silicon)
+- macOS 11.0 and later (Intel x64 and Apple silicon)
 
 ### Development Environment
 
 #### macOS Monterey
 
-- macOS Monterey (12.1) on a Mac mini (M1, 2020)
-- Apple clang version 13.0.0 (clang-1300.0.29.30)
-- Xcode Version 13.2.1 (13C100)
+- macOS Monterey (12.5) on a Mac mini (M1, 2020)
+- Apple clang version 13.1.6 (clang-1316.0.21.2.5)
+- Xcode Version 13.4.1 (13F100)
 
 #### macOS Big Sur
 
-- macOS Big Sur (11.6.3) on a MacBook Pro (2019)
+- macOS Big Sur (11.6.8) on a MacBook Pro (2019)
 - Apple clang version 13.0.0 (clang-1300.0.29.30)
 - Xcode Version 13.2.1 (13C100)
 
@@ -137,9 +144,9 @@ Type `can_test --help` to display all program options.
 
 ### Testing
 
-The XCode project for the trial program includes a xctest target with one test suite for each CAN API V3 **C** interface function.
+The Xcode project for the trial program includes an xctest target with one test suite for each CAN API V3 **C** interface function.
 To run the test suites or single test cases two CAN devices are required.
-General test settings can be change in the file `Settings.h`.
+General test settings can be adapted in the file `Settings.h`.
 
 ## Known Bugs and Caveats
 
@@ -149,10 +156,14 @@ General test settings can be change in the file `Settings.h`.
 
 ## This and That
 
+### PCBUSB Library for macOS&reg;
 The PCBUSB library can be downloaded form the [MacCAN](https://mac-can.com/) website (binaries only). \
 Please note the copyright and license agreements.
 
-A Windows&reg; version can be downloaded from / cloned at [GitHub](https://github.com/uv-software/PCANBasic-Wrapper).
+### Wrapper Library for Windows&reg;
+
+A CAN API V3 compatible Wrapper Library for Windows is also available.
+It is build upon Peak´s PCANBasic DLL and can be downloaded from / cloned at [GitHub](https://github.com/uv-software/PCANBasic-Wrapper).
 
 ### Dual-License
 
@@ -167,7 +178,8 @@ You can choose between one of them if you use this work in whole or in part.
 Mac and macOS are trademarks of Apple Inc., registered in the U.S. and other countries. \
 PCAN is a registered trademark of PEAK-System Technik GmbH, Darmstadt, Germany. \
 Windows is a registered trademark of Microsoft Corporation in the United States and/or other countries. \
-All other company, product and service names mentioned herein are trademarks, registered trademarks or service marks of their respective owners.
+Linux is a registered trademark of Linus Torvalds. \
+All other company, product and service names mentioned herein may be trademarks, registered trademarks or service marks of their respective owners.
 
 ### Hazard Note
 
