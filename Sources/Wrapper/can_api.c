@@ -587,14 +587,14 @@ int can_reset(int handle)
     TPCANStatus rc;                     // return value
     DWORD value;                        // parameter value
 
-    if (!init)                          // must be initialized!
+    if (!init)                          // must be initialized
         return CANERR_NOTINIT;
     if (!IS_HANDLE_VALID(handle))       // must be a valid handle
         return CANERR_HANDLE;
     if (can[handle].board == PCAN_NONEBUS) // must be an opened handle
         return CANERR_HANDLE;
 
-    if (can[handle].status.can_stopped) { // when running then go bus off
+    if (!can[handle].status.can_stopped) { // when running then go bus off
         /* note: we turn off the receiver and the transmitter to do that! */
 #ifndef ISSUE_276_UNSOLVED
         value = PCAN_PARAMETER_OFF;     //   receiver off
