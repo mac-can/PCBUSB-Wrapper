@@ -49,6 +49,11 @@
 #import "can_api.h"
 #import <XCTest/XCTest.h>
 
+#ifndef CAN_FD_SUPPORTED
+#define CAN_FD_SUPPORTED  FEATURE_SUPPORTED
+#warning CAN_FD_SUPPORTED not set, default=FEATURE_SUPPORTED
+#endif
+
 @interface test_can_status : XCTestCase
 
 @end
@@ -64,9 +69,9 @@
     (void)can_exit(CANKILL_ALL);
 }
 
-// @xctest TC09.1: Get CAN controller status with invalid interface handle(s).
+// @xctest TC09.1: Get CAN controller status with invalid interface handle(s)
 //
-// @expected: CANERR_HANDLE
+// @expected CANERR_HANDLE
 //
 - (void)testWithInvalidHandle {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -78,6 +83,10 @@
     // @- initialize DUT1 with configured settings
     handle = can_init(DUT1, TEST_CANMODE, NULL);
     XCTAssertLessThanOrEqual(0, handle);
+    // @- get status of DUT1 and check to be in INIT state
+    rc = can_status(handle, &status.byte);
+    XCTAssertEqual(CANERR_NOERROR, rc);
+    XCTAssertTrue(status.can_stopped);
 
     // @test:
     // @- try to get status with invalid handle -1
@@ -124,9 +133,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC09.2: Give a NULL pointer as argument for parameter 'status'.
+// @xctest TC09.2: Give a NULL pointer as argument for parameter 'status'
 //
-// @expected: CANERR_NOERROR
+// @expected CANERR_NOERROR
 //
 - (void)testWithNullPointerForStatus {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -184,9 +193,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC09.3: Get CAN controller status when interface is not initialized.
+// @xctest TC09.3: Get CAN controller status when interface is not initialized
 //
-// @expected: CANERR_NOTINIT
+// @expected CANERR_NOTINIT
 //
 - (void)testWhenInterfaceNotInitialized {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -195,14 +204,8 @@
     int rc = CANERR_FATAL;
 
     // @test:
-    // @- try to get status of DUT1 with invalid handle -1
-    rc = can_status(INVALID_HANDLE, &status.byte);
-    XCTAssertEqual(CANERR_NOTINIT, rc);
-    // @- try to get status of DUT1 with invalid handle INT32_MIN
-    rc = can_status(INT32_MIN, &status.byte);
-    XCTAssertEqual(CANERR_NOTINIT, rc);
-    // @- try to get status of DUT1 with invalid handle INT32_MAX
-    rc = can_status(INT32_MAX, &status.byte);
+    // @- try to get status of DUT1
+    rc = can_status(DUT1, &status.byte);
     XCTAssertEqual(CANERR_NOTINIT, rc);
 
     // @post:
@@ -242,9 +245,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC09.4: Get CAN controller status when interface initialized (but CAN controller not started).
+// @xctest TC09.4: Get CAN controller status when interface initialized (but CAN controller not started)
 //
-// @expected: CANERR_NOERROR and status bit 'can_stopped' = 1
+// @expected CANERR_NOERROR and status bit 'can_stopped' = 1
 //
 - (void)testWhenInterfaceInitialized {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -256,6 +259,10 @@
     // @- initialize DUT1 with configured settings
     handle = can_init(DUT1, TEST_CANMODE, NULL);
     XCTAssertLessThanOrEqual(0, handle);
+    // @- get status of DUT1 and check to be in INIT state
+    rc = can_status(handle, &status.byte);
+    XCTAssertEqual(CANERR_NOERROR, rc);
+    XCTAssertTrue(status.can_stopped);
 
     // @test:
     // @- get status of DUT1 and check to be in INIT state
@@ -293,9 +300,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC09.5: Get CAN controller status when CAN controller started.
+// @xctest TC09.5: Get CAN controller status when CAN controller started
 //
-// @expected: CANERR_NOERROR and status bit 'can_stopped' = 0
+// @expected CANERR_NOERROR and status bit 'can_stopped' = 0
 //
 - (void)testWhenInterfaceStarted {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -343,9 +350,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC09.6: Get CAN controller status when CAN controller stopped.
+// @xctest TC09.6: Get CAN controller status when CAN controller stopped
 //
-// @expected: CANERR_NOERROR and status bit 'can_stopped' = 1
+// @expected CANERR_NOERROR and status bit 'can_stopped' = 1
 //
 - (void)testWhenInterfaceStopped {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -394,9 +401,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC09.7: Get CAN controller status when interface already shutdown.
+// @xctest TC09.7: Get CAN controller status when interface already shutdown
 //
-// @expected: CANERR_NOTINIT
+// @expected CANERR_NOTINIT
 //
 - (void)testWhenInterfaceShutdown {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -446,48 +453,70 @@
     XCTAssertEqual(CANERR_NOTINIT, rc);
 }
 
-// @xctest TC09.8: tbd.
+// @xctest TC09.8: Get CAN controller status when in bus off state
+//
+// @expected CANERR_NOERROR but status flag 'bus_off' set
 //
 //- (void)testWhenStatusBusOff {
-//        TODO: insert coin here
+// @todo: insert coin here
 //}
 
-// @xctest TC09.9: tbd.
+// @xctest TC09.9: Get CAN controller status when warning level reached
+//
+// @expected CANERR_NOERROR but status flag 'warning_level' set
 //
 //- (void)testWhenStatusWarningLevel {
-//        TODO: insert coin here
+// @todo: insert coin here
 //}
 
-// @xctest TC09.10: tbd.
+// @xctest TC09.10: Get CAN controller status when errors on bus
+//
+// @expected CANERR_NOERROR but status flag 'bus_error' set
 //
 //- (void)testWhenStatusBusBrror {
-//        TODO: insert coin here
+// @todo: insert coin here
 //}
 
-// @xctest TC09.11: tbd.
+// @xctest TC09.11: Get CAN controller status when transmitter is busy
+//
+// @expected CANERR_NOERROR but status flag 'transmitter_busy' set
 //
 //- (void)testWhenStatusTransmitterBusy {
-//        TODO: insert coin here
+// @todo: insert coin here
+//
+// @note: already covered by TC05.19 (Send a CAN message when transmitter is busy)
 //}
 
-// @xctest TC09.12: tbd.
+// @xctest TC09.12: Get CAN controller status when reception queue is empty
+//
+// @expected CANERR_NOERROR but status flag 'receiver_empty' set
 //
 //- (void)testWhenStatusReceiverEmpty {
-//        TODO: insert coin here
+// @todo: insert coin here
+//
+// @note: already covered by TC04.7 (Read a CAN message when reception queue is empty)
 //}
 
-// @xctest TC09.13: tbd.
+// @xctest TC09.13: Get CAN controller status after message lost
+//
+// @expected CANERR_NOERROR but status flag 'message_lost' set
 //
 //- (void)testWhenStatusMessageLost {
-//        TODO: insert coin here
+// @todo: insert coin here
+//
+// @note: already covered by TC04.9 (Read a CAN message after message lost)
 //}
 
-// @xctest TC09.14: tbd.
+// @xctest TC09.14: Get CAN controller status after reception queue overrun
+//
+// @expected CANERR_NOERROR but status flag 'queue_overrun' set
 //
 //- (void)testWhenStatusQueueOverrun {
-//        TODO: insert coin here
+// @todo: insert coin here
+//
+// @note: already covered by TC04.8 (Read a CAN message from reception queue after overrun)
 //}
 
 @end
 
-// $Id: test_can_status.mm 1086 2022-01-09 20:01:00Z haumea $  Copyright (c) UV Software, Berlin //
+// $Id: test_can_status.mm 1083 2022-07-25 12:40:16Z makemake $  Copyright (c) UV Software, Berlin //

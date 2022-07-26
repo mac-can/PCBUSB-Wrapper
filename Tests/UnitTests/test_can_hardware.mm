@@ -64,9 +64,9 @@
     (void)can_exit(CANKILL_ALL);
 }
 
-// @xctest TC13.1: Get hardware version with invalid interface handle(s).
+// @xctest TC13.1: Get hardware version with invalid interface handle(s)
 //
-// @expected: NULL
+// @expected NULL
 //
 - (void)testWithInvalidHandle {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -79,6 +79,10 @@
     // @- initialize DUT1 with configured settings
     handle = can_init(DUT1, TEST_CANMODE, NULL);
     XCTAssertLessThanOrEqual(0, handle);
+    // @- get status of DUT1 and check to be in INIT state
+    rc = can_status(handle, &status.byte);
+    XCTAssertEqual(CANERR_NOERROR, rc);
+    XCTAssertTrue(status.can_stopped);
 
     // @test:
     // @- try to get version of DUT1 with invalid handle -1
@@ -125,9 +129,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC13.2: Get hardware version when interface is not initialized.
+// @xctest TC13.2: Get hardware version when interface is not initialized
 //
-// @expected: NULL
+// @expected NULL
 //
 - (void)testWhenInterfaceNotInitialized {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -137,14 +141,8 @@
     int rc = CANERR_FATAL;
 
     // @test:
-    // @- try to get version of DUT1 with invalid handle -1
-    string = can_hardware(INVALID_HANDLE);
-    XCTAssertTrue(NULL == string);
-    // @- try to get version of DUT1 with invalid handle INT32_MIN
-    string = can_hardware(INT32_MIN);
-    XCTAssertTrue(NULL == string);
-    // @- try to get version of DUT1 with invalid handle INT32_MAX
-    string = can_hardware(INT32_MAX);
+    // @- try to get version of DUT1
+    string = can_hardware(DUT1);
     XCTAssertTrue(NULL == string);
 
     // @post:
@@ -184,9 +182,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC13.3: Get hardware version when interface already shutdown.
+// @xctest TC13.3: Get hardware version when interface already shutdown
 //
-// @expected: NULL
+// @expected NULL
 //
 - (void)testWhenInterfaceShutdown {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -237,9 +235,9 @@
     XCTAssertTrue(NULL == string);
 }
 
-// @xctest TC13.4: Query hardware version at any place in a standard sequence (cf. SmokeTest).
+// @xctest TC13.4: Query hardware version at any place in a standard sequence (cf. SmokeTest)
 //
-// @expected: Not NULL
+// @expected a zero-terminated string
 //
 - (void)testAnyPlaceAnyTime {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -296,4 +294,4 @@
 
 @end
 
-// $Id: test_can_hardware.mm 1086 2022-01-09 20:01:00Z haumea $  Copyright (c) UV Software, Berlin //
+// $Id: test_can_hardware.mm 1083 2022-07-25 12:40:16Z makemake $  Copyright (c) UV Software, Berlin //
