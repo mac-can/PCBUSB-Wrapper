@@ -126,7 +126,7 @@ extern "C" {
 #define PCAN_HARDWARE_NAME       0x0EU  //!< PCAN hardware name parameter
 #define PCAN_CONTROLLER_NUMBER   0x10U  //!< CAN-Controller number of a PCAN-Channel
 //#define PCAN_SERIAL_NUMBER       0x??U
-//#define PCAN_CLOCK_DOMAIN        0x??U
+//#define PCAN_CLOCK_DOMAINS       0x??U
 // TODO: define more or all parameters
 // ...
 #define PCAN_MAX_BUFFER_SIZE     256U   /**< max. buffer size for CAN_GetValue/CAN_SetValue */
@@ -141,7 +141,7 @@ extern "C" {
  #define PCAN_LIB_BASIC         "PCANBasic.dll"
  #define PCAN_LIB_WRAPPER       "u3canpcb.dll"
  #define PCAN_LIB_MIN_MAJOR      4U
- #define PCAN_LIB_MIN_MINOR      0U
+ #define PCAN_LIB_MIN_MINOR      5U
 #elif defined(__APPLE__)
  #define PCAN_LIB_BASIC         "libPCBUSB.dylib"
  #define PCAN_LIB_WRAPPER       "libUVCANPCB.dylib"
