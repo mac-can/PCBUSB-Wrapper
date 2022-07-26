@@ -1,7 +1,7 @@
 #
-#	CAN Tester for PEAK PCAN-USB Interfaces
+#	CAN Tester for PEAK PCAN Interfaces
 #
-#	Copyright (c) 2008-2010,2012-2021  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+#	Copyright (c) 2008-2010,2014-2022  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 #
 #	This program is free software: you can redistribute it and/or modify
 #	it under the terms of the GNU General Public License as published by
@@ -28,10 +28,12 @@ SOURCE_DIR = $(HOME_DIR)/Sources
 CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
 WRAPPER_DIR = $(HOME_DIR)/Sources/Wrapper
 
-OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o  $(BINDIR)/libPeakCAN.a
+OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o $(BINDIR)/libPeakCAN.a
 
 
 ifeq ($(current_OS),Darwin) # macOS - libPeakCAN.dylib
+
+VERSION = 0.2.4
 
 TARGET  = can_test
 
@@ -45,12 +47,12 @@ HEADERS = -I$(SOURCE_DIR) \
 	-I$(WRAPPER_DIR) \
 	-I$(MAIN_DIR)
 
-CFLAGS += -O2 -Wall -Wno-parentheses \
+CFLAGS += -O2 -Wall -Wextra -Wno-parentheses \
 	-fno-strict-aliasing \
 	$(DEFINES) \
 	$(HEADERS)
 
-CXXFLAGS += -g -Wall -Wextra -pthread \
+CXXFLAGS += -O2 -g -Wall -Wextra -pthread \
 	$(DEFINES) \
 	$(HEADERS)
 
@@ -63,16 +65,14 @@ CFLAGS += -arch arm64 -arch x86_64
 CXXFLAGS += -arch arm64 -arch x86_64
 LDFLAGS += -arch arm64 -arch x86_64
 endif
-endif
-
 
 CXX = clang++
 CC = clang
 LD = clang++
-LT = libtool
+endif
+
 RM = rm -f
 CP = cp -f
-LN = ln -s
 
 OUTDIR = .objects
 BINDIR = $(HOME_DIR)/Binaries
@@ -115,5 +115,6 @@ $(OUTDIR)/Timer.o: $(MAIN_DIR)/Timer.cpp
 
 $(TARGET): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
+	$(CP) $(TARGET) $(BINDIR)
 	@lipo -archs $@
 	@echo "\033[1mTarget '"$@"' successfully build\033[0m"

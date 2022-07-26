@@ -21,25 +21,28 @@ OBJECTS = $(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o \
 
 ifeq ($(current_OS),Darwin) # macOS - libPeakCAN.dylib
 
+VERSION = 0
 TARGET	= pcb_test
 
 INSTALL = ~/bin
 
 DEFINES = -DOPTION_CAN_2_0_ONLY=0 \
 	-DOPTION_CANAPI_DRIVER=1 \
-	-DOPTION_CANAPI_COMPANIONS=1
+	-DOPTION_CANAPI_RETVALS=1 \
+	-DOPTION_CANAPI_COMPANIONS=1 \
+	-DOPTION_CANBTR_PEAK_FREQUENCIES=1
 
 HEADERS = -I$(SOURCE_DIR) \
 	-I$(CANAPI_DIR) \
 	-I$(WRAPPER_DIR) \
 	-I$(MAIN_DIR)
 
-CFLAGS += -O2 -Wall -Wno-parentheses \
-	-fno-strict-aliasing \
+CFLAGS += -O0 -g -Wall -Wextra -Wno-parentheses \
+	-fmessage-length=0 -fno-strict-aliasing \
 	$(DEFINES) \
 	$(HEADERS)
 
-CXXFLAGS += -g -Wall -Wextra -pthread \
+CXXFLAGS += -O0 -g -Wall -Wextra -pthread \
 	$(DEFINES) \
 	$(HEADERS)
 
@@ -52,20 +55,29 @@ CFLAGS += -arch arm64 -arch x86_64
 CXXFLAGS += -arch arm64 -arch x86_64
 LDFLAGS += -arch arm64 -arch x86_64
 endif
+
+CHECKER  = warning,information
+IGNORE   = -i can_msg.c -i can_dev.c
+ifeq ($(HUNTER),BUGS)
+CHECKER += --bug-hunting
 endif
 
+ifeq ($(XCTEST),FULL)
+TESTING =
+else
+TESTING = -only-testing Testing/Testing/testSmokeTest
+endif
 
 CXX = clang++
 CC = clang
 LD = clang++
-LT = libtool
+endif
+
 RM = rm -f
 CP = cp -f
-LN = ln -s
 
 OUTDIR = .objects
-BINDIR = $(HOME_DIR)/Binaries
-INCDIR = $(HOME_DIR)/Includes
+
 
 .PHONY: info outdir
 
@@ -80,6 +92,10 @@ info:
 outdir:
 	@mkdir -p $(OUTDIR)
 
+check:
+	cppcheck --enable=$(CHECKER) --suppressions-list=$(HOME_DIR)/suppress.txt \
+	-D__APPLE__ $(DEFINES) $(HEADERS) $(IGNORE) $(SOURCE_DIR)
+
 clean:
 	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
 
@@ -91,6 +107,9 @@ install:
 
 test: info outdir $(TARGET)
 	./$(TARGET) INFO EXIT
+
+xctest:
+	xcodebuild clean build test -project PCBUSB.xcodeproj -scheme Testing $(TESTING)
 
 
 $(OUTDIR)/can_api.o: $(WRAPPER_DIR)/can_api.c

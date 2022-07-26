@@ -1,7 +1,7 @@
 #
 #	CAN Interface API, Version 3 (for PEAK PCAN-USB Interfaces)
 #
-#	Copyright (c) 2010-2022 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
+#	Copyright (c) 2012-2022  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 #	All rights reserved.
 #
 #	This library is part of PCBUSB-Wrapper.
@@ -28,7 +28,7 @@
 #	SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 #	CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 #	OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-#	OF MPCBUSB-Wrapper, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#	OF PCBUSB-Wrapper, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 #	GNU General Public License v3.0 or later:
 #	PCBUSB-Wrapper is free software: you can redistribute it and/or modify
@@ -86,12 +86,12 @@ HEADERS = -I$(SOURCE_DIR) \
 	-I$(CANAPI_DIR) \
 	-I$(WRAPPER_DIR)
 
-CFLAGS += -O2 -Wall -Wno-parentheses \
-	-fno-strict-aliasing \
+CFLAGS += -O2 -Wall -Wextra -Wno-parentheses \
+	-fmessage-length=0 -fno-strict-aliasing \
 	$(DEFINES) \
 	$(HEADERS)
 
-CXXFLAGS += -g -Wall -Wextra -pthread \
+CXXFLAGS += -O2 -g -Wall -Wextra -pthread \
 	$(DEFINES) \
 	$(HEADERS)
 
@@ -99,9 +99,9 @@ LIBRARIES =
 
 LDFLAGS  += -lpthread \
 	-nostartfiles -dynamiclib -fvisibility=hidden \
-	-install_name $(INSTALL_NAME) \
-	-current_version $(CURRENT_VERSION) \
-	-compatibility_version $(COMPATIBILITY_VERSION)
+	-Wl,-install_name,$(INSTALL_NAME) \
+	-Wl,-current_version,$(CURRENT_VERSION) \
+	-Wl,-compatibility_version,$(COMPATIBILITY_VERSION)
 
 LTFLAGS += -static
 
@@ -110,13 +110,13 @@ CFLAGS += -arch arm64 -arch x86_64
 CXXFLAGS += -arch arm64 -arch x86_64
 LDFLAGS += -arch arm64 -arch x86_64
 endif
-endif
-
 
 CXX = clang++
 CC = clang
 LD = clang
 LT = libtool
+endif
+
 RM = rm -f
 CP = cp -f
 LN = ln -s
@@ -158,7 +158,7 @@ pristine:
 
 install:
 	@echo "Copying library file..."
-	$(CP) $(TARGET) $(INSTALL)
+	$(RM) $(INSTALL)/$(TARGET); $(CP) $(TARGET) $(INSTALL)
 ifeq ($(current_OS),Darwin)
 	$(RM) $(INSTALL)/$(LIBRARY).dylib ; $(LN) $(INSTALL)/$(TARGET) $(INSTALL)/$(LIBRARY).dylib
 endif
