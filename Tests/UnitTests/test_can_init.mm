@@ -49,6 +49,12 @@
 #import "can_api.h"
 #import <XCTest/XCTest.h>
 
+#ifndef CAN_FD_SUPPORTED
+#define CAN_FD_SUPPORTED  FEATURE_SUPPORTED
+#warning CAN_FD_SUPPORTED not set, default=FEATURE_SUPPORTED
+#endif
+
+
 @interface test_can_init : XCTestCase
 
 @end
@@ -64,9 +70,9 @@
     (void)can_exit(CANKILL_ALL);
 }
 
-// @xctest TC02.1: Initialize interface again when interface already initialzed.
+// @xctest TC02.1: Initialize interface again when interface already initialzed
 //
-// @expected: CANERR_YETINIT
+// @expected CANERR_YETINIT
 //
 - (void)testWhenInterfaceInitialized {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -122,9 +128,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC02.2: Initialize interface again when CAN controller already started.
+// @xctest TC02.2: Initialize interface again when CAN controller already started
 //
-// @expected: CANERR_YETINIT
+// @expected CANERR_YETINIT
 //
 - (void)testWhenInterfaceStarted {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -180,9 +186,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC02.3: Initialize interface again when CAN controller already stopped.
+// @xctest TC02.3: Initialize interface again when CAN controller already stopped
 //
-// @expected: CANERR_YETINIT
+// @expected CANERR_YETINIT
 //
 - (void)testWhenInterfaceStopped {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -237,9 +243,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC02.4: Initialize interface again when shutdown before.
+// @xctest TC02.4: Initialize interface again when shutdown before
 //
-// @expected: CANERR_NOERROR
+// @expected CANERR_NOERROR
 //
 - (void)testWhenInterfaceShutdown {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -297,9 +303,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC02.5: Initialize interface with valid channel number(s).
+// @xctest TC02.5: Initialize interface with valid channel number(s)
 //
-// @expected: CANERR_NOERROR
+// @expected CANERR_NOERROR
 //
 - (void)testWithValidChannelNo {
     SInt32 channel = INVALID_HANDLE;
@@ -327,9 +333,9 @@
     }
 }
 
-// @xctest TC02.6: Initialize interface with invalid channel number(s).
+// @xctest TC02.6: Initialize interface with invalid channel number(s)
 //
-// @expected: CANERR_NOTINIT or CANERR_VENDOR
+// @expected CANERR_NOTINIT or CANERR_VENDOR
 //
 - (void)testWithInvalidChannelNo {
     int rc = CANERR_FATAL;
@@ -356,9 +362,9 @@
     //        Therefore, no assumptions can be made for positive values!
 }
 
-// @xctest TC02.7: Check if interface can be initialized with its full operation mode capability.
+// @xctest TC02.7: Check if interface can be initialized with its full operation mode capability
 //
-// @expected: CANERR_NOERROR
+// @expected CANERR_NOERROR
 //
 - (void)testOperationModeCapability {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -391,7 +397,7 @@
 
     // @post:
     // @- start DUT1 with configured bit-rate settings
-    if (mode.fdoe) BITRATE_250K2M(bitrate);
+    if (mode.fdoe) BITRATE_FD_250K2M(bitrate);
     // @note: 250kbps : 2'000kbps when CAN FD capable.
     rc = can_start(handle, &bitrate);
     XCTAssertEqual(CANERR_NOERROR, rc);
@@ -412,9 +418,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC02.8: Check if interface can be initialized with operation mode bit MON set (listen-only mode).
+// @xctest TC02.8: Check if interface can be initialized with operation mode bit MON set (listen-only mode)
 //
-// @expected: CANERR_NOERROR or CANERR_ILLPARA if listen-only mode is not supported
+// @expected CANERR_NOERROR or CANERR_ILLPARA if listen-only mode is not supported
 //
 - (void)testMonitorModeEnableDisable {
     can_mode_t capa = { CANMODE_DEFAULT };
@@ -454,9 +460,9 @@
     }
 }
 
-// @xctest TC02.9: Check if interface can be initialized with operation mode bit ERR set (error frame reception).
+// @xctest TC02.9: Check if interface can be initialized with operation mode bit ERR set (error frame reception)
 //
-// @expected: CANERR_NOERROR or CANERR_ILLPARA if error frame reception is not supported
+// @expected CANERR_NOERROR or CANERR_ILLPARA if error frame reception is not supported
 //
 - (void)testErrorFramesEnableDisable {
     can_mode_t capa = { CANMODE_DEFAULT };
@@ -496,9 +502,9 @@
     }
 }
 
-// @xctest TC02.10: Check if interface can be initialized with operation mode bit NRTR set (suppress remote frames).
+// @xctest TC02.10: Check if interface can be initialized with operation mode bit NRTR set (suppress remote frames)
 //
-// @expected: CANERR_NOERROR or CANERR_ILLPARA if suppressing of remote frames is not supported
+// @expected CANERR_NOERROR or CANERR_ILLPARA if suppressing of remote frames is not supported
 //
 - (void)testRemoteFramesDisableEnable {
     can_mode_t capa = { CANMODE_DEFAULT };
@@ -538,9 +544,9 @@
     }
 }
 
-// @xctest TC02.11: Check if interface can be initialized with operation mode bit NXTD set (suppress extended frames).
+// @xctest TC02.11: Check if interface can be initialized with operation mode bit NXTD set (suppress extended frames)
 //
-// @expected: CANERR_NOERROR or CANERR_ILLPARA if suppressing of extended frames is not supported
+// @expected CANERR_NOERROR or CANERR_ILLPARA if suppressing of extended frames is not supported
 //
 - (void)testExtendedFramesDisableEnable {
     can_mode_t capa = { CANMODE_DEFAULT };
@@ -580,9 +586,9 @@
     }
 }
 
-// @xctest TC02.12: Check if interface can be initialized with operation mode bit FDOE set (CAN FD operation enabled).
+// @xctest TC02.12: Check if interface can be initialized with operation mode bit FDOE set (CAN FD operation enabled)
 //
-// @expected: CANERR_NOERROR or CANERR_ILLPARA if CAN FD operation mode is not supported
+// @expected CANERR_NOERROR or CANERR_ILLPARA if CAN FD operation mode is not supported
 //
 - (void)testCanFdOperationEnableDisable {
     can_mode_t capa = { CANMODE_DEFAULT };
@@ -613,7 +619,7 @@
         rc = can_property(handle, CANPROP_GET_OP_MODE, (void*)&mode.byte, sizeof(UInt8));
         XCTAssertEqual(CANERR_NOERROR, rc);
         XCTAssertEqual(CANMODE_FDOE, mode.byte);
-#if (CAN_FD_SUPPORTED != 0)
+#if (CAN_FD_SUPPORTED == FEATURE_SUPPORTED)
         // @todo: try to send & receive some CAN FD long frames
 #endif
         // @- shutdown DUT1
@@ -624,9 +630,9 @@
     }
 }
 
-// @xctest TC02.13: Check if interface can be initialized with operation mode bit FDOE and BRSE set (CAN FD operation with bit-rate switching enabled).
+// @xctest TC02.13: Check if interface can be initialized with operation mode bit FDOE and BRSE set (CAN FD operation with bit-rate switching enabled)
 //
-// @expected: CANERR_NOERROR or CANERR_ILLPARA if CAN FD operation mode or bit-rate switching is not supported
+// @expected CANERR_NOERROR or CANERR_ILLPARA if CAN FD operation mode or bit-rate switching is not supported
 //
 - (void)testBitrateSwitchingEnableDisable {
     can_mode_t capa = { CANMODE_DEFAULT };
@@ -657,7 +663,7 @@
         rc = can_property(handle, CANPROP_GET_OP_MODE, (void*)&mode.byte, sizeof(UInt8));
         XCTAssertEqual(CANERR_NOERROR, rc);
         XCTAssertEqual(CANMODE_FDOE | CANMODE_BRSE, mode.byte);
-#if (CAN_FD_SUPPORTED != 0)
+#if (CAN_FD_SUPPORTED == FEATURE_SUPPORTED)
         // @todo: try to send & receive some CAN FD fast frames
 #endif
         // @- shutdown DUT1
@@ -677,4 +683,4 @@
 
 @end
 
-// $Id: test_can_init.mm 1086 2022-01-09 20:01:00Z haumea $  Copyright (c) UV Software, Berlin //
+// $Id: test_can_init.mm 1073 2022-07-16 13:06:44Z makemake $  Copyright (c) UV Software, Berlin //

@@ -2,7 +2,7 @@
 #
 #   CAN Interface API, Version 3 (Python Wrapper)
 #
-#   Copyright (c) 2005-2021 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
+#   Copyright (c) 2005-2022 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 #	All rights reserved.
 #
 #   This file is part of CAN API V3.
@@ -29,7 +29,7 @@
 #	SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 #	CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 #	OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-#	OF MCAN API V3, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#	OF CAN API V3, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 #	GNU General Public License v3.0 or later:
 #	CAN API V3 is free software: you can redistribute it and/or modify
@@ -52,22 +52,20 @@
     Interface API for various CAN interfaces from different
     vendors running under multiple operating systems.
 
-    $Author: eris $
+    $Author: haumea $
 
-    $Rev: 999 $
+    $Rev: 1046 $
 """
 from ctypes import *
 import platform
 import argparse
 import sys
 
-#-- FIXME: This fix will not work here ---
-#if platform.system() == "Darwin":
-#    # To solve an issue with file system relative paths that are not allowed
-#    # in hardened programs in Python 2.7 (under macOS).
-#    # Installation path on macOS is '/usr/local/lib'
-#    from ctypes.util import find_library
-#-- END ---
+if platform.system() == "Darwin":
+    # To solve an issue with file system relative paths that are not allowed
+    # in hardened programs in Python 2.7 (under macOS).
+    # Installation path on macOS is '/usr/local/lib'
+    from ctypes.util import find_library
 
 # CAN API V3 - Python Wrapper
 #
@@ -409,8 +407,7 @@ class CANAPI:
             if platform.system() == 'Windows':
                 self.__m_library = windll.LoadLibrary(library)
             elif platform.system() == 'Darwin':
-#                self.__m_library = cdll.LoadLibrary(find_library(library))
-                self.__m_library = cdll.LoadLibrary(library)  # FIXME: doesnot work with Python 2.x
+                self.__m_library = cdll.LoadLibrary(find_library(library))
             else:
                 self.__m_library = cdll.LoadLibrary(library)
         except Exception as e:
@@ -765,5 +762,5 @@ if __name__ == '__main__':
     # have a great time
     print('Bye, bye!')
 
-# * $Id: CANAPI.py 999 2021-06-02 15:28:37Z eris $ *** (c) UV Software, Berlin ***
+# * $Id: CANAPI.py 1046 2022-03-08 20:38:47Z haumea $ *** (c) UV Software, Berlin ***
 #

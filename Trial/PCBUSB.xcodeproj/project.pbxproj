@@ -30,6 +30,7 @@
 		0FB7FEB225AEED5500A2B7B1 /* can_btr.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FB7FEB125AEED5500A2B7B1 /* can_btr.c */; };
 		0FC6171925CC66F30010B15D /* PeakCAN.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0FC6171725CC66F30010B15D /* PeakCAN.cpp */; };
 		0FC6171E25CC67360010B15D /* can_api.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FC6171D25CC67360010B15D /* can_api.c */; };
+		44E1A86D289075E50096F308 /* test_can_property.mm in Sources */ = {isa = PBXBuildFile; fileRef = 44E1A86C289075E50096F308 /* test_can_property.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -80,6 +81,7 @@
 		0FC6171C25CC67360010B15D /* PCBUSB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PCBUSB.h; path = ../Sources/Wrapper/PCBUSB.h; sourceTree = "<group>"; };
 		0FC6171D25CC67360010B15D /* can_api.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = can_api.c; path = ../Sources/Wrapper/can_api.c; sourceTree = "<group>"; };
 		0FE14B1725AEEA4900E87475 /* PCBUSB */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PCBUSB; sourceTree = BUILT_PRODUCTS_DIR; };
+		44E1A86C289075E50096F308 /* test_can_property.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = test_can_property.mm; path = ../Tests/UnitTests/test_can_property.mm; sourceTree = "<group>"; };
 		44FAED34279200C000B44E88 /* Driver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Driver.h; path = ../Tests/UnitTests/Driver.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -117,6 +119,7 @@
 				0F8328D827822DE400BE8BBA /* test_can_status.mm */,
 				0F8328DA27822DE400BE8BBA /* test_can_busload.mm */,
 				0F8328DE27822DE400BE8BBA /* test_can_bitrate.mm */,
+				44E1A86C289075E50096F308 /* test_can_property.mm */,
 				0F8328E127822DE500BE8BBA /* test_can_hardware.mm */,
 				0F8328D727822DE400BE8BBA /* test_can_firmware.mm */,
 				0F8328E327822DE500BE8BBA /* test_can_version.mm */,
@@ -267,6 +270,7 @@
 				0F8328D327820AE100BE8BBA /* can_btr.c in Sources */,
 				0F8328E727822DE500BE8BBA /* test_can_status.mm in Sources */,
 				0F8328D127820ABC00BE8BBA /* Tester.cpp in Sources */,
+				44E1A86D289075E50096F308 /* test_can_property.mm in Sources */,
 				0F8328E827822DE500BE8BBA /* test_can_read.mm in Sources */,
 				0F8328F227822DE500BE8BBA /* test_can_version.mm in Sources */,
 				0F8328E427822DE500BE8BBA /* test_can_write.mm in Sources */,

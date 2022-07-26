@@ -49,6 +49,11 @@
 #import "can_api.h"
 #import <XCTest/XCTest.h>
 
+#ifndef CAN_FD_SUPPORTED
+#define CAN_FD_SUPPORTED  FEATURE_SUPPORTED
+#warning CAN_FD_SUPPORTED not set, default=FEATURE_SUPPORTED
+#endif
+
 @interface test_can_reset : XCTestCase
 
 @end
@@ -64,9 +69,9 @@
     (void)can_exit(CANKILL_ALL);
 }
 
-// @xctest TC06.1: Stop CAN controller with invalid interface handle(s).
+// @xctest TC06.1: Stop CAN controller with invalid interface handle(s)
 //
-// @expected: CANERR_HANDLE
+// @expected CANERR_HANDLE
 //
 - (void)testWithInvalidHandle {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -136,9 +141,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC06.2: Stop CAN controller when interface is not initialized.
+// @xctest TC06.2: Stop CAN controller when interface is not initialized
 //
-// @expected: CANERR_NOTINIT
+// @expected CANERR_NOTINIT
 //
 - (void)testWhenInterfaceNotInitialized {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -147,14 +152,8 @@
     int rc = CANERR_FATAL;
 
     // @test:
-    // @- try to stop DUT1 with invalid handle -1
-    rc = can_reset(INVALID_HANDLE);
-    XCTAssertEqual(CANERR_NOTINIT, rc);
-    // @- try to stop DUT1 with invalid handle INT32_MIN
-    rc = can_reset(INT32_MIN);
-    XCTAssertEqual(CANERR_NOTINIT, rc);
-    // @- try to stop DUT1 with invalid handle INT32_MAX
-    rc = can_reset(INT32_MAX);
+    // @- try to stop DUT1
+    rc = can_reset(DUT1);
     XCTAssertEqual(CANERR_NOTINIT, rc);
 
     // @post:
@@ -194,9 +193,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC06.3: Stop CAN controller when interface initialized (but CAN controller not started).
+// @xctest TC06.3: Stop CAN controller when interface initialized (but CAN controller not started)
 //
-// @expected: CANERR_NOERROR
+// @expected CANERR_NOERROR
 //
 - (void)testWhenInterfaceInitialized {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -258,9 +257,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC06.4: Stop CAN controller when it was stopped before.
+// @xctest TC06.4: Stop CAN controller when it was stopped before
 //
-// @expected: CANERR_NOERROR
+// @expected CANERR_NOERROR
 //
 - (void)testWhenInterfaceStopped {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -322,9 +321,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC06.5: Stop CAN controller when interface already shutdown.
+// @xctest TC06.5: Stop CAN controller when interface already shutdown
 //
-// @expected: CANERR_NOTINIT
+// @expected CANERR_NOTINIT
 //
 - (void)testWhenInterfaceShutdown {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -376,4 +375,4 @@
 
 @end
 
-// $Id: test_can_reset.mm 1086 2022-01-09 20:01:00Z haumea $  Copyright (c) UV Software, Berlin //
+// $Id: test_can_reset.mm 1083 2022-07-25 12:40:16Z makemake $  Copyright (c) UV Software, Berlin //

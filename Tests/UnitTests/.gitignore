@@ -1,4 +1,7 @@
+#.gitignore
 .svn
-ToDo.txt
+# never ever commit the template
+# make a copy and name it 'Driver.h'
+Template.h
+# not realized by libPCBUSB.dylib
 test_can_kill.mm
-test_can_property.mm

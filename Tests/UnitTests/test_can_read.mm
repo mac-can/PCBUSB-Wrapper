@@ -49,6 +49,21 @@
 #import "can_api.h"
 #import <XCTest/XCTest.h>
 
+#ifndef CAN_FD_SUPPORTED
+#define CAN_FD_SUPPORTED  FEATURE_SUPPORTED
+#warning CAN_FD_SUPPORTED not set, default=FEATURE_SUPPORTED
+#endif
+
+#ifndef FEATURE_WRITE_ACKNOWLEDGED
+#define FEATURE_WRITE_ACKNOWLEDGED  FEATURE_UNSUPPORTED
+#warning FEATURE_WRITE_ACKNOWLEDGED not set, default=FEATURE_UNSUPPORTED
+#endif
+
+#ifndef FEATURE_STATUS_BIT_QUE_OVR
+#define FEATURE_STATUS_BIT_QUE_OVR  FEATURE_SUPPORTED
+#warning FEATURE_STATUS_BIT_QUE_OVR not set, default=FEATURE_SUPPORTED
+#endif
+
 #define TIMESTAMP_DELAY_10MS  10U
 #define TIMESTAMP_DELAY_7MS   7U
 #define TIMESTAMP_DELAY_5MS   5U
@@ -70,9 +85,9 @@
     (void)can_exit(CANKILL_ALL);
 }
 
-// @xctest TC04.1: Read a CAN message with invalid interface handle(s).
+// @xctest TC04.1: Read a CAN message with invalid interface handle(s)
 //
-// @expected: CANERR_HANDLE
+// @expected CANERR_HANDLE
 //
 - (void)testWithInvalidHandle {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -81,10 +96,16 @@
     int handle = INVALID_HANDLE;
     int rc = CANERR_FATAL;
 
-    // @test:
+    // @pre:
     // @- initialize DUT1 with configured settings
     handle = can_init(DUT1, TEST_CANMODE, NULL);
     XCTAssertLessThanOrEqual(0, handle);
+    // @- get status of DUT1 and check to be in INIT state
+    rc = can_status(handle, &status.byte);
+    XCTAssertEqual(CANERR_NOERROR, rc);
+    XCTAssertTrue(status.can_stopped);
+
+    // @test:
     // @- try to read a message from DUT1 with invalid handle -1
     rc = can_read(INVALID_HANDLE, &message, 0U);
     XCTAssertEqual(CANERR_HANDLE, rc);
@@ -122,14 +143,16 @@
     rc = can_status(handle, &status.byte);
     XCTAssertEqual(CANERR_NOERROR, rc);
     XCTAssertTrue(status.can_stopped);
+    
+    // @post:
     // @- shutdown DUT1
     rc = can_exit(handle);
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC04.2: Give a NULL pointer as argument for parameter 'message'.
+// @xctest TC04.2: Give a NULL pointer as argument for parameter 'message'
 //
-// @expected: CANERR_NULLPTR
+// @expected CANERR_NULLPTR
 //
 - (void)testWithNullPointerForMessage {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -181,9 +204,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC04.3: Read a CAN message when interface is not initialized.
+// @xctest TC04.3: Read a CAN message when interface is not initialized
 //
-// @expected: CANERR_NOTINIT
+// @expected CANERR_NOTINIT
 //
 - (void)testWhenInterfaceNotInitialized {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -193,14 +216,8 @@
     int rc = CANERR_FATAL;
 
     // @test:
-    // @- try to read a message from DUT1 with invalid handle -1
-    rc = can_read(INVALID_HANDLE, &message, 0U);
-    XCTAssertEqual(CANERR_NOTINIT, rc);
-    // @- try to read a message from DUT1 with invalid handle INT32_MIN
-    rc = can_read(INT32_MIN, &message, 0U);
-    XCTAssertEqual(CANERR_NOTINIT, rc);
-    // @- try to read a message from DUT1 with invalid handle INT32_MAX
-    rc = can_read(INT32_MAX, &message, 0U);
+    // @- try to read a message from DUT1
+    rc = can_read(DUT1, &message, 0U);
     XCTAssertEqual(CANERR_NOTINIT, rc);
 
     // @post:
@@ -240,9 +257,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC04.4: Read a CAN message when CAN controller is not started.
+// @xctest TC04.4: Read a CAN message when CAN controller is not started
 //
-// @expected: CANERR_OFFLINE
+// @expected CANERR_OFFLINE
 //
 - (void)testWhenInterfaceNotStarted {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -255,6 +272,10 @@
     // @- initialize DUT1 with configured settings
     handle = can_init(DUT1, TEST_CANMODE, NULL);
     XCTAssertLessThanOrEqual(0, handle);
+    // @- get status of DUT1 and check to be in INIT state
+    rc = can_status(handle, &status.byte);
+    XCTAssertEqual(CANERR_NOERROR, rc);
+    XCTAssertTrue(status.can_stopped);
 
     // @test:
     // @- try to read a message from DUT1
@@ -295,9 +316,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC04.5: Read a CAN message when CAN controller already stopped.
+// @xctest TC04.5: Read a CAN message when CAN controller already stopped
 //
-// @expected: CANERR_OFFLINE
+// @expected CANERR_OFFLINE
 //
 - (void)testWhenInterfaceStopped {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -350,9 +371,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC04.6: Read a CAN message when interface already shutdown.
+// @xctest TC04.6: Read a CAN message when interface already shutdown
 //
-// @expected: CANERR_NOTINIT
+// @expected CANERR_NOTINIT
 //
 - (void)testWhenInterfaceShutdown {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -403,9 +424,9 @@
     XCTAssertEqual(CANERR_NOTINIT, rc);
 }
 
-// @xctest TC04.7: Read a CAN message when reception queue is empty.
+// @xctest TC04.7: Read a CAN message when reception queue is empty
 //
-// @expected: CANERR_RX_EMPTY
+// @expected CANERR_RX_EMPTY
 //
 - (void)testWhenReceiveQueueIsEmpty {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -464,9 +485,9 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC04.8: Read a CAN message from reception queue after overrun.
+// @xctest TC04.8: Read a CAN message from reception queue after overrun
 //
-// @expected: CANERR_NOERROR, but status bit 'queue_overrun' = 1
+// @expected CANERR_NOERROR, but status bit 'queue_overrun' = 1
 //
 - (void)testWhenReceiveQueueIsFull {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -518,6 +539,8 @@
     rc = can_status(handle2, &status.byte);
     XCTAssertEqual(CANERR_NOERROR, rc);
     XCTAssertFalse(status.can_stopped);
+    // @issue(PeakCAN): a delay of 100ms is required here
+    PCBUSB_INIT_DELAY();
 
     // @test:
     NSLog(@"Be patient...");
@@ -538,11 +561,13 @@
         if (CANERR_NOERROR != rc)
             break;
     }
-#if (TX_ACKNOWLEDGE_UNSUPPORTED != 0)
+#if (FEATURE_WRITE_ACKNOWLEDGED != FEATURE_SUPPORTED)
     // @note: a delay (after burner) to guarantee that all CAN messages are really sent
-    //        is required when messages are not acknowlegded by the CAN controller.
+    // @      is required when messages are not acknowledged by the CAN controller.
     CTimer::Delay(TEST_AFTER_BURNER*CTimer::MSEC);
     // @note: the delay depends on the bit-rate (set TEST_AFTER_BURNER in "Settings.h").
+#else
+    CTimer::Delay(100U*CTimer::MSEC);  // [2022-05-28] let the queue finally overflow!
 #endif
     NSLog(@"%d frame(s) sent", i);
     // @- read a message from DUT1 (there should be at least one)
@@ -553,7 +578,7 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
     XCTAssertFalse(status.can_stopped);
     // @- check if bit CANSTAT_QUE_OVR is set in status register
-#if (STATUS_QUEUE_OVFL_UNSUPPORTED == 0)
+#if (FEATURE_STATUS_BIT_QUE_OVR == FEATURE_SUPPORTED)
     XCTAssertTrue(status.queue_overrun);
 #endif
     // @- stop/reset DUT1 (this should clear the receive queue)
@@ -592,16 +617,17 @@
     XCTAssertEqual(CANERR_NOERROR, rc);
 }
 
-// @xctest TC04.9: tbd.
+// @xctest TC04.9: Read a CAN message after message lost
+//
+// @expected CANERR_NOERROR but status flag 'message_lost' set
 //
 //- (void)testWhenMessageLost {
-//        TODO: insert coin here
-//        FIXME: How to loose a message?
+// @todo: How to loose a message?
 //
 
-// @xctest TC04.10: Measure time-stamp accuracy of the device.
+// @xctest TC04.10: Measure time-stamp accuracy of the device
 //
-// @expected: CANERR_NOERROR
+// @expected CANERR_NOERROR
 //
 - (void)testTimestampAccuracy {
     can_bitrate_t bitrate = { TEST_BTRINDEX };
@@ -660,12 +686,14 @@
     rc = can_status(handle2, &status.byte);
     XCTAssertEqual(CANERR_NOERROR, rc);
     XCTAssertFalse(status.can_stopped);
+    // @issue(PeakCAN): a delay of 100ms is required here
+    PCBUSB_INIT_DELAY();
 
 #if (TEST_TIMESTAMP_10MS != 0)
     // @test:
     NSLog(@"Be patient...");
     timer.Restart((uint32_t)TEST_TIMESTAMP * 100U * CTimer::MSEC);
-    // @- send n CAN messages with 10ms delay from DUT2 to DUT1
+    // @- send n CAN messages with 10ms delay from DUT2 to DUT1:
     message2.id = 0x010U;
     for (i = n = 0; i < TEST_TIMESTAMP; i++) {
         message2.data[0] = (uint8_t)((uint64_t)i >> 0);
@@ -688,7 +716,7 @@
     }
     NSLog(@"%d frame(s) sent with %u.000ms delay", i, TIMESTAMP_DELAY_10MS);
     sum = last = 0;
-    // @- read all CAN messages from DUT1 receive queue
+    // @- read all CAN messages from DUT1 receive queue:
     while ((n < i) && !timer.Timeout()) {
         memset(&message1, 0, sizeof(can_message_t));
         // @-- read one message and sum up the time differences
@@ -718,7 +746,7 @@
     // @test:
     NSLog(@"Be patient...");
     timer.Restart((uint32_t)TEST_TIMESTAMP * 100U * CTimer::MSEC);
-    // @- send n CAN messages with 7ms delay from DUT2 to DUT1
+    // @- send n CAN messages with 7ms delay from DUT2 to DUT1:
     message2.id = 0x010U;
     for (i = n = 0; i < TEST_TIMESTAMP; i++) {
         message2.data[0] = (uint8_t)((uint64_t)i >> 0);
@@ -741,7 +769,7 @@
     }
     NSLog(@"%d frame(s) sent with %u.000ms delay", i, TIMESTAMP_DELAY_7MS);
     sum = last = 0;
-    // @- read all CAN messages from DUT1 receive queue
+    // @- read all CAN messages from DUT1 receive queue:
     while ((n < i) && !timer.Timeout()) {
         memset(&message1, 0, sizeof(can_message_t));
         // @-- read one message and sum up the time differences
@@ -771,7 +799,7 @@
     // @test:
     NSLog(@"Be patient...");
     timer.Restart((uint32_t)TEST_TIMESTAMP * 100U * CTimer::MSEC);
-    // @- send n CAN messages with 5ms delay from DUT2 to DUT1
+    // @- send n CAN messages with 5ms delay from DUT2 to DUT1:
     message2.id = 0x010U;
     for (i = n = 0; i < TEST_TIMESTAMP; i++) {
         message2.data[0] = (uint8_t)((uint64_t)i >> 0);
@@ -794,7 +822,7 @@
     }
     NSLog(@"%d frame(s) sent with %u.000ms delay", i, TIMESTAMP_DELAY_5MS);
     sum = last = 0;
-    // @- read all CAN messages from DUT1 receive queue
+    // @- read all CAN messages from DUT1 receive queue:
     while ((n < i) && !timer.Timeout()) {
         memset(&message1, 0, sizeof(can_message_t));
         // @-- read one message and sum up the time differences
@@ -824,7 +852,7 @@
     // @test:
     NSLog(@"Be patient...");
     timer.Restart((uint32_t)TEST_TIMESTAMP * 100U * CTimer::MSEC);
-    // @- send n CAN messages with 2ms delay from DUT2 to DUT1
+    // @- send n CAN messages with 2ms delay from DUT2 to DUT1:
     message2.id = 0x010U;
     for (i = n = 0; i < TEST_TIMESTAMP; i++) {
         message2.data[0] = (uint8_t)((uint64_t)i >> 0);
@@ -847,7 +875,7 @@
     }
     NSLog(@"%d frame(s) sent with %u.000ms delay", i, TIMESTAMP_DELAY_2MS);
     sum = last = 0;
-    // @- read all CAN messages from DUT1 receive queue
+    // @- read all CAN messages from DUT1 receive queue:
     while ((n < i) && !timer.Timeout()) {
         memset(&message1, 0, sizeof(can_message_t));
         // @-- read one message and sum up the time differences
@@ -877,7 +905,7 @@
     // @test:
     NSLog(@"Be patient...");
     timer.Restart((uint32_t)TEST_TIMESTAMP * 100U * CTimer::MSEC);
-    // @- send n CAN messages with 1ms delay from DUT2 to DUT1
+    // @- send n CAN messages with 1ms delay from DUT2 to DUT1:
     message2.id = 0x010U;
     for (i = n = 0; i < TEST_TIMESTAMP; i++) {
         message2.data[0] = (uint8_t)((uint64_t)i >> 0);
@@ -900,7 +928,7 @@
     }
     NSLog(@"%d frame(s) sent with %u.000ms delay", i, TIMESTAMP_DELAY_1MS);
     sum = last = 0;
-    // @- read all CAN messages from DUT1 receive queue
+    // @- read all CAN messages from DUT1 receive queue:
     while ((n < i) && !timer.Timeout()) {
         memset(&message1, 0, sizeof(can_message_t));
         // @-- read one message and sum up the time differences
@@ -929,7 +957,7 @@
     // @test:
     NSLog(@"Be patient...");
     timer.Restart((uint32_t)TEST_TIMESTAMP * 100U * CTimer::MSEC);
-    // @- send n CAN messages without delay from DUT2 to DUT1
+    // @- send n CAN messages without delay from DUT2 to DUT1:
     message2.id = 0x010U;
     for (i = n = 0; i < TEST_TIMESTAMP; i++) {
         message2.data[0] = (uint8_t)((uint64_t)i >> 0);
@@ -952,7 +980,7 @@
     }
     NSLog(@"%d frame(s) sent without delay", i);
     sum = last = 0;
-    // @- read all CAN messages from DUT1 receive queue
+    // @- read all CAN messages from DUT1 receive queue:
     while ((n < i) && !timer.Timeout()) {
         memset(&message1, 0, sizeof(can_message_t));
         // @-- read one message and sum up the time differences
@@ -997,4 +1025,4 @@
 }
 @end
 
-// $Id: test_can_read.mm 1086 2022-01-09 20:01:00Z haumea $  Copyright (c) UV Software, Berlin //
+// $Id: test_can_read.mm 1083 2022-07-25 12:40:16Z makemake $  Copyright (c) UV Software, Berlin //

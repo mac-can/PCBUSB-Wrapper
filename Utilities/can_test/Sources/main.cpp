@@ -1,8 +1,8 @@
 //  SPDX-License-Identifier: GPL-3.0-or-later
 //
-//  CAN Tester for PEAK PCAN-USB Interfaces
+//  CAN Tester for PEAK PCAN Interfaces
 //
-//  Copyright (c) 2008-2010,2012-2022 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+//  Copyright (c) 2008-2010,2014-2022 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "build_no.h"
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    2
-#define VERSION_PATCH    3
+#define VERSION_PATCH    99
 #define VERSION_BUILD    BUILD_NO
 #define VERSION_STRING   TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) " (" TOSTRING(BUILD_NO) ")"
 #if defined(_WIN64)
@@ -31,11 +31,13 @@
 #define PLATFORM        "Linux"
 #elif defined(__APPLE__)
 #define PLATFORM        "macOS"
+#elif defined(__CYGWIN__)
+#define PLATFORM        "Cygwin"
 #else
 #error Unsupported architecture
 #endif
-static const char APPLICATION[] = "CAN Tester for PEAK PCAN-USB Interfaces, Version " VERSION_STRING;
-static const char COPYRIGHT[]   = "Copyright (c) 2008-2010,2012-2022 by Uwe Vogt, UV Software, Berlin";
+static const char APPLICATION[] = "CAN Tester for PEAK PCAN Interfaces, Version " VERSION_STRING;
+static const char COPYRIGHT[]   = "Copyright (c) 2008-2010,2014-2022 by Uwe Vogt, UV Software, Berlin";
 static const char WARRANTY[]    = "This program comes with ABSOLUTELY NO WARRANTY!\n\n" \
                                   "This is free software, and you are welcome to redistribute it\n" \
                                   "under certain conditions; type `--version' for details.";
@@ -518,7 +520,7 @@ int main(int argc, const char * argv[]) {
         return 1;
     }
 #endif
-    /* - check data length length and make CAN FD DLC (0x0..0xF) */
+    /* - check data length and make CAN FD DLC (0x0..0xF) */
     if (!opMode.fdoe && (dlc > CAN_MAX_LEN)) {
         fprintf(stderr, "%s: illegal combination of options `--mode' (m) and `--dlc' (d)\n", basename(argv[0]));
         return 1;
@@ -553,7 +555,7 @@ int main(int argc, const char * argv[]) {
         fprintf(stderr, "%s: illegal option `--no-remote-frames' for transmitter test\n", basename(argv[0]));
         return 1;
     }
-    /* CAN Tester for PEAK PCAN-USB Interfaces interfaces */
+    /* CAN Tester for PEAK PCAN Interfaces interfaces */
     fprintf(stdout, "%s\n%s\n\n%s\n\n", APPLICATION, COPYRIGHT, WARRANTY);
 
     /* - show operation mode and bit-rate settings */
@@ -611,7 +613,7 @@ int main(int argc, const char * argv[]) {
         fprintf(stdout, "FAILED!\n");
         fprintf(stderr, "+++ error: CAN Controller could not be initialized (%i)", retVal);
         if (retVal == CCanApi::NotSupported)
-            fprintf(stderr, " - possibly CAN operating mode %02Xh not supported", opMode.byte);
+            fprintf(stderr, "\n           - possibly CAN operating mode %02Xh not supported", opMode.byte);
         fputc('\n', stderr);
         goto finalize;
     }

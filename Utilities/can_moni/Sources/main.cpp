@@ -1,6 +1,6 @@
 //  SPDX-License-Identifier: GPL-3.0-or-later
 //
-//  CAN Monitor for PEAK PCAN-USB Interfaces
+//  CAN Monitor for PEAK PCAN Interfaces
 //
 //  Copyright (c) 2007,2012-2022 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 //
@@ -20,7 +20,7 @@
 #include "build_no.h"
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    2
-#define VERSION_PATCH    3
+#define VERSION_PATCH    99
 #define VERSION_BUILD    BUILD_NO
 #define VERSION_STRING   TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) " (" TOSTRING(BUILD_NO) ")"
 #if defined(_WIN64)
@@ -34,8 +34,8 @@
 #else
 #error Unsupported architecture
 #endif
-static const char APPLICATION[] = "CAN Monitor for PEAK PCAN-USB Interfaces, Version " VERSION_STRING;
-static const char COPYRIGHT[]   = "Copyright (c) 2008-2010,2012-2022 by Uwe Vogt, UV Software, Berlin";
+static const char APPLICATION[] = "CAN Monitor for PEAK PCAN Interfaces, Version " VERSION_STRING;
+static const char COPYRIGHT[]   = "Copyright (c) 2007,2012-2022 by Uwe Vogt, UV Software, Berlin";
 static const char WARRANTY[]    = "This program comes with ABSOLUTELY NO WARRANTY!\n\n" \
                                   "This is free software, and you are welcome to redistribute it\n" \
                                   "under certain conditions; type `--version' for details.";
@@ -531,7 +531,7 @@ int main(int argc, const char * argv[]) {
         fprintf(stderr, "%s: illegal combination of options `--mode' (m) and `--bitrate'\n", basename(argv[0]));
         return 1;
     }
-    /* CAN Monitor for PEAK PCAN-Basic interfaces */
+    /* CAN Monitor for PEAK PCAN interfaces */
     fprintf(stdout, "%s\n%s\n\n%s\n\n", APPLICATION, COPYRIGHT, WARRANTY);
 
     /* - show operation mode and bit-rate settings */
@@ -589,7 +589,7 @@ int main(int argc, const char * argv[]) {
         fprintf(stdout, "FAILED!\n");
         fprintf(stderr, "+++ error: CAN Controller could not be initialized (%i)", retVal);
         if (retVal == CCanApi::NotSupported)
-            fprintf(stderr, " - possibly CAN operating mode %02Xh not supported", opMode.byte);
+            fprintf(stderr, "\n           - possibly CAN operating mode %02Xh not supported", opMode.byte);
         fputc('\n', stderr);
         goto finalize;
     }

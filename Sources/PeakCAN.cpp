@@ -49,11 +49,11 @@
 #ifdef _MSC_VER
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    4
-#define VERSION_PATCH    3
+#define VERSION_PATCH    4
 #else
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    2
-#define VERSION_PATCH    3
+#define VERSION_PATCH    99
 #endif
 #define VERSION_BUILD    BUILD_NO
 #define VERSION_STRING   TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) " (" TOSTRING(BUILD_NO) ")"
@@ -68,7 +68,7 @@
 #else
 #error Unsupported architecture
 #endif
-static const char version[] = "CAN API V3 for PEAK PCAN-USB Interfaces, Version " VERSION_STRING;
+static const char version[] = "CAN API V3 for Peak-System PCAN-USB Interfaces, Version " VERSION_STRING;
 
 #ifdef _MSC_VER
 //no Microsoft extensions please!

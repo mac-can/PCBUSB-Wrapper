@@ -52,11 +52,11 @@
 #ifdef _MSC_VER
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    4
-#define VERSION_PATCH    3
+#define VERSION_PATCH    4
 #else
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    2
-#define VERSION_PATCH    3
+#define VERSION_PATCH    99
 #endif
 #define VERSION_BUILD    BUILD_NO
 #define VERSION_STRING   TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) " (" TOSTRING(BUILD_NO) ")"
@@ -71,7 +71,7 @@
 #else
 #error Unsupported architecture
 #endif
-static const char version[] = "CAN API V3 for PEAK PCAN-USB Interfaces, Version " VERSION_STRING;
+static const char version[] = "CAN API V3 for Peak-System PCAN-USB Interfaces, Version " VERSION_STRING;
 
 
 /*  -----------  includes  -----------------------------------------------
@@ -476,6 +476,8 @@ int can_start(int handle, const can_bitrate_t *bitrate)
     //UINT64 filter;                       // for 29-bit filter
     TPCANStatus rc;                     // return value
 
+    strcpy(string, "");                 // empty string
+    
     if (!init)                          // must be initialized
         return CANERR_NOTINIT;
     if (!IS_HANDLE_VALID(handle))       // must be a valid handle
@@ -500,6 +502,8 @@ int can_start(int handle, const can_bitrate_t *bitrate)
         case CANBTR_INDEX_10K: btr0btr1 = PCAN_BAUD_10K; break;
         default: return CANERR_BAUDRATE;
         }
+        if (can[handle].mode.fdoe)      //   btr0btr1 not in CAN FD
+            return CANERR_BAUDRATE;
     }
     else if (!can[handle].mode.fdoe) {  // btr0btr1 for CAN 2.0
         if (map_bitrate2register(bitrate, &btr0btr1) != CANERR_NOERROR)
@@ -583,14 +587,14 @@ int can_reset(int handle)
     TPCANStatus rc;                     // return value
     DWORD value;                        // parameter value
 
-    if (!init)                          // must be initialized!
+    if (!init)                          // must be initialized
         return CANERR_NOTINIT;
     if (!IS_HANDLE_VALID(handle))       // must be a valid handle
         return CANERR_HANDLE;
     if (can[handle].board == PCAN_NONEBUS) // must be an opened handle
         return CANERR_HANDLE;
 
-    if (can[handle].status.can_stopped) { // when running then go bus off
+    if (!can[handle].status.can_stopped) { // when running then go bus off
         /* note: we turn off the receiver and the transmitter to do that! */
 #ifndef ISSUE_276_UNSOLVED
         value = PCAN_PARAMETER_OFF;     //   receiver off
@@ -916,6 +920,7 @@ EXPORT
 int can_property(int handle, uint16_t param, void *value, uint32_t nbyte)
 {
     if (!init || !IS_HANDLE_VALID(handle)) {
+        // note: library properties can be queried w/o a handle
         return lib_parameter(param, value, (size_t)nbyte);
     }
     if (!init)                          // must be initialized
@@ -924,7 +929,7 @@ int can_property(int handle, uint16_t param, void *value, uint32_t nbyte)
         return CANERR_HANDLE;
     if (can[handle].board == PCAN_NONEBUS) // must be an opened handle
         return CANERR_HANDLE;
-
+    // note: device properties must be queried with a valid handle
     return drv_parameter(handle, param, value, (size_t)nbyte);
 }
 
@@ -1112,7 +1117,7 @@ static int map_bitrate2register(const can_bitrate_t *bitrate, TPCANBaudrate *btr
         return CANERR_BAUDRATE;
     if ((bitrate->btr.nominal.sjw < CANBTR_SJA1000_SJW_MIN) || (CANBTR_SJA1000_SJW_MAX < bitrate->btr.nominal.sjw))
         return CANERR_BAUDRATE;
-    if (/*(bitrate->btr.nominal.sam < CANBTR_SJA1000_SAM_MIN) ||*/ (CANBTR_SJA1000_SAM_MAX < bitrate->btr.nominal.sam))
+    if ((bitrate->btr.nominal.sam != CANBTR_SJA1000_SAM_SINGLE) && (bitrate->btr.nominal.sam != CANBTR_SJA1000_SAM_TRIPLE))
         return CANERR_BAUDRATE;
     /* +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+ */
     /* |  SJW  |          BRP          |SAM|   TSEG2   |     TSEG1     | */
@@ -1135,10 +1140,10 @@ static int map_register2bitrate(const TPCANBaudrate btr0btr1, can_bitrate_t *bit
     bitrate->btr.nominal.sam = (uint16_t)((btr0btr1 & 0x0080u) >> 7) + 0u;
     bitrate->btr.nominal.tseg2 = (uint16_t)((btr0btr1 & 0x0070u) >> 4) + 1u;
     bitrate->btr.nominal.tseg1 = (uint16_t)((btr0btr1 & 0x000Fu) >> 0) + 1u;
-    bitrate->btr.data.brp = 0;
-    bitrate->btr.data.tseg1 = 0;
-    bitrate->btr.data.tseg2 = 0;
-    bitrate->btr.data.sjw = 0;
+    bitrate->btr.data.brp = 0u;
+    bitrate->btr.data.tseg1 = 0u;
+    bitrate->btr.data.tseg2 = 0u;
+    bitrate->btr.data.sjw = 0u;
     return CANERR_NOERROR;
 }
 
@@ -1147,6 +1152,13 @@ static int map_bitrate2string(const can_bitrate_t *bitrate, TPCANBitrateFD strin
     assert(bitrate);
     assert(string);
 
+    if ((bitrate->btr.frequency != CANBTR_FREQ_80MHz) &&
+        (bitrate->btr.frequency != CANBTR_FREQ_60MHz) &&
+        (bitrate->btr.frequency != CANBTR_FREQ_40MHz) &&
+        (bitrate->btr.frequency != CANBTR_FREQ_30MHz) &&
+        (bitrate->btr.frequency != CANBTR_FREQ_24MHz) &&
+        (bitrate->btr.frequency != CANBTR_FREQ_20MHz))
+        return CANERR_BAUDRATE;
     if ((bitrate->btr.nominal.brp < CANBTR_NOMINAL_BRP_MIN) || (CANBTR_NOMINAL_BRP_MAX < bitrate->btr.nominal.brp))
         return CANERR_BAUDRATE;
     if ((bitrate->btr.nominal.tseg1 < CANBTR_NOMINAL_TSEG1_MIN) || (CANBTR_NOMINAL_TSEG1_MAX < bitrate->btr.nominal.tseg1))
@@ -1378,6 +1390,7 @@ static int lib_parameter(uint16_t param, void *value, size_t nbyte)
     case CANPROP_GET_BUSLOAD:           // current bus load of the CAN controller (uint16_t)
     case CANPROP_GET_NUM_CHANNELS:      // numbers of CAN channels on the CAN interface (uint8_t)
     case CANPROP_GET_CAN_CHANNEL:       // active CAN channel on the CAN interface (uint8_t)
+    case CANPROP_GET_CAN_CLOCK:         // frequency of the CAN controller clock in [Hz] (int32_t)
     case CANPROP_GET_TX_COUNTER:        // total number of sent messages (uint64_t)
     case CANPROP_GET_RX_COUNTER:        // total number of reveiced messages (uint64_t)
     case CANPROP_GET_ERR_COUNTER:       // total number of reveiced error frames (uint64_t)
@@ -1511,15 +1524,16 @@ static int drv_parameter(int handle, uint16_t param, void *value, size_t nbyte)
         if (nbyte >= sizeof(uint8_t)) {
             if ((rc = can_busload(handle, &load, NULL)) == CANERR_NOERROR) {
                 if (nbyte > sizeof(uint8_t))
-                    *(uint16_t*)value = (uint16_t)load * 100U;  // 0 - 10000 ==> 0.00% - 100.00%
+                    *(uint16_t*)value = (uint16_t)load * 100U;  // 0..10000 ==> 0.00%..100.00%
                 else
-                    *(uint8_t*)value = (uint8_t)load;           // 0  -  100 ==> 0.00% - 100.00%
+                    *(uint8_t*)value = (uint8_t)load;           // 0..100% (note: legacy resolution)
                 rc = CANERR_NOERROR;
             }
         }
         break;
     case CANPROP_GET_NUM_CHANNELS:      // numbers of CAN channels on the CAN interface (uint8_t)
     case CANPROP_GET_CAN_CHANNEL:       // active CAN channel on the CAN interface (uint8_t)
+    case CANPROP_GET_CAN_CLOCK:         // frequency of the CAN controller clock in [Hz] (int32_t)
         // TODO: insert coin here
         rc = CANERR_NOTSUPP;
         break;
@@ -1545,7 +1559,7 @@ static int drv_parameter(int handle, uint16_t param, void *value, size_t nbyte)
     case CANPROP_GET_RCV_QUEUE_HIGH:    // maximum number of message the receive queue has hold (uint32_t)
     case CANPROP_GET_RCV_QUEUE_OVFL:    // overflow counter of the receive queue (uint64_t)
         // note: cannot be determined
-        rc = CANERR_NOTSUPP;  // FIXME: ?
+        rc = CANERR_NOTSUPP;  // TODO: check UVS parameter extension
         break;
     default:
         if ((CANPROP_GET_VENDOR_PROP <= param) &&  // get a vendor-specific property value (void*)

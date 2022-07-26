@@ -1,10 +1,10 @@
 #
 #	CAN Interface API, Version 3 (for PEAK PCAN-USB Interfaces)
 #
-#	Copyright (c) 2010-2021 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
+#	Copyright (c) 2012-2022  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 #	All rights reserved.
 #
-#	This library is part of PCBUSB-Wrapper.
+#	This file is part of PCBUSB-Wrapper.
 #
 #	PCBUSB-Wrapper is dual-licensed under the BSD 2-Clause "Simplified" License
 #	and under the GNU General Public License v3.0 (or any later version). You can
@@ -28,7 +28,7 @@
 #	SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 #	CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 #	OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-#	OF MPCBUSB-Wrapper, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#	OF PCBUSB-Wrapper, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 #	GNU General Public License v3.0 or later:
 #	PCBUSB-Wrapper is free software: you can redistribute it and/or modify
@@ -68,13 +68,19 @@ pristine:
 	$(MAKE) -C Utilities/can_moni $@
 
 install:
-	$(MAKE) -C Trial $@
+#	$(MAKE) -C Trial $@
 	$(MAKE) -C Libraries/CANAPI $@
 	$(MAKE) -C Libraries/PeakCAN $@
 #	$(MAKE) -C Utilities/can_test $@
 #	$(MAKE) -C Utilities/can_moni $@
 
 test:
+	$(MAKE) -C Trial $@
+
+check:
+	$(MAKE) -C Trial $@ 2> checker.txt
+
+xctest:
 	$(MAKE) -C Trial $@
 
 build_no:
