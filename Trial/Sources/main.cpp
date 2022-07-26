@@ -3,6 +3,7 @@
 //  MacCAN-PeakCAN
 //  Bart Simpson didn´t do it
 //
+#include "PeakCAN_Defines.h"
 #include "PeakCAN.h"
 
 #include <stdio.h>
@@ -15,26 +16,30 @@
 #else
  #include <windows.h>
 #endif
-
 #include <inttypes.h>
 
 //#define SECOND_CHANNEL
 #define ISSUE_198   (1)
 
-#define BITRATE_DEFAULT(x) do {x.btr.frequency=80000000;x.btr.nominal.brp=20;x.btr.nominal.tseg1=12;x.btr.nominal.tseg2=3;x.btr.nominal.sjw=1; \
-                                                        x.btr.data.brp=4;x.btr.data.tseg1=7;x.btr.data.tseg2=2;x.btr.data.sjw=1} while(0)
-#define BITRATE_125K1M(x)  do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=255;x.btr.nominal.tseg2=64;x.btr.nominal.sjw=64; \
-                                                        x.btr.data.brp=2;x.btr.data.tseg1=31;x.btr.data.tseg2=8;x.btr.data.sjw=8;} while(0)
-#define BITRATE_250K2M(x)  do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=127;x.btr.nominal.tseg2=32;x.btr.nominal.sjw=32; \
-                                                        x.btr.data.brp=2;x.btr.data.tseg1=15;x.btr.data.tseg2=4;x.btr.data.sjw=4;} while(0)
-#define BITRATE_500K4M(x)  do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=63;x.btr.nominal.tseg2=16;x.btr.nominal.sjw=16; \
-                                                        x.btr.data.brp=2;x.btr.data.tseg1=7;x.btr.data.tseg2=2;x.btr.data.sjw=2;} while(0)
-#define BITRATE_1M8M(x)    do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=31;x.btr.nominal.tseg2=8;x.btr.nominal.sjw=8; \
-                                                        x.btr.data.brp=2;x.btr.data.tseg1=3;x.btr.data.tseg2=1;x.btr.data.sjw=1;} while(0)
-#define BITRATE_125K(x)    do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=255;x.btr.nominal.tseg2=64;x.btr.nominal.sjw=64;} while(0)
-#define BITRATE_250K(x)    do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=127;x.btr.nominal.tseg2=32;x.btr.nominal.sjw=32;} while(0)
-#define BITRATE_500K(x)    do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=63;x.btr.nominal.tseg2=16;x.btr.nominal.sjw=16;} while(0)
-#define BITRATE_1M(x)      do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=31;x.btr.nominal.tseg2=8;x.btr.nominal.sjw=8;} while(0)
+#define BITRATE_1M(x)    do {x.btr.frequency=8000000;x.btr.nominal.brp=1; x.btr.nominal.tseg1=5; x.btr.nominal.tseg2=2;x.btr.nominal.sjw=1;x.btr.nominal.sam=0;} while(0)
+#define BITRATE_800K(x)  do {x.btr.frequency=8000000;x.btr.nominal.brp=1; x.btr.nominal.tseg1=7; x.btr.nominal.tseg2=2;x.btr.nominal.sjw=1;x.btr.nominal.sam=0;} while(0)
+#define BITRATE_500K(x)  do {x.btr.frequency=8000000;x.btr.nominal.brp=1; x.btr.nominal.tseg1=13;x.btr.nominal.tseg2=2;x.btr.nominal.sjw=1;x.btr.nominal.sam=0;} while(0)
+#define BITRATE_250K(x)  do {x.btr.frequency=8000000;x.btr.nominal.brp=2; x.btr.nominal.tseg1=13;x.btr.nominal.tseg2=2;x.btr.nominal.sjw=1;x.btr.nominal.sam=0;} while(0)
+#define BITRATE_125K(x)  do {x.btr.frequency=8000000;x.btr.nominal.brp=4; x.btr.nominal.tseg1=13;x.btr.nominal.tseg2=2;x.btr.nominal.sjw=1;x.btr.nominal.sam=0;} while(0)
+#define BITRATE_100K(x)  do {x.btr.frequency=8000000;x.btr.nominal.brp=4; x.btr.nominal.tseg1=16;x.btr.nominal.tseg2=3;x.btr.nominal.sjw=2;x.btr.nominal.sam=0;} while(0)
+#define BITRATE_50K(x)   do {x.btr.frequency=8000000;x.btr.nominal.brp=8; x.btr.nominal.tseg1=16;x.btr.nominal.tseg2=3;x.btr.nominal.sjw=2;x.btr.nominal.sam=0;} while(0)
+#define BITRATE_20K(x)   do {x.btr.frequency=8000000;x.btr.nominal.brp=20;x.btr.nominal.tseg1=16;x.btr.nominal.tseg2=3;x.btr.nominal.sjw=2;x.btr.nominal.sam=0;} while(0)
+#define BITRATE_10K(x)   do {x.btr.frequency=8000000;x.btr.nominal.brp=40;x.btr.nominal.tseg1=16;x.btr.nominal.tseg2=3;x.btr.nominal.sjw=2;x.btr.nominal.sam=0;} while(0)
+#define BITRATE_5K(x)    do {x.btr.frequency=8000000;x.btr.nominal.brp=64;x.btr.nominal.tseg1=16;x.btr.nominal.tseg2=8;x.btr.nominal.sjw=2;x.btr.nominal.sam=0;} while(0)
+
+#define BITRATE_FD_1M(x)      do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=31; x.btr.nominal.tseg2=8; x.btr.nominal.sjw=8; } while(0)
+#define BITRATE_FD_500K(x)    do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=63; x.btr.nominal.tseg2=16;x.btr.nominal.sjw=16;} while(0)
+#define BITRATE_FD_250K(x)    do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=127;x.btr.nominal.tseg2=32;x.btr.nominal.sjw=32;} while(0)
+#define BITRATE_FD_125K(x)    do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=255;x.btr.nominal.tseg2=64;x.btr.nominal.sjw=64;} while(0)
+#define BITRATE_FD_1M8M(x)    do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=31; x.btr.nominal.tseg2=8; x.btr.nominal.sjw=8;  x.btr.data.brp=2; x.btr.data.tseg1=3;  x.btr.data.tseg2=1; x.btr.data.sjw=1; } while(0)
+#define BITRATE_FD_500K4M(x)  do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=63; x.btr.nominal.tseg2=16;x.btr.nominal.sjw=16; x.btr.data.brp=2; x.btr.data.tseg1=7;  x.btr.data.tseg2=2; x.btr.data.sjw=2; } while(0)
+#define BITRATE_FD_250K2M(x)  do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=127;x.btr.nominal.tseg2=32;x.btr.nominal.sjw=32; x.btr.data.brp=2; x.btr.data.tseg1=15; x.btr.data.tseg2=4; x.btr.data.sjw=4; } while(0)
+#define BITRATE_FD_125K1M(x)  do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=255;x.btr.nominal.tseg2=64;x.btr.nominal.sjw=64; x.btr.data.brp=2; x.btr.data.tseg1=31; x.btr.data.tseg2=8; x.btr.data.sjw=8; } while(0)
 
 #define OPTION_NO   (0)
 #define OPTION_YES  (1)
@@ -46,6 +51,8 @@
 
 #if defined(_WIN32) || defined(_WIN64)
  static void usleep(unsigned int usec);
+ /* useconds_t: to be compatible with macOS */
+ typedef unsigned int  useconds_t;
 #endif
 static void sigterm(int signo);
 
@@ -86,7 +93,7 @@ int main(int argc, const char * argv[]) {
     useconds_t delay = 0U;
     CCanApi::SChannelInfo info;
     CCanApi::EChannelState state;
-    //int32_t clocks[CANPROP_MAX_BUFFER_SIZE/sizeof(int32_t)];
+//    int32_t clocks[CANPROP_MAX_BUFFER_SIZE/sizeof(int32_t)];
     char szVal[CANPROP_MAX_BUFFER_SIZE];
     uint16_t u16Val;
     uint32_t u32Val;
@@ -96,6 +103,8 @@ int main(int argc, const char * argv[]) {
     int option_info = OPTION_NO;
     int option_stat = OPTION_NO;
     int option_test = OPTION_NO;
+    int option_list = OPTION_NO;
+//    int option_path = OPTION_NO;
     int option_exit = OPTION_NO;
     int option_echo = OPTION_YES;
     int option_stop = OPTION_NO;
@@ -103,6 +112,8 @@ int main(int argc, const char * argv[]) {
     int option_retry = OPTION_NO;
     int option_repeat = OPTION_NO;
     int option_transmit = OPTION_NO;
+//    int option_trace = OPTION_NO;
+//    int option_log = OPTION_NO;
     uint64_t received = 0ULL;
     uint64_t expected = 0ULL;
 
@@ -134,19 +145,29 @@ int main(int argc, const char * argv[]) {
         if (!strcmp(argv[i], "BD:6") || !strcmp(argv[i], "BD:50")) bitrate.index = CANBTR_INDEX_50K;
         if (!strcmp(argv[i], "BD:7") || !strcmp(argv[i], "BD:20")) bitrate.index = CANBTR_INDEX_20K;
         if (!strcmp(argv[i], "BD:8") || !strcmp(argv[i], "BD:10")) bitrate.index = CANBTR_INDEX_10K;
+        if (!strcmp(argv[i], "BD:1M")) BITRATE_1M(bitrate);
+        if (!strcmp(argv[i], "BD:800K")) BITRATE_800K(bitrate);
+        if (!strcmp(argv[i], "BD:500K")) BITRATE_500K(bitrate);
+        if (!strcmp(argv[i], "BD:250K")) BITRATE_250K(bitrate);
+        if (!strcmp(argv[i], "BD:125K")) BITRATE_125K(bitrate);
+        if (!strcmp(argv[i], "BD:100K")) BITRATE_100K(bitrate);
+        if (!strcmp(argv[i], "BD:50K")) BITRATE_50K(bitrate);
+        if (!strcmp(argv[i], "BD:20K")) BITRATE_20K(bitrate);
+        if (!strcmp(argv[i], "BD:10K")) BITRATE_10K(bitrate);
+        if (!strcmp(argv[i], "BD:5K")) BITRATE_5K(bitrate);
         /* CAN FD operation */
         if (!strcmp(argv[i], "CANFD") || !strcmp(argv[i], "FD")) opMode.fdoe = 1;
         if (!strcmp(argv[i], "FDF")) opMode.fdoe = 1;
         if (!strcmp(argv[i], "BRS")) opMode.brse = 1;
         /* bit rate (CAN FD) */
-        if (!strcmp(argv[i], "BR:125K1M")) BITRATE_125K1M(bitrate);
-        if (!strcmp(argv[i], "BR:250K2M")) BITRATE_250K2M(bitrate);
-        if (!strcmp(argv[i], "BR:500K4M")) BITRATE_500K4M(bitrate);
-        if (!strcmp(argv[i], "BR:1M8M")) BITRATE_1M8M(bitrate);
-        if (!strcmp(argv[i], "BR:125K")) BITRATE_125K(bitrate);
-        if (!strcmp(argv[i], "BR:250K")) BITRATE_250K(bitrate);
-        if (!strcmp(argv[i], "BR:500K")) BITRATE_500K(bitrate);
-        if (!strcmp(argv[i], "BR:1M")) BITRATE_1M(bitrate);
+        if (!strcmp(argv[i], "BR:125K1M")) BITRATE_FD_125K1M(bitrate);
+        if (!strcmp(argv[i], "BR:250K2M")) BITRATE_FD_250K2M(bitrate);
+        if (!strcmp(argv[i], "BR:500K4M")) BITRATE_FD_500K4M(bitrate);
+        if (!strcmp(argv[i], "BR:1M8M")) BITRATE_FD_1M8M(bitrate);
+        if (!strcmp(argv[i], "BR:125K")) BITRATE_FD_125K(bitrate);
+        if (!strcmp(argv[i], "BR:250K")) BITRATE_FD_250K(bitrate);
+        if (!strcmp(argv[i], "BR:500K")) BITRATE_FD_500K(bitrate);
+        if (!strcmp(argv[i], "BR:1M")) BITRATE_FD_1M(bitrate);
         /* asynchronous IO */
         if (!strcmp(argv[i], "POLLING")) timeout = 0U;
         if (!strcmp(argv[i], "BLOCKING")) timeout = CANREAD_INFINITE;
@@ -175,6 +196,8 @@ int main(int argc, const char * argv[]) {
         if (!strcmp(argv[i], "INFO")) option_info = OPTION_YES;
         if (!strcmp(argv[i], "STAT")) option_stat = OPTION_YES;
         if (!strcmp(argv[i], "TEST")) option_test = OPTION_YES;
+        if (!strcmp(argv[i], "LIST")) option_list = OPTION_YES;
+//        if (!strcmp(argv[i], "PATH")) option_path = OPTION_YES;
         if (!strcmp(argv[i], "EXIT")) option_exit = OPTION_YES;
         /* additional operation modes (bit field) */
         if (!strcmp(argv[i], "SHARED")) opMode.shrd = 1;
@@ -193,6 +216,7 @@ int main(int argc, const char * argv[]) {
         perror("+++ error");
         return errno;
     }
+    /* information from library */
     if (option_info) {
         retVal = myDriver.GetProperty(CANPROP_GET_SPEC, (void *)&u16Val, sizeof(uint16_t));
         if (retVal == CCanApi::NoError)
@@ -229,9 +253,56 @@ int main(int argc, const char * argv[]) {
             fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_LIBRARY_VENDOR): value = '%s'\n", szVal);
         else
             fprintf(stderr, "+++ error: myDriver.GetProperty(CANPROP_GET_LIBRARY_VENDOR) returned %i\n", retVal);
+        if (option_exit && !option_list && !option_test)
+            return 0;
+    }
+    /* device list */
+    if (option_list) {
+        int n = 0;
+#if (1)
+        bool result = CPeakCAN::GetFirstChannel(info);
+        while (result) {
+            fprintf(stdout, ">>> CCanAPI::Get%sChannel(): %i = \'%s\' (%i = \'%s\')\n", !n ? "First" : "Next",
+                    info.m_nChannelNo, info.m_szDeviceName, info.m_nLibraryId, info.m_szVendorName);
+            result = CPeakCAN::GetNextChannel(info);
+            n++;
+        }
+#else
+        retVal = myDriver.SetProperty(CANPROP_SET_FIRST_CHANNEL, (void *)NULL, 0U);
+        while (retVal == CCanApi::NoError) {
+            fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_SET_%s_CHANNEL): OK\n", !n ? "FIRST" : "NEXT");
+            retVal = myDriver.GetProperty(CANPROP_GET_CHANNEL_NO, (void *)&i32Val, sizeof(int32_t));
+            if (retVal == CCanApi::NoError)
+                fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_CHANNEL_NO): value = %d\n", i32Val);
+            else
+                fprintf(stderr, "+++ error: myDriver.GetProperty(CANPROP_GET_CHANNEL_NO) returned %i\n", retVal);
+            retVal = myDriver.GetProperty(CANPROP_GET_CHANNEL_NAME, (void *)szVal, CANPROP_MAX_BUFFER_SIZE);
+            if (retVal == CCanApi::NoError)
+                fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_CHANNEL_NAME): value = '%s'\n", szVal);
+            else
+                fprintf(stderr, "+++ error: myDriver.GetProperty(CANPROP_GET_CHANNEL_NAME) returned %i\n", retVal);
+            retVal = myDriver.GetProperty(CANPROP_GET_CHANNEL_DLLNAME, (void *)szVal, CANPROP_MAX_BUFFER_SIZE);
+            if (retVal == CCanApi::NoError)
+                fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_CHANNEL_DLLNAME): value = '%s'\n", szVal);
+            else
+                fprintf(stderr, "+++ error: myDriver.GetProperty(CANPROP_GET_CHANNEL_DLLNAME) returned %i\n", retVal);
+            retVal = myDriver.GetProperty(CANPROP_GET_CHANNEL_VENDOR_ID, (void *)&i32Val, sizeof(int32_t));
+            if (retVal == CCanApi::NoError)
+                fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_CHANNEL_VENDOR_ID): value = %d\n", i32Val);
+            else
+                fprintf(stderr, "+++ error: myDriver.GetProperty(CANPROP_GET_CHANNEL_VENDOR_ID) returned %i\n", retVal);
+            retVal = myDriver.GetProperty(CANPROP_GET_CHANNEL_VENDOR_NAME, (void *)szVal, CANPROP_MAX_BUFFER_SIZE);
+            if (retVal == CCanApi::NoError)
+                fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_CHANNEL_VENDOR_NAME): value = '%s'\n", szVal);
+            else
+                fprintf(stderr, "+++ error: myDriver.GetProperty(CANPROP_GET_CHANNEL_VENDOR_NAME) returned %i\n", retVal);
+            n++;
+        }
+#endif
         if (option_exit && !option_test)
             return 0;
     }
+    /* channel tester */
     if (option_test) {
 #if (1)
         bool result = CPeakCAN::GetFirstChannel(info);
@@ -247,7 +318,7 @@ int main(int argc, const char * argv[]) {
 #else
         retVal = myDriver.SetProperty(CANPROP_SET_FIRST_CHANNEL, (void *)NULL, 0U);
         while (retVal == CCanApi::NoError) {
-            retVal = myDriver.GetProperty(CANPROP_GET_CHANNEL_TYPE, (void *)&i32Val, sizeof(int32_t));
+            retVal = myDriver.GetProperty(CANPROP_GET_CHANNEL_NO, (void *)&i32Val, sizeof(int32_t));
             if (retVal == CCanApi::NoError) {
                 retVal = CPeakCAN::ProbeChannel(i32Val, opMode, state);
                 fprintf(stdout, ">>> CCanApi::ProbeChannel(%i): state = %s", i32Val,
@@ -262,6 +333,7 @@ int main(int argc, const char * argv[]) {
         if (option_exit)
             return 0;
     }
+    /* initialization */
     retVal = myDriver.InitializeChannel(channel, opMode);
     if (retVal != CCanApi::NoError) {
         fprintf(stderr, "+++ error: myDriver.InitializeChannel(%i) returned %i\n", channel, retVal);
@@ -270,6 +342,7 @@ int main(int argc, const char * argv[]) {
     else if (myDriver.GetStatus(status) == CCanApi::NoError) {
         fprintf(stdout, ">>> myDriver.InitializeChannel(%i): status = 0x%02X\n", channel, status.byte);
     }
+    /* channel status */
     if (option_test) {
         retVal = myDriver.ProbeChannel(channel, opMode, state);
         fprintf(stdout, ">>> myDriver.ProbeChannel(%i): state = %s", channel,
@@ -278,6 +351,7 @@ int main(int argc, const char * argv[]) {
                         (state == CCanApi::ChannelNotAvailable) ? "not available" : "not testable");
         fprintf(stdout, "%s", (retVal == CCanApi::IllegalParameter) ? " (warning: Op.-Mode not supported)\n" : "\n");
     }
+    /* information from driver */
     if (option_info) {
         retVal = myDriver.GetProperty(CANPROP_GET_NUM_CHANNELS, (void*)&u8Val, sizeof(uint8_t));
         if (retVal == CCanApi::NoError)
@@ -286,7 +360,7 @@ int main(int argc, const char * argv[]) {
         //    fprintf(stderr, "+++ error: myDriver.GetProperty(CANPROP_GET_NUM_CHANNELS) returned %i\n", retVal);
         retVal = myDriver.GetProperty(CANPROP_GET_CAN_CHANNEL, (void*)&u8Val, sizeof(uint8_t));
         if (retVal == CCanApi::NoError)
-            fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_CAN_CHANNEL): value = %u\n", u8Val + 1U);
+            fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_CAN_CHANNEL): value = %u\n", u8Val);
         //else [optional property]
         //    fprintf(stderr, "+++ error: myDriver.GetProperty(CANPROP_GET_CAN_CHANNEL) returned %i\n", retVal);
         retVal = myDriver.GetProperty(CANPROP_GET_DEVICE_TYPE, (void *)&i32Val, sizeof(int32_t));
@@ -309,7 +383,7 @@ int main(int argc, const char * argv[]) {
             fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_DEVICE_DLLNAME): value = '%s'\n", szVal);
         else
             fprintf(stderr, "+++ error: myDriver.GetProperty(CANPROP_GET_DEVICE_DLLNAME) returned %i\n", retVal);
-        // vendor-specific properties
+        /* vendor-specific properties */
         retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_DEVICE_ID, (void *)&u32Val, sizeof(uint32_t));
         if (retVal == CCanApi::NoError)
             fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_DEVICE_ID): value = %u\n", u32Val);
@@ -330,26 +404,33 @@ int main(int argc, const char * argv[]) {
             fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_HARDWARE_NAME): value = '%s'\n", szVal);
         else
             fprintf(stderr, "+++ error: myDriver.GetProperty(PEAKCAN_PROPERTY_HARDWARE_NAME) returned %i\n", retVal);
-//        retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_SERIAL_NUMBER, (void *)szVal, CANPROP_MAX_BUFFER_SIZE);
-//        if (retVal == CCanApi::NoError)
-//            fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_SERIAL_NUMBER): value = '%s'\n", szVal);
-//        else
-//            fprintf(stderr, "+++ error: myDriver.GetProperty(PEAKCAN_PROPERTY_SERIAL_NUMBER) returned %i\n", retVal);
-//        retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_CLOCK_DOMAIN, (void *)&i32Val, sizeof(int32_t));
-//        if (retVal == CCanApi::NoError)
-//            fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_CLOCK_DOMAIN): value = %d\n", i32Val);
-//        else
-//            fprintf(stderr, "+++ error: myDriver.GetProperty(PEAKCAN_PROPERTY_CLOCK_DOMAIN) returned %i\n", retVal);
 #if (0)
-        retVal = myDriver.GetProperty(CANPROP_GET_CAN_CLOCKS, (void *)clocks, CANPROP_MAX_BUFFER_SIZE);
+        retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_SERIAL_NUMBER, (void *)szVal, CANPROP_MAX_BUFFER_SIZE);
+        if (retVal == CCanApi::NoError)
+            fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_SERIAL_NUMBER): value = '%s'\n", szVal);
+        else
+            fprintf(stderr, "+++ error: myDriver.GetProperty(PEAKCAN_PROPERTY_SERIAL_NUMBER) returned %i\n", retVal);
+        retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_CONTROLLER_NUMBER, (void *)szVal, CANPROP_MAX_BUFFER_SIZE);
+        if (retVal == CCanApi::NoError)
+            fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_CONTROLLER_NUMBER): value = '%s'\n", szVal);
+        else
+            fprintf(stderr, "+++ error: myDriver.GetProperty(PEAKCAN_PROPERTY_CONTROLLER_NUMBER) returned %i\n", retVal);
+       retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_CLOCK_DOMAINS, (void *)clocks, CANPROP_MAX_BUFFER_SIZE);
         if (retVal == CCanApi::NoError) {
-            fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_CAN_CLOCKS): array =");
-            for (int i = 0; (i < (int)(CANPROP_MAX_BUFFER_SIZE/sizeof(int32_t))) && (clocks[i] != EOF); i++)
+            fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_CLOCK_DOMAINS): array =");
+            for (int i = 0; (clocks[i] != EOF) && (i < (int)(CANPROP_MAX_BUFFER_SIZE/sizeof(int32_t))); i++)
                 fprintf(stdout, "%s%.1f", i ? ", " : " [", (float)clocks[i] / (float)1000000);
-            fprintf(stdout, "] MHz\n");
-        } else
-            fprintf(stderr, "+++ error: myDriver.GetProperty(CANPROP_GET_CAN_CLOCKS) returned %i\n", retVal);
+            fprintf(stdout, "]\n");
+        }
+        //else [optional property]
+        //    fprintf(stderr, "+++ error: myDriver.GetProperty(PEAKCAN_PROPERTY_CLOCK_DOMAINS) returned %i\n", retVal);
 #endif
+        retVal = myDriver.GetProperty(CANPROP_GET_CAN_CLOCK, (void *)&i32Val, sizeof(int32_t));
+        if (retVal == CCanApi::NoError)
+            fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_CAN_CLOCK): value = %d\n", i32Val);
+        //else [optional property]
+        //    fprintf(stderr, "+++ error: myDriver.GetProperty(CANPROP_GET_CAN_CLOCK) returned %i\n", retVal);
+        /* device capabilities */
         retVal = myDriver.GetProperty(CANPROP_GET_OP_CAPABILITY, (void *)&u8Val, sizeof(uint8_t));
         if (retVal == CCanApi::NoError)
             fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_OP_CAPABILITY): value = 0x%02X\n", u8Val);
@@ -358,6 +439,7 @@ int main(int argc, const char * argv[]) {
         if (myDriver.GetProperty(CANPROP_GET_OP_MODE, (void *)&u8Val, sizeof(uint8_t)) == CCanApi::NoError)
             fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_OP_MODE): value = 0x%02X\n", u8Val);
     }
+    /* start communication */
     retVal = myDriver.StartController(bitrate);
     if (retVal != CCanApi::NoError) {
         fprintf(stderr, "+++ error: myDriver.StartController returned %i\n", retVal);
@@ -387,6 +469,7 @@ int main(int argc, const char * argv[]) {
 //        fprintf(stdout, "Attention: The program will be aborted when the transmitter is busy.\n"
 //                        "           Use progrsm option RETRY to avoid this.\n");
     fprintf(stdout, "Press Ctrl+C to abort...\n");
+    /* transmit messages */
     while (running && (option_transmit-- > 0)) {
         if (!opMode.fdoe) {
             message.fdf = 0;
@@ -498,6 +581,7 @@ retry:
     if (myDriver.GetStatus(status) == CCanApi::NoError) {
         fprintf(stdout, "\n>>> myDriver.ReadMessage: status = 0x%02X\n", status.byte);
     }
+    /* some statistics */
     if (option_stat || option_info) {
         uint64_t u64TxCnt, u64RxCnt, u64ErrCnt;
         if ((myDriver.GetProperty(CANPROP_GET_TX_COUNTER, (void *)&u64TxCnt, sizeof(uint64_t)) == CCanApi::NoError) &&
@@ -512,6 +596,7 @@ retry:
             (myDriver.GetProperty(CANPROP_GET_RCV_QUEUE_OVFL, (void *)&u64QueOvfl, sizeof(uint64_t)) == CCanApi::NoError))
             fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_QUEUE_*): SIZE = %" PRIu32 " HIGH = %" PRIu32 " OVFL = %" PRIu64 "\n", u32QueSize, u32QueHigh, u64QueOvfl);
     }
+    /* version information */
     if (option_info) {
         char *hardware = myDriver.GetHardwareVersion();
         if (hardware)
@@ -521,6 +606,7 @@ retry:
             fprintf(stdout, ">>> myDriver.GetFirmwareVersion: '%s'\n", firmware);
     }
 teardown:
+    /* shutdown */
 #ifdef SECOND_CHANNEL
     retVal = mySecond.ResetController();
     if (retVal != CCanApi::NoError)
