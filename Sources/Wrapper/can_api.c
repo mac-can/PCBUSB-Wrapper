@@ -1112,7 +1112,7 @@ static int map_bitrate2register(const can_bitrate_t *bitrate, TPCANBaudrate *btr
         return CANERR_BAUDRATE;
     if ((bitrate->btr.nominal.sjw < CANBTR_SJA1000_SJW_MIN) || (CANBTR_SJA1000_SJW_MAX < bitrate->btr.nominal.sjw))
         return CANERR_BAUDRATE;
-    if (/*(bitrate->btr.nominal.sam < CANBTR_SJA1000_SAM_MIN) ||*/ (CANBTR_SJA1000_SAM_MAX < bitrate->btr.nominal.sam))
+    if ((bitrate->btr.nominal.sam != CANBTR_SJA1000_SAM_SINGLE) && (bitrate->btr.nominal.sam != CANBTR_SJA1000_SAM_TRIPLE))
         return CANERR_BAUDRATE;
     /* +---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+ */
     /* |  SJW  |          BRP          |SAM|   TSEG2   |     TSEG1     | */
