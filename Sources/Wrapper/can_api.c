@@ -733,7 +733,7 @@ int can_read(int handle, can_msg_t *msg, uint16_t timeout)
     struct timeval tv;
     tv.tv_sec = (time_t)(timeout / 1000u);
     tv.tv_usec = (suseconds_t)(timeout % 1000u) * (suseconds_t)1000;
-retry:
+repeat:
     if (!can[handle].mode.fdoe)
         rc = CAN_Read(can[handle].board, &can_msg, &timestamp);
     else
@@ -741,11 +741,11 @@ retry:
     if (rc == PCAN_ERROR_QRCVEMPTY) {
         if(timeout == 65535u) {
             if(select(can[handle].fdes+1, &rdfs, NULL, NULL, NULL) > 0)
-                goto retry;
+                goto repeat;
         }
         else if(timeout != 0) {
             if(select(can[handle].fdes+1, &rdfs, NULL, NULL, &tv) > 0)
-                goto retry;
+                goto repeat;
         }
         can[handle].status.receiver_empty = 1;
         return CANERR_RX_EMPTY;         //   receiver empty!
@@ -773,6 +773,10 @@ retry:
             can[handle].counters.err++;
             return CANERR_ERR_FRAME;    //   error frame received
         }
+        if ((can_msg.MSGTYPE & PCAN_MESSAGE_EXTENDED) && can[handle].mode.nxtd)
+            goto repeat;                //   refuse extended frames
+        if ((can_msg.MSGTYPE & PCAN_MESSAGE_RTR) && can[handle].mode.nrtr)
+            goto repeat;                //   refuse remote frames
         msg->id = (int32_t)can_msg.ID;
         msg->xtd = (can_msg.MSGTYPE & PCAN_MESSAGE_EXTENDED) ? 1 : 0;
         msg->rtr = (can_msg.MSGTYPE & PCAN_MESSAGE_RTR) ? 1 : 0;
@@ -796,10 +800,15 @@ retry:
             return CANERR_RX_EMPTY;     //   receiver empty
         }
         if ((can_msg_fd.MSGTYPE & PCAN_MESSAGE_ERRFRAME)) {
+            // TODO: encode status message (error frame)
             can[handle].status.receiver_empty = 1;
             can[handle].counters.err++;
             return CANERR_ERR_FRAME;    //   error frame received
         }
+        if ((can_msg.MSGTYPE & PCAN_MESSAGE_EXTENDED) && can[handle].mode.nxtd)
+            goto repeat;                //   refuse extended frames
+        if ((can_msg.MSGTYPE & PCAN_MESSAGE_RTR) && can[handle].mode.nrtr)
+            goto repeat;                //   refuse remote frames
         msg->id = (int32_t)can_msg_fd.ID;
         msg->xtd = (can_msg_fd.MSGTYPE & PCAN_MESSAGE_EXTENDED) ? 1 : 0;
         msg->rtr = (can_msg_fd.MSGTYPE & PCAN_MESSAGE_RTR) ? 1 : 0;
@@ -1072,8 +1081,8 @@ static TPCANStatus pcan_capability(TPCANHandle board, can_mode_t *capability)
     capability->nrtr = 1; // PCAN_ALLOW_RTR_FRAMES available since version 0.x
     capability->err = 1;  // PCAN_ALLOW_ERROR_FRAMES available since version 0.x
 #else
-    capability->nxtd = 0; // PCAN_ACCEPTANCE_FILTER_29BIT not implemented yet!
-    capability->nrtr = 0; // PCAN_ALLOW_RTR_FRAMES not implemented yet!
+    capability->nxtd = 1; // Suppress XTD frames (software solution)
+    capability->nrtr = 1; // Suppress RTR frames (software solution)
     capability->err = 0;  // PCAN_ALLOW_ERROR_FRAMES not implemented yet!
 #endif
     capability->mon = 1;  // PCAN_LISTEN_ONLY available since version 0.4
