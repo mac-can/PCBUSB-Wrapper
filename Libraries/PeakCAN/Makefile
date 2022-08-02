@@ -53,6 +53,7 @@ HOME_DIR = ../..
 
 SOURCE_DIR = $(HOME_DIR)/Sources
 CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
+PCBUSB_DIR = $(HOME_DIR)/Sources/PCANBasic
 WRAPPER_DIR = $(HOME_DIR)/Sources/Wrapper
 
 OBJECTS = $(OUTDIR)/PeakCAN.o $(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o
@@ -84,6 +85,7 @@ DEFINES = -DOPTION_PCAN_DYLIB=1 \
 
 HEADERS = -I$(SOURCE_DIR) \
 	-I$(CANAPI_DIR) \
+	-I$(PCBUSB_DIR) \
 	-I$(WRAPPER_DIR)
 
 CFLAGS += -O2 -Wall -Wextra -Wno-parentheses \

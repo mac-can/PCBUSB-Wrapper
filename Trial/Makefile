@@ -13,6 +13,7 @@ MAIN_DIR = ./Sources
 
 SOURCE_DIR = $(HOME_DIR)/Sources
 CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
+PCBUSB_DIR = $(HOME_DIR)/Sources/PCANBasic
 WRAPPER_DIR = $(HOME_DIR)/Sources/Wrapper
 
 OBJECTS = $(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o \
@@ -34,6 +35,7 @@ DEFINES = -DOPTION_CAN_2_0_ONLY=0 \
 
 HEADERS = -I$(SOURCE_DIR) \
 	-I$(CANAPI_DIR) \
+	-I$(PCBUSB_DIR) \
 	-I$(WRAPPER_DIR) \
 	-I$(MAIN_DIR)
 

@@ -1,0 +1,22 @@
+macOS Library for PCAN-USB Interfaces
+
+Copyright (c) 2013-2022 by UV Software, Berlin
+
+
+libPCBUSB
+~~~~~~~~~
+
+The PCBUSB library realizes a 'PCAN-USB Driver for macOS' using Apple´s IOUSBKit.
+It supports up to 8 PCAN-USB or PCAN-USB FD devices from PEAK-System Technik.
+See the header-file PCBUSB.h for details.
+
+PCAN is a registered trademark of PEAK-System Technik GmbH, Darmstadt, Germany.
+Mac and macOS are trademarks of Apple Inc., registered in the U.S. and other countries.
+
+This software is freeware without any warranty or support!
+
+Contact
+~~~~~~~
+
+E-Mail:  mailto:info@mac-can.com
+Internet: http://www.mac-can.com
