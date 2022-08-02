@@ -17,7 +17,7 @@ _All rights reserved._
    when required and commit them with commit comment:
   - `Update CAN API V3 sources to rev. `_nnn_ \
     `- `_list of major changes (optional)_
-2. Update the PCBUSB header file in `$(PROJROOT)/Sources/Wrapper` from PEAK´s website
+2. Update the PCANBasic header file in `$(PROJROOT)/Sources/PCANBasic` from PEAK´s website
    when required and commit them with commit comment:
   - `Update PCBUSB header file (version `_n_`.`_n_`.`_n_`)` \
     `- `_list of major changes (optional)_
