@@ -26,6 +26,7 @@ MAIN_DIR = ./Sources
 
 SOURCE_DIR = $(HOME_DIR)/Sources
 CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
+PCBUSB_DIR = $(HOME_DIR)/Sources/PCANBasic
 WRAPPER_DIR = $(HOME_DIR)/Sources/Wrapper
 
 OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o $(BINDIR)/libPeakCAN.a
@@ -44,6 +45,7 @@ DEFINES = -DOPTION_CANAPI_DRIVER=1 \
 
 HEADERS = -I$(SOURCE_DIR) \
 	-I$(CANAPI_DIR) \
+	-I$(PCBUSB_DIR) \
 	-I$(WRAPPER_DIR) \
 	-I$(MAIN_DIR)
 
