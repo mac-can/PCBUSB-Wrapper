@@ -35,7 +35,7 @@ OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o  $(BINDIR)/libPeakCAN.a \
 
 ifeq ($(current_OS),Darwin) # macOS - libPeakCAN.dylib
 
-VERSION = 0.2.4
+VERSION = 0.2.5
 
 TARGET  = can_moni
 
