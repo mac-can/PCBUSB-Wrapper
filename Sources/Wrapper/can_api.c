@@ -1045,13 +1045,17 @@ static int pcan_error(TPCANStatus status)
 static int pcan_compatibility(void) {
     TPCANStatus sts;                    // channel status
     unsigned int major = 0, minor = 0;  // channel version
-    char version[256] = "PCBUSB library, version 0.0.0.0";
+    char version[256] = "PCBUSB 0.0.0.0\n...";
 
-    /* (§1) get library version (as a string) */
-    if ((sts = CAN_GetValue(PCAN_NONEBUS, PCAN_EXT_SOFTWARE_VERSION, (void*)version, 256)) != PCAN_ERROR_OK)
+    /*  note: PCAN_CHANNEL_VERSION is a pre-initialization parameter
+     *        and can be read from any valid channel handle
+     *        independent if the device is present or not.
+     */
+    /* (§1) get channel version (as a string) */
+    if ((sts = CAN_GetValue(PCAN_USBBUS1, PCAN_CHANNEL_VERSION, (void*)version, 256)) != PCAN_ERROR_OK)
         return pcan_error(sts);
     /* (§2) extract major and minor revision */
-    if (sscanf(version, "PCBUSB library, version %u.%u", &major, &minor) != 2)
+    if (sscanf(version, "PCBUSB %u.%u", &major, &minor) != 2)
         return CANERR_FATAL;
     /* (§3) check for minimal required version */
     if ((major != PCAN_LIB_MIN_MAJOR) || (minor < PCAN_LIB_MIN_MINOR))
