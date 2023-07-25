@@ -4,6 +4,7 @@
 //  Bart Simpson didn´t do it
 //
 #include "PeakCAN_Defines.h"
+#include "PeakCAN_Defaults.h"
 #include "PeakCAN.h"
 
 #include <stdio.h>
@@ -21,26 +22,48 @@
 //#define SECOND_CHANNEL
 #define ISSUE_198   (1)
 
-#define BITRATE_1M(x)    do {x.btr.frequency=8000000;x.btr.nominal.brp=1; x.btr.nominal.tseg1=5; x.btr.nominal.tseg2=2;x.btr.nominal.sjw=1;x.btr.nominal.sam=0;} while(0)
-#define BITRATE_800K(x)  do {x.btr.frequency=8000000;x.btr.nominal.brp=1; x.btr.nominal.tseg1=7; x.btr.nominal.tseg2=2;x.btr.nominal.sjw=1;x.btr.nominal.sam=0;} while(0)
-#define BITRATE_500K(x)  do {x.btr.frequency=8000000;x.btr.nominal.brp=1; x.btr.nominal.tseg1=13;x.btr.nominal.tseg2=2;x.btr.nominal.sjw=1;x.btr.nominal.sam=0;} while(0)
-#define BITRATE_250K(x)  do {x.btr.frequency=8000000;x.btr.nominal.brp=2; x.btr.nominal.tseg1=13;x.btr.nominal.tseg2=2;x.btr.nominal.sjw=1;x.btr.nominal.sam=0;} while(0)
-#define BITRATE_125K(x)  do {x.btr.frequency=8000000;x.btr.nominal.brp=4; x.btr.nominal.tseg1=13;x.btr.nominal.tseg2=2;x.btr.nominal.sjw=1;x.btr.nominal.sam=0;} while(0)
-#define BITRATE_100K(x)  do {x.btr.frequency=8000000;x.btr.nominal.brp=4; x.btr.nominal.tseg1=16;x.btr.nominal.tseg2=3;x.btr.nominal.sjw=2;x.btr.nominal.sam=0;} while(0)
-#define BITRATE_50K(x)   do {x.btr.frequency=8000000;x.btr.nominal.brp=8; x.btr.nominal.tseg1=16;x.btr.nominal.tseg2=3;x.btr.nominal.sjw=2;x.btr.nominal.sam=0;} while(0)
-#define BITRATE_20K(x)   do {x.btr.frequency=8000000;x.btr.nominal.brp=20;x.btr.nominal.tseg1=16;x.btr.nominal.tseg2=3;x.btr.nominal.sjw=2;x.btr.nominal.sam=0;} while(0)
-#define BITRATE_10K(x)   do {x.btr.frequency=8000000;x.btr.nominal.brp=40;x.btr.nominal.tseg1=16;x.btr.nominal.tseg2=3;x.btr.nominal.sjw=2;x.btr.nominal.sam=0;} while(0)
-#define BITRATE_5K(x)    do {x.btr.frequency=8000000;x.btr.nominal.brp=64;x.btr.nominal.tseg1=16;x.btr.nominal.tseg2=8;x.btr.nominal.sjw=2;x.btr.nominal.sam=0;} while(0)
-
-#define BITRATE_FD_1M(x)      do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=31; x.btr.nominal.tseg2=8; x.btr.nominal.sjw=8; } while(0)
-#define BITRATE_FD_500K(x)    do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=63; x.btr.nominal.tseg2=16;x.btr.nominal.sjw=16;} while(0)
-#define BITRATE_FD_250K(x)    do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=127;x.btr.nominal.tseg2=32;x.btr.nominal.sjw=32;} while(0)
-#define BITRATE_FD_125K(x)    do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=255;x.btr.nominal.tseg2=64;x.btr.nominal.sjw=64;} while(0)
-#define BITRATE_FD_1M8M(x)    do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=31; x.btr.nominal.tseg2=8; x.btr.nominal.sjw=8;  x.btr.data.brp=2; x.btr.data.tseg1=3;  x.btr.data.tseg2=1; x.btr.data.sjw=1; } while(0)
-#define BITRATE_FD_500K4M(x)  do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=63; x.btr.nominal.tseg2=16;x.btr.nominal.sjw=16; x.btr.data.brp=2; x.btr.data.tseg1=7;  x.btr.data.tseg2=2; x.btr.data.sjw=2; } while(0)
-#define BITRATE_FD_250K2M(x)  do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=127;x.btr.nominal.tseg2=32;x.btr.nominal.sjw=32; x.btr.data.brp=2; x.btr.data.tseg1=15; x.btr.data.tseg2=4; x.btr.data.sjw=4; } while(0)
-#define BITRATE_FD_125K1M(x)  do {x.btr.frequency=80000000;x.btr.nominal.brp=2;x.btr.nominal.tseg1=255;x.btr.nominal.tseg2=64;x.btr.nominal.sjw=64; x.btr.data.brp=2; x.btr.data.tseg1=31; x.btr.data.tseg2=8; x.btr.data.sjw=8; } while(0)
-
+#if (0)
+#define BITRATE_1M(x)    PEAKCAN_BR_1M(x)
+#define BITRATE_800K(x)  PEAKCAN_BR_800K(x)
+#define BITRATE_500K(x)  PEAKCAN_BR_500K(x)
+#define BITRATE_250K(x)  PEAKCAN_BR_250K(x)
+#define BITRATE_125K(x)  PEAKCAN_BR_125K(x)
+#define BITRATE_100K(x)  PEAKCAN_BR_100K(x)
+#define BITRATE_50K(x)   PEAKCAN_BR_50K(x)
+#define BITRATE_20K(x)   PEAKCAN_BR_20K(x)
+#define BITRATE_10K(x)   PEAKCAN_BR_10K(x)
+#define BITRATE_5K(x)    PEAKCAN_BR_5K(x)
+#else
+#define BITRATE_1M(x)    DEFAULT_CAN_BR_1M(x)  
+#define BITRATE_800K(x)  DEFAULT_CAN_BR_800K(x)
+#define BITRATE_500K(x)  DEFAULT_CAN_BR_500K(x)
+#define BITRATE_250K(x)  DEFAULT_CAN_BR_250K(x)
+#define BITRATE_125K(x)  DEFAULT_CAN_BR_125K(x)
+#define BITRATE_100K(x)  DEFAULT_CAN_BR_100K(x)
+#define BITRATE_50K(x)   DEFAULT_CAN_BR_50K(x) 
+#define BITRATE_20K(x)   DEFAULT_CAN_BR_20K(x) 
+#define BITRATE_10K(x)   DEFAULT_CAN_BR_10K(x) 
+#define BITRATE_5K(x)    DEFAULT_CAN_BR_5K(x)  
+#endif
+#if (0)
+#define BITRATE_FD_1M(x)      PEAKCAN_FD_BR_1M(x)
+#define BITRATE_FD_500K(x)    PEAKCAN_FD_BR_500K(x)
+#define BITRATE_FD_250K(x)    PEAKCAN_FD_BR_250K(x)
+#define BITRATE_FD_125K(x)    PEAKCAN_FD_BR_125K(x)
+#define BITRATE_FD_1M8M(x)    PEAKCAN_FD_BR_1M8M(x)
+#define BITRATE_FD_500K4M(x)  PEAKCAN_FD_BR_500K4M(x)
+#define BITRATE_FD_250K2M(x)  PEAKCAN_FD_BR_250K2M(x)
+#define BITRATE_FD_125K1M(x)  PEAKCAN_FD_BR_125K1M(x)
+#else
+#define BITRATE_FD_1M(x)      DEFAULT_CAN_FD_BR_1M(x)
+#define BITRATE_FD_500K(x)    DEFAULT_CAN_FD_BR_500K(x)
+#define BITRATE_FD_250K(x)    DEFAULT_CAN_FD_BR_250K(x)
+#define BITRATE_FD_125K(x)    DEFAULT_CAN_FD_BR_125K(x)
+#define BITRATE_FD_1M8M(x)    DEFAULT_CAN_FD_BR_1M8M(x)
+#define BITRATE_FD_500K4M(x)  DEFAULT_CAN_FD_BR_500K4M(x)
+#define BITRATE_FD_250K2M(x)  DEFAULT_CAN_FD_BR_250K2M(x)
+#define BITRATE_FD_125K1M(x)  DEFAULT_CAN_FD_BR_125K1M(x)
+#endif
 #define OPTION_NO   (0)
 #define OPTION_YES  (1)
 
@@ -388,11 +411,6 @@ int main(int argc, const char * argv[]) {
         else
             fprintf(stderr, "+++ error: myDriver.GetProperty(CANPROP_GET_DEVICE_DLLNAME) returned %i\n", retVal);
         /* vendor-specific properties */
-        retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_DEVICE_ID, (void *)&u32Val, sizeof(uint32_t));
-        if (retVal == CCanApi::NoError)
-            fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_DEVICE_ID): value = 0x%x\n", u32Val);
-        else
-            fprintf(stderr, "+++ error: myDriver.GetProperty(PEAKCAN_PROPERTY_DEVICE_ID) returned %i\n", retVal);
         retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_API_VERSION, (void *)szVal, CANPROP_MAX_BUFFER_SIZE);
         if (retVal == CCanApi::NoError)
             fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_API_VERSION): value = '%s'\n", szVal);
@@ -408,27 +426,16 @@ int main(int argc, const char * argv[]) {
             fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_HARDWARE_NAME): value = '%s'\n", szVal);
         else
             fprintf(stderr, "+++ error: myDriver.GetProperty(PEAKCAN_PROPERTY_HARDWARE_NAME) returned %i\n", retVal);
-#if (0)
-        retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_SERIAL_NUMBER, (void *)szVal, CANPROP_MAX_BUFFER_SIZE);
-        if (retVal == CCanApi::NoError)
-            fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_SERIAL_NUMBER): value = '%s'\n", szVal);
-        else
-            fprintf(stderr, "+++ error: myDriver.GetProperty(PEAKCAN_PROPERTY_SERIAL_NUMBER) returned %i\n", retVal);
         retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_CONTROLLER_NUMBER, (void *)&u32Val, sizeof(uint32_t));
         if (retVal == CCanApi::NoError)
             fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_CONTROLLER_NUMBER): value = %u\n", u32Val);
         else
             fprintf(stderr, "+++ error: myDriver.GetProperty(PEAKCAN_PROPERTY_CONTROLLER_NUMBER) returned %i\n", retVal);
-        retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_CAN_CLOCK_DOMAINS, (void *)clocks, CANPROP_MAX_BUFFER_SIZE);
-        if (retVal == CCanApi::NoError) {
-            fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_CAN_CLOCK_DOMAINS): array =");
-            for (int i = 0; (clocks[i] != EOF) && (i < (int)(CANPROP_MAX_BUFFER_SIZE/sizeof(int32_t))); i++)
-                fprintf(stdout, "%s%.1f", i ? ", " : " [", (float)clocks[i] / (float)1000000);
-            fprintf(stdout, "]\n");
-        }
-        //else [optional property]
-        //    fprintf(stderr, "+++ error: myDriver.GetProperty(PEAKCAN_PROPERTY_CAN_CLOCK_DOMAINS) returned %i\n", retVal);
-#endif
+        retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_DEVICE_ID, (void *)&u32Val, sizeof(uint32_t));
+        if (retVal == CCanApi::NoError)
+            fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_DEVICE_ID): value = 0x%X\n", u32Val);
+        else
+            fprintf(stderr, "+++ error: myDriver.GetProperty(PEAKCAN_PROPERTY_DEVICE_ID) returned %i\n", retVal);
         retVal = myDriver.GetProperty(CANPROP_GET_CAN_CLOCK, (void *)&i32Val, sizeof(int32_t));
         if (retVal == CCanApi::NoError)
             fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_CAN_CLOCK): value = %d\n", i32Val);

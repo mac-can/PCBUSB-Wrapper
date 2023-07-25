@@ -115,6 +115,7 @@ int main(int argc, const char * argv[]) {
     int num_boards = 0;
     int show_version = 0;
     char *device, *firmware, *software;
+    char property[CANPROP_MAX_BUFFER_SIZE] = "";
     struct option long_options[] = {
         {"baudrate", required_argument, 0, 'b'},
         {"bitrate", required_argument, 0, 'B'},
@@ -141,6 +142,8 @@ int main(int argc, const char * argv[]) {
     };
     CANAPI_Bitrate_t bitrate = {};
     bitrate.index = CANBTR_INDEX_250K;
+    bool hasDataPhase = false;
+    bool hasNoSamp = true;
     CANAPI_OpMode_t opMode = {};
     opMode.byte = CANMODE_DEFAULT;
     CANAPI_Return_t retVal = 0;
@@ -210,7 +213,7 @@ int main(int argc, const char * argv[]) {
                 fprintf(stderr, "%s: duplicated option `--bitrate'\n", basename(argv[0]));
                 return 1;
             }
-            if (CCanDriver::MapString2Bitrate(optarg, bitrate) != CCanApi::NoError) {
+            if (CCanDriver::MapString2Bitrate(optarg, bitrate, hasDataPhase, hasNoSamp) != CCanApi::NoError) {
                 fprintf(stderr, "%s: illegal argument for option `--bitrate'\n", basename(argv[0]));
                 return 1;
             }
@@ -472,28 +475,14 @@ int main(int argc, const char * argv[]) {
                 speed.nominal.speed / 1000.,
                 speed.nominal.samplepoint * 100.);
 #if (OPTION_CAN_2_0_ONLY == 0)
-            if (speed.data.brse)
+            if (opMode.byte & CANMODE_BRSE)
                 fprintf(stdout, ":%.0fkbps@%.1f%%",
                     speed.data.speed / 1000.,
                     speed.data.samplepoint * 100.);
 #endif
-            fprintf(stdout, " (f_clock=%i,nom_brp=%u,nom_tseg1=%u,nom_tseg2=%u,nom_sjw=%u",
-                bitrate.btr.frequency,
-                bitrate.btr.nominal.brp,
-                bitrate.btr.nominal.tseg1,
-                bitrate.btr.nominal.tseg2,
-                bitrate.btr.nominal.sjw);
-#if (OPTION_CAN_2_0_ONLY == 0)
-            if (speed.data.brse)
-                fprintf(stdout, ",data_brp=%u,data_tseg1=%u,data_tseg2=%u,data_sjw=%u",
-                    bitrate.btr.data.brp,
-                    bitrate.btr.data.tseg1,
-                    bitrate.btr.data.tseg2,
-                    bitrate.btr.data.sjw);
-            else
-#endif
-                fprintf(stdout, ",nom_sam=%u", bitrate.btr.nominal.sam);
-            fprintf(stdout, ")\n\n");
+            (void)CCanDriver::MapBitrate2String(bitrate, property, CANPROP_MAX_BUFFER_SIZE,
+                                                (opMode.byte & CANMODE_BRSE), hasNoSamp);
+            fprintf(stdout, " (%s)\n\n", property);
         }
         else {
             fprintf(stdout, "Baudrate=%.0fkbps@%.1f%% (index %i)\n\n",
@@ -516,12 +505,12 @@ int main(int argc, const char * argv[]) {
     fprintf(stdout, "OK!\n");
     /* - start communication */
     if (bitrate.btr.frequency > 0) {
-        fprintf(stdout, "Bit-rate=%.0fkbps",
-            speed.nominal.speed / 1000.);
+        fprintf(stdout, "Bit-rate=%.0fkbps", speed.nominal.speed / 1000.);
 #if (OPTION_CAN_2_0_ONLY == 0)
-        if (speed.data.brse)
-            fprintf(stdout, ":%.0fkbps",
-                speed.data.speed / 1000.);
+        if (opMode.byte & CANMODE_BRSE)
+            fprintf(stdout, ":%.0fkbps", speed.data.speed / 1000.);
+        else if (opMode.byte & CANMODE_FDOE)
+            fprintf(stdout, ":%.0fkbps", speed.nominal.speed / 1000.);
 #endif
         fprintf(stdout, "...");
     }
