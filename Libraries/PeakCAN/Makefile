@@ -1,7 +1,7 @@
 #
 #	CAN Interface API, Version 3 (for PEAK PCAN-USB Interfaces)
 #
-#	Copyright (c) 2012-2022  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+#	Copyright (c) 2012-2023  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 #	All rights reserved.
 #
 #	This library is part of PCBUSB-Wrapper.
@@ -147,9 +147,11 @@ incdir:
 	@mkdir -p $(INCDIR)
 	@cp $(SOURCE_DIR)/PeakCAN.h $(INCDIR)
 	@cp $(SOURCE_DIR)/PeakCAN_Defines.h $(INCDIR)
+	@cp $(SOURCE_DIR)/PeakCAN_Defaults.h $(INCDIR)
 	@cp $(CANAPI_DIR)/CANAPI.h $(INCDIR)
 	@cp $(CANAPI_DIR)/CANAPI_Types.h $(INCDIR)
 	@cp $(CANAPI_DIR)/CANAPI_Defines.h $(INCDIR)
+	@cp $(CANAPI_DIR)/CANBTR_Defaults.h $(INCDIR)
 
 clean:
 	$(RM) $(TARGET) $(STATIC) $(OUTDIR)/*.o $(OUTDIR)/*.d
