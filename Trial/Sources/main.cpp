@@ -1,6 +1,6 @@
 //
 //  main.cpp
-//  MacCAN-PeakCAN
+//  PCBUSB-Wrapper
 //  Bart Simpson didn´t do it
 //
 #include "PeakCAN_Defines.h"

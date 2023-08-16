@@ -2,7 +2,7 @@
 /*
  *  CAN Interface API, Version 3 (for PEAK PCAN-USB Interfaces)
  *
- *  Copyright (c) 2012-2022 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+ *  Copyright (c) 2012-2023 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
  *  All rights reserved.
  *
  *  This file is part of PCBUSB-Wrapper.
@@ -128,7 +128,7 @@ static void _finalizer() {
 #define INVALID_HANDLE          (-1)
 #define IS_HANDLE_VALID(hnd)    ((0 <= (hnd)) && ((hnd) < PCAN_MAX_HANDLES))
 #ifndef DLC2LEN
-#define DLC2LEN(x)              dlc_table[(x) & 0xF]
+#define DLC2LEN(x)              dlc_table[((x) < 16) ? (x) : 15]
 #endif
 #if (OPTION_PCAN_BIT_TIMING == OPTION_DISABLED)
 #undef  PCAN_BAUD_100K
@@ -767,9 +767,13 @@ repeat:
         return CANERR_RX_EMPTY;         //   receiver empty!
     }
 #endif
-    if ((rc & ~PCAN_ERROR_ANYBUSERR)) { // something went wrong
+    if ((rc & ~(PCAN_ERROR_ANYBUSERR | PCAN_ERROR_QOVERRUN))) {
         can[handle].status.receiver_empty = 1;
-        return pcan_error(rc);
+        return pcan_error(rc);          // something went wrong
+    }
+    else if ((rc & ~PCAN_ERROR_ANYBUSERR) == PCAN_ERROR_QOVERRUN) {
+        can[handle].status.queue_overrun = 1;
+        /* queue has overrun, but we have a message */
     }
     if (!can[handle].mode.fdoe) {       // CAN 2.0 message:
         if ((can_msg.MSGTYPE & PCAN_MESSAGE_EXTENDED) && can[handle].mode.nxtd)
@@ -1091,7 +1095,7 @@ static int pcan_error(TPCANStatus status)
     if ((status & PCAN_ERROR_BUSHEAVY)     == PCAN_ERROR_BUSHEAVY)      return CANERR_BERR;
     if ((status & PCAN_ERROR_BUSLIGHT)     == PCAN_ERROR_BUSLIGHT)      return CANERR_BERR;
     if ((status & PCAN_ERROR_QRCVEMPTY)    == PCAN_ERROR_QRCVEMPTY)     return CANERR_RX_EMPTY;
-    if ((status & PCAN_ERROR_QOVERRUN)     == PCAN_ERROR_QOVERRUN)      return CANERR_MSG_LST;
+    if ((status & PCAN_ERROR_QOVERRUN)     == PCAN_ERROR_QOVERRUN)      return CANERR_QUE_OVR;
     if ((status & PCAN_ERROR_QXMTFULL)     == PCAN_ERROR_QXMTFULL)      return CANERR_TX_BUSY;
     if ((status & PCAN_ERROR_MASK)         == PCAN_ERROR_REGTEST)       return PCAN_ERR_REGTEST;
     if ((status & PCAN_ERROR_MASK)         == PCAN_ERROR_NODRIVER)      return PCAN_ERR_NODRIVER;
