@@ -2,7 +2,7 @@
 //
 //  CAN Interface API, Version 3 (for PEAK PCAN-USB Interfaces)
 //
-//  Copyright (c) 2012-2022 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+//  Copyright (c) 2012-2023 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 //  All rights reserved.
 //
 //  This file is part of PCBUSB-Wrapper.
@@ -49,6 +49,7 @@
 #define PEAKCAN_H_INCLUDED
 
 #include "PeakCAN_Defines.h"
+#include "PeakCAN_Defaults.h"
 #include "CANAPI.h"
 
 /// \name   PeakCAN
@@ -58,7 +59,7 @@
 #define PEAKCAN_LIBRARY_NAME  CANDLL_PCANBASIC
 #define PEAKCAN_LIBRARY_VENDOR  "UV Software, Berlin"
 #define PEAKCAN_LIBRARY_LICENSE  "BSD-2-Clause OR GPL-3.0-or-later"
-#define PEAKCAN_LIBRARY_COPYRIGHT  "Copyright (c) 2012-2022  Uwe Vogt, UV Software, Berlin"
+#define PEAKCAN_LIBRARY_COPYRIGHT  "Copyright (c) 2012-2023  Uwe Vogt, UV Software, Berlin"
 #define PEAKCAN_LIBRARY_HAZARD_NOTE  "If you connect your CAN device to a real CAN network when using this library,\n" \
                                      "you might damage your application."
 /// \}
@@ -131,8 +132,8 @@ public:
     static char *GetVersion();  // (for compatibility reasons)
 
     static CANAPI_Return_t MapIndex2Bitrate(int32_t index, CANAPI_Bitrate_t &bitrate);
-    static CANAPI_Return_t MapString2Bitrate(const char *string, CANAPI_Bitrate_t &bitrate);
-    static CANAPI_Return_t MapBitrate2String(CANAPI_Bitrate_t bitrate, char *string, size_t length);
+    static CANAPI_Return_t MapString2Bitrate(const char *string, CANAPI_Bitrate_t &bitrate, bool &data, bool &sam);
+    static CANAPI_Return_t MapBitrate2String(CANAPI_Bitrate_t bitrate, char *string, size_t length, bool data = false, bool sam = false);
     static CANAPI_Return_t MapBitrate2Speed(CANAPI_Bitrate_t bitrate, CANAPI_BusSpeed_t &speed);
 private:
     CANAPI_Return_t MapBitrate2Sja1000(CANAPI_Bitrate_t bitrate, uint16_t &btr0btr1);
@@ -172,11 +173,14 @@ public:
 //#define PEAKCAN_PROPERTY_RCV_QUEUE_SIZE     (CANPROP_GET_RCV_QUEUE_SIZE)
 //#define PEAKCAN_PROPERTY_RCV_QUEUE_HIGH     (CANPROP_GET_RCV_QUEUE_HIGH)
 //#define PEAKCAN_PROPERTY_RCV_QUEUE_OVFL     (CANPROP_GET_RCV_QUEUE_OVFL)
+//#define PEAKCAN_PROPERTY_TRM_QUEUE_SIZE     (CANPROP_GET_TRM_QUEUE_SIZE)
+//#define PEAKCAN_PROPERTY_TRM_QUEUE_HIGH     (CANPROP_GET_TRM_QUEUE_HIGH)
+//#define PEAKCAN_PROPERTY_TRM_QUEUE_OVFL     (CANPROP_GET_TRM_QUEUE_OVFL)
 #define PEAKCAN_PROPERTY_DEVICE_ID          (CANPROP_GET_VENDOR_PROP + PCAN_DEVICE_ID)
 #define PEAKCAN_PROPERTY_API_VERSION        (CANPROP_GET_VENDOR_PROP + PCAN_API_VERSION)
 #define PEAKCAN_PROPERTY_CHANNEL_VERSION    (CANPROP_GET_VENDOR_PROP + PCAN_CHANNEL_VERSION)
 #define PEAKCAN_PROPERTY_HARDWARE_NAME      (CANPROP_GET_VENDOR_PROP + PCAN_HARDWARE_NAME)
-//#define PEAKCAN_PROPERTY_CONTROLLER_NUMBER  (CANPROP_GET_VENDOR_PROP + PCAN_CONTROLLER_NUMBER)
+#define PEAKCAN_PROPERTY_CONTROLLER_NUMBER  (CANPROP_GET_VENDOR_PROP + PCAN_CONTROLLER_NUMBER)
 //#define PEAKCAN_PROPERTY_SERIAL_NUMBER      (CANPROP_GET_VENDOR_PROP + PCAN_SERIAL_NUMBER)
 //#define PEAKCAN_PROPERTY_CLOCK_DOMAINS      (CANPROP_GET_VENDOR_PROP + PCAN_CLOCK_DOMAIND)
 /// \}

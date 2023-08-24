@@ -1,7 +1,7 @@
 #
 #	CAN Tester for PEAK PCAN Interfaces
 #
-#	Copyright (c) 2008-2010,2014-2022  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+#	Copyright (c) 2008-2010,2014-2023  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 #
 #	This program is free software: you can redistribute it and/or modify
 #	it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o $(BINDIR)/libPeakCAN.a
 
 ifeq ($(current_OS),Darwin) # macOS - libPeakCAN.dylib
 
-VERSION = 0.2.4
+VERSION = 0.2.5
 
 TARGET  = can_test
 
