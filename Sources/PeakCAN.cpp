@@ -2,7 +2,7 @@
 //
 //  CAN Interface API, Version 3 (for PEAK PCAN-USB Interfaces)
 //
-//  Copyright (c) 2012-2022 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+//  Copyright (c) 2012-2023 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 //  All rights reserved.
 //
 //  This file is part of PCBUSB-Wrapper.
@@ -53,7 +53,7 @@
 #else
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    2
-#define VERSION_PATCH    99
+#define VERSION_PATCH    5
 #endif
 #define VERSION_BUILD    BUILD_NO
 #define VERSION_STRING   TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) " (" TOSTRING(BUILD_NO) ")"

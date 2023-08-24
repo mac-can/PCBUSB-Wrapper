@@ -1,7 +1,7 @@
 #
 #	CAN Tester for PEAK PCAN Interfaces
 #
-#	Copyright (c) 2008-2010,2014-2022  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+#	Copyright (c) 2008-2010,2014-2023  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 #
 #	This program is free software: you can redistribute it and/or modify
 #	it under the terms of the GNU General Public License as published by
