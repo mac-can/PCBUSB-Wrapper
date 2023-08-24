@@ -1,7 +1,7 @@
 #
 #	CAN Interface API, Version 3 (for PEAK PCAN-USB Interfaces)
 #
-#	Copyright (c) 2012-2022  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+#	Copyright (c) 2012-2023  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 #	All rights reserved.
 #
 #	This file is part of PCBUSB-Wrapper.
@@ -52,6 +52,7 @@ all:
 	$(MAKE) -C Libraries/PeakCAN $@
 	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Utilities/can_moni $@
+	$(MAKE) -C Tests/CANAPI $@
 
 clean:
 	$(MAKE) -C Trial $@
@@ -59,6 +60,7 @@ clean:
 	$(MAKE) -C Libraries/PeakCAN $@
 	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Utilities/can_moni $@
+	$(MAKE) -C Tests/CANAPI $@
 
 pristine:
 	$(MAKE) -C Trial $@
@@ -66,6 +68,7 @@ pristine:
 	$(MAKE) -C Libraries/PeakCAN $@
 	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Utilities/can_moni $@
+	$(MAKE) -C Tests/CANAPI $@
 
 install:
 #	$(MAKE) -C Trial $@
@@ -73,6 +76,7 @@ install:
 	$(MAKE) -C Libraries/PeakCAN $@
 #	$(MAKE) -C Utilities/can_test $@
 #	$(MAKE) -C Utilities/can_moni $@
+#	$(MAKE) -C Tests/CANAPI $@
 
 test:
 	$(MAKE) -C Trial $@
@@ -82,6 +86,10 @@ check:
 
 xctest:
 	$(MAKE) -C Trial $@
+
+smoketest:
+	$(MAKE) -C Tests/CANAPI/macOS clean all
+	./Tests/CANAPI/pcb_testing --gtest_filter="SmokeTest.*"
 
 build_no:
 	@./build_no.sh
