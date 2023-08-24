@@ -56,7 +56,7 @@ MAIN_DIR = ./Sources
 TEST_DIR = ./Testcases
 
 GTEST_INC = $(HOME_DIR)/GoogleTest/include
-GTEST_LIB = $(HOME_DIR)/GoogleTest/build/macOS/lib
+GTEST_LIB = $(HOME_DIR)/GoogleTest/macOS/lib
 
 CANAPI_INC = $(PROJ_DIR)/Includes
 CANAPI_LIB = $(PROJ_DIR)/Binaries

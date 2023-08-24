@@ -24,7 +24,7 @@ Installation and Usage of GoogleTest
 3. Build static libraries as Universal macOS Binary for macOS 11.0 with CMake
    note: GoogleMock (aka gmock) does not need to be created for this project.
 4. Copy all files from '~/Projects/gtest/googletest/build/lib'
-   into '$(PROJROOT)/Tests/CANAPI/GoogleTest/build/macOS/lib'
+   into '$(PROJROOT)/Tests/CANAPI/GoogleTest/macOS/lib'
  
 Important Notes
 ~~~~~~~~~~~~~~~
