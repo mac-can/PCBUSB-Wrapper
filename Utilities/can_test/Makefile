@@ -1,5 +1,5 @@
 #
-#	CAN Tester for PEAK PCAN Interfaces
+#	CAN Tester for Peak-System PCAN USB Interfaces (CAN API V3)
 #
 #	Copyright (c) 2008-2010,2014-2023  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 #
@@ -21,20 +21,20 @@ current_OS := $(patsubst CYGWIN%,Cygwin,$(current_OS))
 current_OS := $(patsubst MINGW%,MinGW,$(current_OS))
 current_OS := $(patsubst MSYS%,MinGW,$(current_OS))
 
-HOME_DIR = ../..
+PROJ_DIR = ../..
+HOME_DIR = .
 MAIN_DIR = ./Sources
 
-SOURCE_DIR = $(HOME_DIR)/Sources
-CANAPI_DIR = $(HOME_DIR)/Sources/CANAPI
-PCBUSB_DIR = $(HOME_DIR)/Sources/PCANBasic
-WRAPPER_DIR = $(HOME_DIR)/Sources/Wrapper
+DRIVER_DIR = $(PROJ_DIR)/Sources
+CANAPI_DIR = $(PROJ_DIR)/Sources/CANAPI
 
-OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o $(BINDIR)/libPeakCAN.a
+OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o \
+	$(BINDIR)/libPeakCAN.a 
 
 
 ifeq ($(current_OS),Darwin) # macOS - libPeakCAN.dylib
 
-VERSION = 0.2.5
+VERSION = 0.2.6
 
 TARGET  = can_test
 
@@ -43,11 +43,10 @@ INSTALL = ~/bin
 DEFINES = -DOPTION_CANAPI_DRIVER=1 \
 	-DOPTION_CANAPI_COMPANIONS=1
 
-HEADERS = -I$(SOURCE_DIR) \
-	-I$(CANAPI_DIR) \
-	-I$(PCBUSB_DIR) \
-	-I$(WRAPPER_DIR) \
-	-I$(MAIN_DIR)
+HEADERS = -I$(MAIN_DIR) \
+	-I$(HOME_DIR) \
+	-I$(DRIVER_DIR) \
+	-I$(CANAPI_DIR)
 
 CFLAGS += -O2 -Wall -Wextra -Wno-parentheses \
 	-fno-strict-aliasing \
@@ -77,13 +76,13 @@ RM = rm -f
 CP = cp -f
 
 OUTDIR = .objects
-BINDIR = $(HOME_DIR)/Binaries
-INCDIR = $(HOME_DIR)/Includes
+BINDIR = $(PROJ_DIR)/Binaries
+INCDIR = $(PROJ_DIR)/Includes
 
-.PHONY: info outdir bindir
+.PHONY: info outdir bindir incdir
 
 
-all: info outdir bindir $(TARGET)
+all: info outdir bindir incdir $(TARGET)
 
 info:
 	@echo $(CXX)" on "$(current_OS)
@@ -95,6 +94,9 @@ outdir:
 
 bindir:
 	@mkdir -p $(BINDIR)
+
+incdir:
+	@mkdir -p $(INCDIR)
 
 clean:
 	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
