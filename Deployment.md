@@ -1,4 +1,4 @@
-### macOS® Wrapper Library for PCAN-USB Interfaces from Peak-System
+### macOS® Wrapper Library for PCAN-USB Interfaces from PEAK-System
 
 _Copyright &copy; 2005-2010, 2012-2023 Uwe Vogt, UV Software, Berlin (info@mac-can.com)_ \
 _All rights reserved._
@@ -31,10 +31,10 @@ _All rights reserved._
   - `$(PROJROOT)/Sources/Wrapper\can_api.cpp`
   - `$(PROJROOT)/Libraries/CANAPI/Makefile`<sup>*</sup>
   - `$(PROJROOT)/Libraries/PeakCAN/Makefile`<sup>*</sup>
-  - `$(PROJROOT)/Utilities/can_moni/Sources/main.cpp`
+  - `$(PROJROOT)/Utilities/can_moni/Driver.h
   - `$(PROJROOT)/Utilities/can_moni/Makefile`
   - `$(PROJROOT)/Utilities/can_moni/README.md`
-  - `$(PROJROOT)/Utilities/can_test/Sources/main.cpp`
+  - `$(PROJROOT)/Utilities/can_test/Driver.h`
   - `$(PROJROOT)/Utilities/can_test/Makefile`
   - `$(PROJROOT)/Utilities/can_test/README.md`
 

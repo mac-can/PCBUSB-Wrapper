@@ -1,5 +1,5 @@
 #
-#	CAN Monitor for Peak-System PCAN USB Interfaces (CAN API V3)
+#	CAN Monitor for PEAK-System PCAN-USB Interfaces (CAN API V3)
 #
 #	Copyright (c) 2007,2012-2023  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 #

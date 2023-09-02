@@ -1,4 +1,4 @@
-__CAN Tester for Peak-System PCAN USB Interfaces, Version 0.2.6__ \
+__CAN Tester for PEAK-System PCAN-USB Interfaces, Version 0.2.6__ \
 Copyright &copy; 2008-2010,2014-2023 by Uwe Vogt, UV Software, Berlin
 
 ```

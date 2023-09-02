@@ -1,5 +1,5 @@
 #
-#	CAN Tester for Peak-System PCAN USB Interfaces (CAN API V3)
+#	CAN Tester for PEAK-System PCAN-USB Interfaces (CAN API V3)
 #
 #	Copyright (c) 2008-2010,2014-2023  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 #

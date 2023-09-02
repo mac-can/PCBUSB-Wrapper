@@ -620,7 +620,7 @@ int COptions::ShowHelp() {
         std::cout << "      This option must be given before option " << OPTION_DUT1 << " and " << OPTION_DUT2 << "." << std::endl;
 #endif
 #if (CAN_FD_SUPPORTED == FEATURE_SUPPORTED)
-        std::cout << "  " << OPTION_MODE << "=(CAN2.0|CANFD[+BSR])" << std::endl;
+        std::cout << "  " << OPTION_MODE << "=(CAN2.0|CANFD[+BRS])" << std::endl;
         std::cout << "      CAN operation mode: CAN 2.0 or CAN FD format." <<  std::endl;
         std::cout << "              CAN2.0    = CAN classic (default)" << std::endl;
         std::cout << "              CANFD     = CAN FD long frames only" << std::endl;
@@ -686,4 +686,4 @@ int COptions::ShowHelp() {
     return m_fShowHelp;
 }
 
-// $Id: Options.cpp 1188 2023-09-01 18:21:43Z haumea $  Copyright (c) UV Software, Berlin //
+// $Id: Options.cpp 1190 2023-09-02 12:41:00Z makemake $  Copyright (c) UV Software, Berlin //

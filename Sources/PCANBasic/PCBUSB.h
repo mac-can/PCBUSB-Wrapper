@@ -387,9 +387,9 @@ extern "C" {
  *
  *  @param[in]   Channel    The handle of a PCAN Channel.
  *  @param[in]   Btr0Btr1   The speed for the communication (BTR0BTR1 code).
- *  @param[in]   HwType     (not used with PCAN USB devices)
- *  @param[in]   IOPort     (not used with PCAN USB devices)
- *  @param[in]   Interrupt  (not used with PCAN USB devices)
+ *  @param[in]   HwType     (not used with PCAN-USB devices)
+ *  @param[in]   IOPort     (not used with PCAN-USB devices)
+ *  @param[in]   Interrupt  (not used with PCAN-USB devices)
  *
  *  @returns     A TPCANStatus error code.
  */

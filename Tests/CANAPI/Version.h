@@ -2,7 +2,7 @@
 //
 //  CAN Interface API, Version 3 (Testing)
 //
-//  Copyright (c) 2004-2023  Uwe Vogt, UV Software, Berlin (info@uv-software.com)
+//  Copyright (c) 2004-2023 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 //  All rights reserved.
 //
 //  This file is part of CAN API V3.
@@ -47,7 +47,7 @@
 //
 #ifndef VERSION_H_INCLUDED
 #define VERSION_H_INCLUDED
-#define REVISION_NO  "$Rev: 1189 $"
+#define REVISION_NO  "$Rev: 1190 $"
 #endif // VERSION_H_INCLUDED
 
-// $Id: Version.h 1189 2023-09-01 18:36:32Z haumea $  Copyright (c) UV Software, Berlin //
+// $Id: Version.h 1190 2023-09-02 12:41:00Z makemake $  Copyright (c) UV Software, Berlin //

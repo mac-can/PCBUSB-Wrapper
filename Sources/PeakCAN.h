@@ -1,6 +1,6 @@
 //  SPDX-License-Identifier: BSD-2-Clause OR GPL-3.0-or-later
 //
-//  CAN Interface API, Version 3 (for PEAK PCAN-USB Interfaces)
+//  CAN Interface API, Version 3 (for PEAK-System PCAN-USB Interfaces)
 //
 //  Copyright (c) 2012-2023 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 //  All rights reserved.
@@ -65,7 +65,7 @@
 /// \}
 
 /// \name   PeakCAN API
-/// \brief  CAN API V3 driver for Peak-System PCAN-USB interfaces
+/// \brief  CAN API V3 driver for PEAK-System PCAN-USB interfaces
 /// \note   See CCanApi for a description of the overridden methods
 /// \{
 class CANCPP CPeakCAN : public CCanApi {
