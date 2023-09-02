@@ -47,7 +47,6 @@
 //
 #include <cstdio>
 #include <iostream>
-#include "gtest/gtest.h"
 #include "pch.h"
 
 GTEST_API_ int main(int argc, char **argv) {
@@ -64,7 +63,7 @@ GTEST_API_ int main(int argc, char **argv) {
     std::cout << CCanDriver::GetVersion() << std::endl;
     std::cout << "Copyright (c) 2004-2012 by UV Software, Friedrichshafen" << std::endl;
     std::cout << "Copyright (c) 2013-2023 by UV Software, Berlin" << std::endl;
-    std::cout << "Build: " << __DATE__ << " " << __TIME__ << std::endl;
+    std::cout << "Build: " << __DATE__ << " " << __TIME__ << " (" << REVISION_NO << ")" << std::endl;
     // --- initialize GoogleTest framework --
     printf("Running main() from %s\n", __FILE__);
     testing::InitGoogleTest(&argc, argv);
@@ -81,4 +80,4 @@ GTEST_API_ int main(int argc, char **argv) {
     return RUN_ALL_TESTS();
 }
 
-// $Id: main.cpp 1172 2023-08-23 16:05:24Z haumea $  Copyright (c) UV Software, Berlin //
+// $Id: main.cpp 1185 2023-08-29 10:42:03Z haumea $  Copyright (c) UV Software, Berlin //
