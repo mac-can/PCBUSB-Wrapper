@@ -13,7 +13,7 @@ CXXFLAGS =
 LDFLAGS =
 
 CXX = clang++
-LD = clangg++
+LD = clang++
 RM = rm -f
 
 all: $(TARGET1) $(TARGET2)
