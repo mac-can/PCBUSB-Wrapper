@@ -59,7 +59,7 @@ WRAPPER_DIR = $(HOME_DIR)/Sources/Wrapper
 OBJECTS = $(OUTDIR)/PeakCAN.o $(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o
 
 
-ifeq ($(current_OS),Darwin) # macOS - libPeakCAN.dylib
+ifeq ($(current_OS),Darwin)  # macOS - libPeakCAN.dylib
 
 LIBRARY = libPeakCAN
 

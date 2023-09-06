@@ -33,7 +33,7 @@ OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o \
 	$(BINDIR)/libPeakCAN.a 
 
 
-ifeq ($(current_OS),Darwin) # macOS - libPeakCAN.dylib
+ifeq ($(current_OS),Darwin)  # macOS - libPeakCAN.dylib
 
 VERSION = 0.2.6
 

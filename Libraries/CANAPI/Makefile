@@ -59,7 +59,7 @@ WRAPPER_DIR = $(HOME_DIR)/Sources/Wrapper
 OBJECTS = $(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o
 
 
-ifeq ($(current_OS),Darwin) # macOS - libUVCANPCB.dylib
+ifeq ($(current_OS),Darwin)  # macOS - libUVCANPCB.dylib
 
 LIBRARY = libUVCANPCB
 
