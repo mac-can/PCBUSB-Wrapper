@@ -1,6 +1,6 @@
 //  SPDX-License-Identifier: BSD-2-Clause OR GPL-3.0-or-later
 //
-//  CAN Interface API, Version 3 (for PEAK PCAN-USB Interfaces)
+//  CAN Interface API, Version 3 (for PEAK-System PCAN-USB Interfaces)
 //
 //  Copyright (c) 2012-2023 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 //  All rights reserved.
@@ -49,11 +49,11 @@
 #ifdef _MSC_VER
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    4
-#define VERSION_PATCH    5
+#define VERSION_PATCH    6
 #else
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    2
-#define VERSION_PATCH    5
+#define VERSION_PATCH    6
 #endif
 #define VERSION_BUILD    BUILD_NO
 #define VERSION_STRING   TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) " (" TOSTRING(BUILD_NO) ")"
@@ -68,7 +68,7 @@
 #else
 #error Unsupported architecture
 #endif
-static const char version[] = "CAN API V3 for Peak-System PCAN-USB Interfaces, Version " VERSION_STRING;
+static const char version[] = "CAN API V3 for PEAK-System PCAN-USB Interfaces, Version " VERSION_STRING;
 
 #ifdef _MSC_VER
 //no Microsoft extensions please!

@@ -1,5 +1,5 @@
 #
-#	CAN Interface API, Version 3 (for PEAK PCAN-USB Interfaces)
+#	CAN Interface API, Version 3 (for PEAK-System PCAN-USB Interfaces)
 #
 #	Copyright (c) 2012-2023  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 #	All rights reserved.
@@ -59,13 +59,13 @@ WRAPPER_DIR = $(HOME_DIR)/Sources/Wrapper
 OBJECTS = $(OUTDIR)/PeakCAN.o $(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o
 
 
-ifeq ($(current_OS),Darwin) # macOS - libPeakCAN.dylib
+ifeq ($(current_OS),Darwin)  # macOS - libPeakCAN.dylib
 
 LIBRARY = libPeakCAN
 
 MAJOR = 0
 MINOR = 2
-PATCH = 5
+PATCH = 6
 
 VERSION = $(MAJOR).$(MINOR).$(PATCH)
 TARGET  = $(LIBRARY).$(VERSION).dylib

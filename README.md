@@ -1,6 +1,6 @@
-### macOS&reg; Wrapper Library for PCAN-USB Interfaces from Peak-System
+### macOS&reg; Wrapper Library for PCAN-USB Interfaces from PEAK-System
 
-_Copyright&copy; 2005-2010, 2012-2023 Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
+_Copyright&copy; 2005-2010, 2012-2023  Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
 
 # CAN API V3 for PCAN-USB Interfaces
 
@@ -19,7 +19,7 @@ Note: _The PCBUSB library is not included in this repo, and must be installed se
 
 ```C++
 /// \name   PeakCAN API
-/// \brief  CAN API V3 wrapper for Peak-System PCAN-USB interfaces
+/// \brief  CAN API V3 wrapper for PEAK-System PCAN-USB interfaces
 /// \note   See CCanApi for a description of the overridden methods
 /// \{
 class CPeakCAN : public CCanApi {
@@ -122,7 +122,7 @@ Type `can_test --help` to display all program options.
 
 #### macOS Ventura
 
-- macOS Ventura (13.4.1) on a Mac mini (M1, 2020)
+- macOS Ventura (13.5.1) on a Mac mini (M1, 2020)
 - Apple clang version 14.0.3 (clang-1403.0.22.14.1)
 - Xcode Version 14.3.1 (14E300c)
 

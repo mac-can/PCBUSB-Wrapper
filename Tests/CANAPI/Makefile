@@ -1,4 +1,3 @@
-#  SPDX-License-Identifier: BSD-2-Clause OR GPL-3.0-or-later
 #
 #  CAN Interface API, Version 3 (Testing)
 #
