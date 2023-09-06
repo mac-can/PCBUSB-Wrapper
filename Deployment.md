@@ -31,7 +31,7 @@ _All rights reserved._
   - `$(PROJROOT)/Sources/Wrapper\can_api.cpp`
   - `$(PROJROOT)/Libraries/CANAPI/Makefile`<sup>*</sup>
   - `$(PROJROOT)/Libraries/PeakCAN/Makefile`<sup>*</sup>
-  - `$(PROJROOT)/Utilities/can_moni/Driver.h
+  - `$(PROJROOT)/Utilities/can_moni/Driver.h`
   - `$(PROJROOT)/Utilities/can_moni/Makefile`
   - `$(PROJROOT)/Utilities/can_moni/README.md`
   - `$(PROJROOT)/Utilities/can_test/Driver.h`
