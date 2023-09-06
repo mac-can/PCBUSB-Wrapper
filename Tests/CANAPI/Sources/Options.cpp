@@ -69,11 +69,13 @@
 #define OPTION_3RD_DEVICE        "--3rd_device"
 #define OPTION_RTR_DEVICE        "--rtr_device"
 #define OPTION_RUN_ALL           "--run_all"
+#define OPTION_RUN_QUICK         "--run_quick"
 #define OPTION_RUN_CALLSEQUENCES "--run_callsequences"
 
 static const bool c_fCanClassic = false;
 static const bool c_f3rdDevice = false;
 static const bool c_fRtrDevice = false;
+static const bool c_fRunQuick = false;
 static const bool c_fCallSequences = false;
 static const bool c_fBitrateConverter = false;
 
@@ -106,6 +108,7 @@ COptions::COptions() {
     m_fCanClassic = c_fCanClassic;
     m_f3rdDevice = c_f3rdDevice;
     m_fRtrDevice = c_fRtrDevice;
+    m_fRunQuick = c_fRunQuick;
     m_fShowHelp = false;
 }
 
@@ -148,6 +151,7 @@ int COptions::ScanOptions(int argc, char* argv[], char* err, size_t len) {
     int can_device = 0;
     int rtr_device = 0;
     int run_callsequences = 0;
+    int run_quick = 0;
     char* opt = NULL;
     //char *arg = NULL;
 #if (CAN_FD_SUPPORTED == FEATURE_SUPPORTED)
@@ -597,6 +601,30 @@ int COptions::ScanOptions(int argc, char* argv[], char* err, size_t len) {
             else
                 m_fCallSequences = true;
         }
+        // option: --run_quick[=(YES|NO)]
+        else if (strncmp(argv[i], OPTION_RUN_QUICK, strlen(OPTION_RUN_QUICK)) == 0)
+        {
+            if (run_quick++) {
+                if (err)
+                    snprintf(err, len, "duplicated option %s", OPTION_RUN_QUICK);
+                return false;
+            }
+            if (((opt = strchr(argv[i], '=')) != NULL) &&
+                (argv[i][strlen(OPTION_RUN_QUICK)] == '=')) {
+                if (strlen(++opt) == 0) {
+                    if (err)
+                        snprintf(err, len, "missing argument for option %s", OPTION_RUN_QUICK);
+                    return false;
+                }
+                if ((strcasecmp(opt, "YES") == 0) || (strcasecmp(opt, "ON") == 0) ||
+                    (strcasecmp(opt, "Y") == 0) || (strcasecmp(opt, "1") == 0))
+                    m_fRunQuick = true;
+                else
+                    m_fRunQuick = false;
+            }
+            else
+                m_fRunQuick = true;
+        }
         // unknown option (note: GoogleTest does not eat option '--help')
         else if (strcmp(argv[i], "--help") != 0) {
             if (err)
@@ -677,6 +705,8 @@ int COptions::ShowHelp() {
         std::cout << "      Enables or disables the execution of test cases from suite 'CallSequences' (default=" << (c_fCallSequences ? "yes" : "no") << ")." << std::endl;
         std::cout << "  " << OPTION_RUN_ALL << "[=(NO|YES)]" << std::endl;
         std::cout << "      Enables or disables the execution all optional tests (default=no)." << std::endl;
+        std::cout << "  " << OPTION_RUN_QUICK << "[=(NO|YES)]" << std::endl;
+        std::cout << "      Disables or enables the execution of long lasting test cases (default=" << (c_fRunQuick ? "yes" : "no") << ")." << std::endl;
         std::cout << std::endl;
         std::cout << "Hazard Note:" << std::endl;
         std::cout << "  If you connect your CAN device to a real CAN network when using this program," << std::endl;
@@ -686,4 +716,4 @@ int COptions::ShowHelp() {
     return m_fShowHelp;
 }
 
-// $Id: Options.cpp 1190 2023-09-02 12:41:00Z makemake $  Copyright (c) UV Software, Berlin //
+// $Id: Options.cpp 1193 2023-09-06 10:21:35Z haumea $  Copyright (c) UV Software, Berlin //
