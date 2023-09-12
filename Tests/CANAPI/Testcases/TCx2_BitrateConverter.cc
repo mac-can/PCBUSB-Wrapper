@@ -47,6 +47,7 @@
 //
 #include "pch.h"
 #include <math.h>
+#include <limits.h>
 
 #ifndef OPTION_CAN_2_0_ONLY
 #define OPTION_CAN_2_0_ONLY  OPTION_DISABLED
