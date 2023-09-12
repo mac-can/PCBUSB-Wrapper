@@ -56,7 +56,7 @@
 #else
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    2
-#define VERSION_PATCH    6
+#define VERSION_PATCH    99
 #endif
 #define VERSION_BUILD    BUILD_NO
 #define VERSION_STRING   TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) " (" TOSTRING(BUILD_NO) ")"
@@ -96,7 +96,11 @@ static const char version[] = "CAN API V3 for PEAK-System PCAN-USB Interfaces, V
 #else
 #include <unistd.h>
 #include <sys/select.h>
+#if defined(__APPLE__)
 #include "PCBUSB.h"
+#else
+#include "PCANBasic.h"
+#endif
 #endif
 
 /*  -----------  options  ------------------------------------------------

@@ -20,7 +20,7 @@ OBJECTS = $(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o \
 	$(OUTDIR)/PeakCAN.o $(OUTDIR)/main.o
 
 
-ifeq ($(current_OS),Darwin) # macOS - libPeakCAN.dylib
+ifeq ($(current_OS),Darwin)  # macOS - libPeakCAN.dylib
 
 VERSION = 0
 TARGET	= pcb_test
@@ -34,8 +34,8 @@ DEFINES = -DOPTION_CAN_2_0_ONLY=0 \
 	-DOPTION_CANBTR_PEAK_FREQUENCIES=1
 
 HEADERS = -I$(SOURCE_DIR) \
+	-I$(PCBUSB_DIR)/macOS \
 	-I$(CANAPI_DIR) \
-	-I$(PCBUSB_DIR) \
 	-I$(WRAPPER_DIR) \
 	-I$(MAIN_DIR)
 
@@ -129,5 +129,7 @@ $(OUTDIR)/main.o: $(MAIN_DIR)/main.cpp
 
 $(TARGET): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
+ifeq ($(current_OS),Darwin)
 	@lipo -archs $@
+endif
 	@echo "\033[1mTarget '"$@"' successfully build\033[0m"
