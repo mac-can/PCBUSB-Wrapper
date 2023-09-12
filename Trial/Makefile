@@ -75,6 +75,44 @@ CC = clang
 LD = clang++
 endif
 
+ifeq ($(current_OS),Linux)  # Linux - libpeakcan.so
+
+VERSION = 0
+
+TARGET	= pcb_test
+
+INSTALL = ~/bin
+
+DEFINES = -DOPTION_CAN_2_0_ONLY=0 \
+	-DOPTION_CANAPI_DRIVER=1 \
+	-DOPTION_CANAPI_RETVALS=1 \
+	-DOPTION_CANAPI_COMPANIONS=1 \
+	-DOPTION_CANBTR_PEAK_FREQUENCIES=1
+
+HEADERS = -I$(SOURCE_DIR) \
+	-I$(PCBUSB_DIR)/Linux \
+	-I$(CANAPI_DIR) \
+	-I$(WRAPPER_DIR) \
+	-I$(MAIN_DIR)
+
+CFLAGS += -O0 -g -Wall -Wextra -Wno-parentheses \
+	-fmessage-length=0 -fno-strict-aliasing \
+	$(DEFINES) \
+	$(HEADERS)
+
+CXXFLAGS += -O0 -g -Wall -Wextra -pthread \
+	$(DEFINES) \
+	$(HEADERS)
+
+LIBRARIES =
+
+LDFLAGS  += -lpthread
+
+CXX = g++
+CC = gcc
+LD = g++
+endif
+
 RM = rm -f
 CP = cp -f
 
