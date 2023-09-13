@@ -84,8 +84,8 @@ DEFINES = -DOPTION_PCAN_DYLIB=1 \
 	-DOPTION_CANAPI_COMPANIONS=1
 
 HEADERS = -I$(SOURCE_DIR) \
+	-I$(PCBUSB_DIR)/macOS \
 	-I$(CANAPI_DIR) \
-	-I$(PCBUSB_DIR) \
 	-I$(WRAPPER_DIR)
 
 CFLAGS += -O2 -Wall -Wextra -Wno-parentheses \
@@ -117,6 +117,53 @@ CXX = clang++
 CC = clang
 LD = clang++
 LT = libtool
+endif
+
+ifeq ($(current_OS),Linux)  # Linux - libpeakcan.so
+
+LIBRARY = libpeakcan
+
+MAJOR = 0
+MINOR = 2
+PATCH = 6
+
+VERSION = $(MAJOR).$(MINOR).$(PATCH)
+SONAME  = $(LIBRARY).so
+TARGET  = $(SONAME).$(VERSION)
+STATIC  = $(LIBRARY).a
+
+INSTALL = /usr/local/lib
+
+INCLUDE = /usr/local/include
+
+DEFINES = -DOPTION_PCAN_DYLIB=1 \
+	-DOPTION_CANAPI_DRIVER=1 \
+	-DOPTION_CANAPI_COMPANIONS=1
+
+HEADERS = -I$(SOURCE_DIR) \
+	-I$(PCBUSB_DIR)/Linux \
+	-I$(CANAPI_DIR) \
+	-I$(WRAPPER_DIR)
+
+CFLAGS += -fPIC -O2 -Wall -Wno-parentheses \
+	-fno-strict-aliasing \
+	$(DEFINES) \
+	$(HEADERS)
+
+LIBRARIES = -lpthread
+
+CXXFLAGS += -fPIC -g -Wall -Wextra -pthread \
+	$(DEFINES) \
+	$(HEADERS)
+
+LDFLAGS  += --shared -Wl,-soname,$(SONAME) -lc
+
+ARFLAGS = r
+
+CXX = g++
+CC = gcc
+LD = g++
+AR = ar
 endif
 
 RM = rm -f
@@ -157,8 +204,8 @@ clean:
 	$(RM) $(TARGET) $(STATIC) $(OUTDIR)/*.o $(OUTDIR)/*.d
 
 pristine:
-	$(RM) *.dylib *.a $(OUTDIR)/*.o $(OUTDIR)/*.d
-	$(RM) $(BINDIR)/*.dylib $(BINDIR)/*.a
+	$(RM) $(TARGET) $(STATIC) $(OUTDIR)/*.o $(OUTDIR)/*.d
+	$(RM) $(BINDIR)/$(TARGET) $(BINDIR)/$(STATIC)
 	$(RM) $(INCDIR)/*.h
 
 install:
@@ -168,8 +215,9 @@ ifeq ($(current_OS),Darwin)
 	$(RM) $(INSTALL)/$(LIBRARY).dylib ; $(LN) $(INSTALL)/$(TARGET) $(INSTALL)/$(LIBRARY).dylib
 endif
 ifeq ($(current_OS),Linux)
-	$(RM) $(INSTALL)/$(SONAME) ; $(LN) $(INSTALL)/$(TARGET) $(INSTALL)/$(SONAME)
-	$(RM) $(INSTALL)/$(LIBRARY).so ; $(LN) $(INSTALL)/$(SONAME) $(INSTALL)/$(LIBRARY).so
+	$(RM) $(INSTALL)/$(SONAME).$(MAJOR).$(MINOR) ; $(LN) $(INSTALL)/$(TARGET) $(INSTALL)/$(SONAME).$(MAJOR).$(MINOR)
+	$(RM) $(INSTALL)/$(SONAME).$(MAJOR) ; $(LN) $(INSTALL)/$(SONAME).$(MAJOR).$(MINOR) $(INSTALL)/$(SONAME).$(MAJOR)
+	$(RM) $(INSTALL)/$(SONAME) ; $(LN) $(INSTALL)/$(SONAME).$(MAJOR) $(INSTALL)/$(SONAME)
 endif
 
 
@@ -184,13 +232,22 @@ $(OUTDIR)/PeakCAN.o: $(SOURCE_DIR)/PeakCAN.cpp
 
 
 $(STATIC): $(OBJECTS)
-	$(LT) $(LTFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
-	$(CP) $@ $(BINDIR)
+ifeq ($(current_OS),Darwin)
+	$(LT) $(LTFLAGS) -o $@ $(OBJECTS)
+	$(CP) $(STATIC) $(BINDIR)
 	@lipo -archs $@
 	@echo "\033[1mTarget '"$@"' successfully build\033[0m"
+endif
+ifeq ($(current_OS),Linux)
+	$(AR) $(ARFLAGS) $@ $(OBJECTS)
+	$(CP) $(STATIC) $(BINDIR)
+	@echo "\033[1mTarget '"$@"' successfully build\033[0m"
+endif
 
 $(TARGET): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
 	$(CP) $@ $(BINDIR)
+ifeq ($(current_OS),Darwin)
 	@lipo -archs $@
+endif
 	@echo "\033[1mTarget '"$@"' successfully build\033[0m"

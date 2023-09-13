@@ -171,6 +171,11 @@ extern "C" {
  #define PCAN_LIB_WRAPPER       "libUVCANPCB.dylib"
  #define PCAN_LIB_MIN_MAJOR      0U
  #define PCAN_LIB_MIN_MINOR      9U
+#elif defined(__linux__)
+ #define PCAN_LIB_BASIC         "libpcanbasic.so"
+ #define PCAN_LIB_WRAPPER       "libuvcanpcb.so"
+ #define PCAN_LIB_MIN_MAJOR      8U
+ #define PCAN_LIB_MIN_MINOR      0U
 #else
 #error Platform not supported
 #endif

@@ -28,8 +28,7 @@ MAIN_DIR = ./Sources
 DRIVER_DIR = $(PROJ_DIR)/Sources
 CANAPI_DIR = $(PROJ_DIR)/Sources/CANAPI
 
-OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o \
-	$(BINDIR)/libPeakCAN.a 
+OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o 
 
 
 ifeq ($(current_OS),Darwin)  # macOS - libPeakCAN.dylib
@@ -57,6 +56,8 @@ CXXFLAGS += -O2 -g -Wall -Wextra -pthread \
 	$(DEFINES) \
 	$(HEADERS)
 
+OBJECTS  += $(BINDIR)/libPeakCAN.a
+
 LIBRARIES =
 
 LDFLAGS  += -lpthread
@@ -70,6 +71,42 @@ endif
 CXX = clang++
 CC = clang
 LD = clang++
+endif
+
+ifeq ($(current_OS),Linux)  # linux - libuvcanpcb.so
+
+VERSION = 0.2.6
+
+TARGET  = can_test
+
+INSTALL = ~/bin
+
+DEFINES = -DOPTION_CANAPI_DRIVER=1 \
+	-DOPTION_CANAPI_COMPANIONS=1
+
+HEADERS = -I$(MAIN_DIR) \
+	-I$(HOME_DIR) \
+	-I$(DRIVER_DIR) \
+	-I$(CANAPI_DIR)
+
+CFLAGS += -O2 -Wall -Wextra -Wno-parentheses \
+	-fno-strict-aliasing \
+	$(DEFINES) \
+	$(HEADERS)
+
+CXXFLAGS += -O2 -g -Wall -Wextra -pthread \
+	$(DEFINES) \
+	$(HEADERS)
+
+OBJECTS  += $(BINDIR)/libpeakcan.a
+
+LIBRARIES =
+
+LDFLAGS  += -lpthread
+
+CXX = g++
+CC = gcc
+LD = g++
 endif
 
 RM = rm -f
@@ -120,5 +157,7 @@ $(OUTDIR)/Timer.o: $(MAIN_DIR)/Timer.cpp
 $(TARGET): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
 	$(CP) $(TARGET) $(BINDIR)
+ifeq ($(current_OS),Darwin)
 	@lipo -archs $@
+endif
 	@echo "\033[1mTarget '"$@"' successfully build\033[0m"

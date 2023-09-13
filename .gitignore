@@ -4,9 +4,9 @@ Sources/build_no.h
 Trial/.objects
 Trial/pcb_test
 Libraries/CANAPI/.objects
-Libraries/CANAPI/libUVCANPCB.*
+Libraries/CANAPI/lib*.*
 Libraries/PeakCAN/.objects
-Libraries/PeakCAN/libPeakCAN.*
+Libraries/PeakCAN/lib*.*
 Utilities/can_moni/.objects
 Utilities/can_moni/can_moni
 Utilities/can_test/.objects

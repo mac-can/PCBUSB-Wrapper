@@ -56,7 +56,7 @@
 #else
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    2
-#define VERSION_PATCH    6
+#define VERSION_PATCH    99
 #endif
 #define VERSION_BUILD    BUILD_NO
 #define VERSION_STRING   TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) " (" TOSTRING(BUILD_NO) ")"
@@ -96,7 +96,11 @@ static const char version[] = "CAN API V3 for PEAK-System PCAN-USB Interfaces, V
 #else
 #include <unistd.h>
 #include <sys/select.h>
+#if defined(__APPLE__)
 #include "PCBUSB.h"
+#else
+#include "PCANBasic.h"
+#endif
 #endif
 
 /*  -----------  options  ------------------------------------------------
@@ -767,13 +771,20 @@ repeat:
         return CANERR_RX_EMPTY;         //   receiver empty!
     }
 #endif
-    if ((rc & ~(PCAN_ERROR_ANYBUSERR | PCAN_ERROR_QOVERRUN))) {
-        can[handle].status.receiver_empty = 1;
-        return pcan_error(rc);          // something went wrong
+    if ((rc & PCAN_ERROR_OVERRUN)) {
+        can[handle].status.message_lost = 1;
+        /* note: a message got lost, but maybe we have a message */
     }
-    else if ((rc & ~PCAN_ERROR_ANYBUSERR) == PCAN_ERROR_QOVERRUN) {
+    if ((rc & PCAN_ERROR_QOVERRUN)) {
         can[handle].status.queue_overrun = 1;
-        /* note: queue has overrun, but we have a message */
+        /* note: queue has overrun, but maybe we have a message */
+    }
+    if ((rc & PCAN_ERROR_QRCVEMPTY)) {  // receice queue empty?
+        can[handle].status.receiver_empty = 1;
+        if ((rc & 0xFF00U))
+            return pcan_error(rc);      //   something went wrong
+        else
+            return CANERR_RX_EMPTY;     //   receiver empty!
     }
     if (!can[handle].mode.fdoe) {       // CAN 2.0 message:
         if ((can_msg.MSGTYPE & PCAN_MESSAGE_EXTENDED) && can[handle].mode.nxtd)
@@ -1041,7 +1052,7 @@ EXPORT
 char *can_hardware(int handle)
 {
     static char hardware[256] = "";     // hardware version
-    char  str[256] = "", *ptr;          // info string
+    char str[MAX_LENGTH_HARDWARE_NAME] = "", *ptr = NULL;
     DWORD dev = 0x0000UL;               // device number
 
     if (!init)                          // must be initialized
@@ -1051,19 +1062,21 @@ char *can_hardware(int handle)
     if (can[handle].board == PCAN_NONEBUS) // must be an opened handle
         return NULL;
 
-    if (CAN_GetValue(can[handle].board, PCAN_HARDWARE_NAME, (void*)str, 256) != PCAN_ERROR_OK)
+    if (CAN_GetValue(can[handle].board, PCAN_HARDWARE_NAME, (void*)str, MAX_LENGTH_HARDWARE_NAME) != PCAN_ERROR_OK)
         return NULL;
     if ((ptr = strchr(str, '\n')) != NULL)
        *ptr = '\0';
     if ((((can[handle].board & 0x00F0) >> 4) == PCAN_USB) ||
        (((can[handle].board & 0x0F00) >> 8) == PCAN_USB))
     {
-        if (CAN_GetValue(can[handle].board, PCAN_DEVICE_NUMBER, (void*)&dev, 4) != PCAN_ERROR_OK)
+        if (CAN_GetValue(can[handle].board, PCAN_DEVICE_NUMBER, (void*)&dev, sizeof(DWORD)) != PCAN_ERROR_OK)
             return NULL;
         snprintf(hardware, 256, "%s, Device-Id. %02Xh", str, dev);
     }
-    else
-        strcpy(hardware, str);
+    else {
+        strncpy(hardware, str, 256);
+    }
+    hardware[255] = '\0';
 
     return (char*)hardware;             // hardware version
 }
@@ -1072,8 +1085,8 @@ EXPORT
 char *can_firmware(int handle)
 {
     static char firmware[256] = "";     // firmware version
-    char  str[256] = "", *ptr;          // info string
-    char  ver[256] = "";                // version
+    char str[MAX_LENGTH_HARDWARE_NAME] = "", *ptr = NULL;
+    char ver[MAX_LENGTH_VERSION_STRING] = "";
 
     if (!init)                          // must be initialized
         return NULL;
@@ -1082,23 +1095,26 @@ char *can_firmware(int handle)
     if (can[handle].board == PCAN_NONEBUS) // must be an opened handle
         return NULL;
 
-#if (0)
+#ifndef PCAN_EXT_HARDWARE_VERSION
     // TODO: activate this code snippet once parameter PCAN_FIRMWARE_VERSION is realized
     //       if so, don't forget to update the compatibility check!
-    if (CAN_GetValue(can[handle].board, PCAN_HARDWARE_NAME, (void*)str, 256) != PCAN_ERROR_OK)
+    if (CAN_GetValue(can[handle].board, PCAN_HARDWARE_NAME, (void*)str, MAX_LENGTH_HARDWARE_NAME) != PCAN_ERROR_OK)
         return NULL;
     if ((ptr = strchr(str, '\n')) != NULL)
         *ptr = '\0';
-    if (CAN_GetValue(can[handle].board, PCAN_FIRMWARE_VERSION, (void*)ver, 256) != PCAN_ERROR_OK)
+    if (CAN_GetValue(can[handle].board, PCAN_FIRMWARE_VERSION, (void*)ver, MAX_LENGTH_VERSION_STRING) != PCAN_ERROR_OK)
         return NULL;
-    snprintf(firmware, 256, "%s, Firmware %s", str, ver);
-#else
-    if(CAN_GetValue(can[handle].board, PCAN_EXT_HARDWARE_VERSION, (void*)str, 256) != PCAN_ERROR_OK)
-        return NULL;
-    (void)ver;
-    (void)ptr;
     strncpy(firmware, str, 256);
+    strncat(firmware, ", Firmware ", 255);
+    strncat(firmware, ver, 255);
+#else
+    if(CAN_GetValue(can[handle].board, PCAN_EXT_HARDWARE_VERSION, (void*)ver, 256) != PCAN_ERROR_OK)
+        return NULL;
+    (void)str;
+    (void)ptr;
+    strncpy(firmware, ver, 256);
 #endif
+    firmware[255] = '\0';
 
     return (char*)firmware;             // firmware version
 }
@@ -1141,7 +1157,8 @@ static int pcan_error(TPCANStatus status)
 static int pcan_compatibility(void) {
     TPCANStatus sts;                    // channel status
     unsigned int major = 0, minor = 0;  // channel version
-    char version[256] = "PCBUSB 0.0.0.0\n...";
+    char version[MAX_LENGTH_VERSION_STRING] = "";
+    char channel[MAX_LENGTH_VERSION_STRING] = "";
 
     /*  note: PCAN_CHANNEL_VERSION is a pre-initialization parameter
      *        and can be read from any valid channel handle
@@ -1151,10 +1168,14 @@ static int pcan_compatibility(void) {
     if ((sts = CAN_GetValue(PCAN_USBBUS1, PCAN_CHANNEL_VERSION, (void*)version, 256)) != PCAN_ERROR_OK)
         return pcan_error(sts);
     /* (§2) extract major and minor revision */
-    if (sscanf(version, "PCBUSB %u.%u", &major, &minor) != 2)
+    if (sscanf(version, "%s %u.%u", channel, &major, &minor) != 3)
         return CANERR_FATAL;
     /* (§3) check for minimal required version */
+#if (PCAN_LIB_MIN_MINOR != 0)
     if ((major != PCAN_LIB_MIN_MAJOR) || (minor < PCAN_LIB_MIN_MINOR))
+#else
+    if (major != PCAN_LIB_MIN_MAJOR)
+#endif
         return CANERR_LIBRARY;
 
     return CANERR_NOERROR;
