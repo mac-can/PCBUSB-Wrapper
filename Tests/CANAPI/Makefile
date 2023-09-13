@@ -93,7 +93,7 @@ CFLAGS += -O2 -Wall -Wno-parentheses \
 	$(DEFINES) \
 	$(HEADERS)
 
-CXXFLAGS += -std=c++11 -O2 -g -Wall -Wextra -pthread \
+CXXFLAGS += -std=c++14 -O2 -g -Wall -Wextra -pthread \
 	$(DEFINES) \
 	$(HEADERS)
 
