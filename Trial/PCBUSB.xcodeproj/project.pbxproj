@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 53;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -80,7 +80,6 @@
 		0FC6171725CC66F30010B15D /* PeakCAN.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PeakCAN.cpp; path = ../Sources/PeakCAN.cpp; sourceTree = "<group>"; };
 		0FC6171825CC66F30010B15D /* PeakCAN_Defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PeakCAN_Defines.h; path = ../Sources/PeakCAN_Defines.h; sourceTree = "<group>"; };
 		0FC6171B25CC67360010B15D /* can_defs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = can_defs.h; path = ../Sources/Wrapper/can_defs.h; sourceTree = "<group>"; };
-		0FC6171C25CC67360010B15D /* PCBUSB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PCBUSB.h; path = ../Sources/PCANBasic/PCBUSB.h; sourceTree = "<group>"; };
 		0FC6171D25CC67360010B15D /* can_api.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = can_api.c; path = ../Sources/Wrapper/can_api.c; sourceTree = "<group>"; };
 		0FE14B1725AEEA4900E87475 /* PCBUSB */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PCBUSB; sourceTree = BUILT_PRODUCTS_DIR; };
 		44CB06332A6DCCC0000D9246 /* PeakCAN_Defaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PeakCAN_Defaults.h; path = ../Sources/PeakCAN_Defaults.h; sourceTree = "<group>"; };
@@ -90,6 +89,7 @@
 		44F4A11B2A97A29A00AC2CF4 /* Bitrates.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Bitrates.cpp; path = ../Tests/UnitTests/Bitrates.cpp; sourceTree = "<group>"; };
 		44F4A11C2A97A29A00AC2CF4 /* Bitrates.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Bitrates.h; path = ../Tests/UnitTests/Bitrates.h; sourceTree = "<group>"; };
 		44FAED34279200C000B44E88 /* Driver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Driver.h; path = ../Tests/UnitTests/Driver.h; sourceTree = "<group>"; };
+		44FEACB52AB1A08B00544108 /* PCBUSB.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PCBUSB.h; path = ../Sources/PCANBasic/macOS/PCBUSB.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -144,7 +144,7 @@
 		0FB7FE9F25AEEB9900A2B7B1 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				0FC6171C25CC67360010B15D /* PCBUSB.h */,
+				44FEACB52AB1A08B00544108 /* PCBUSB.h */,
 				0FC6171B25CC67360010B15D /* can_defs.h */,
 				0FC6171D25CC67360010B15D /* can_api.c */,
 				0FB7FEAF25AEED5500A2B7B1 /* can_api.h */,
@@ -225,7 +225,8 @@
 		0FE14B0F25AEEA4900E87475 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1240;
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					0F8328BF278209CB00BE8BBA = {
 						CreatedOnToolsVersion = 13.2.1;
@@ -314,6 +315,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"OPTION_XCODE_TESTING=1",
@@ -335,6 +337,7 @@
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
 				MARKETING_VERSION = 1.0;
@@ -378,6 +381,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -407,8 +411,8 @@
 					./Sources,
 					../Sources,
 					../Sources/CANAPI,
-					../Sources/PCANBasic,
 					../Sources/Wrapper,
+					../Sources/PCANBasic/macOS,
 				);
 			};
 			name = Debug;
@@ -447,6 +451,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -471,8 +476,8 @@
 					./Sources,
 					../Sources,
 					../Sources/CANAPI,
-					../Sources/PCANBasic,
 					../Sources/Wrapper,
+					../Sources/PCANBasic/macOS,
 				);
 			};
 			name = Release;
@@ -482,6 +487,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -491,6 +497,7 @@
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
