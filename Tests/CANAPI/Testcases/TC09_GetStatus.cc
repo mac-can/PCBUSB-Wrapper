@@ -1312,4 +1312,4 @@ TEST_F(GetStatus, GTEST_TESTCASE(IfReceiveQueueFull, GTEST_RECEIVE_QUEUE_FULL)) 
     // @end.
 }
 
-//  $Id: TC09_GetStatus.cc 1193 2023-09-06 10:21:35Z haumea $  Copyright (c) UV Software, Berlin.
+//  $Id: TC09_GetStatus.cc 1201 2023-09-13 11:09:28Z makemake $  Copyright (c) UV Software, Berlin.

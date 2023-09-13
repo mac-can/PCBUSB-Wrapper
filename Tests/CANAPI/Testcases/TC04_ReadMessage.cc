@@ -1957,4 +1957,4 @@ TEST_F(ReadMessage, GTEST_TESTCASE(WithDifferentTimeoutValues, GTEST_ENABLED)) {
 // @todo: (1) blocking read
 // @todo: (2) test reentrancy
 
-//  $Id: TC04_ReadMessage.cc 1194 2023-09-06 16:48:53Z makemake $  Copyright (c) UV Software, Berlin.
+//  $Id: TC04_ReadMessage.cc 1201 2023-09-13 11:09:28Z makemake $  Copyright (c) UV Software, Berlin.

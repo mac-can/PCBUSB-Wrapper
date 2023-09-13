@@ -708,4 +708,4 @@ TEST_F(GetProperty, GTEST_TESTCASE(IfChannelTornDown, GTEST_ENABLED)) {
 }
 
 
-//  $Id: TC12_GetProperty.cc 1165 2023-08-22 06:57:25Z haumea $  Copyright (c) UV Software, Berlin.
+//  $Id: TC12_GetProperty.cc 1201 2023-09-13 11:09:28Z makemake $  Copyright (c) UV Software, Berlin.
