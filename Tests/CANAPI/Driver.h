@@ -72,9 +72,14 @@ typedef CPeakCAN  CCanDriver;
 #define FEATURE_ERROR_CODE_CAPTURE  FEATURE_UNSUPPORTED
 #define FEATURE_BLOCKING_READ       FEATURE_SUPPORTED
 #define FEATURE_BLOCKING_WRITE      FEATURE_UNSUPPORTED
+#ifdef __APPLE__
 #define FEATURE_SIZE_RECEIVE_QUEUE  65536
 #define FEATURE_SIZE_TRANSMIT_QUEUE 0
-
+#else
+//  note: These values seem to be dynamic on Linux
+#define FEATURE_SIZE_RECEIVE_QUEUE  0
+#define FEATURE_SIZE_TRANSMIT_QUEUE 0
+#endif
 //  (§5) define macros for CAN 2.0 bit-rate settings
 //       at least BITRATE_1M, BITRATE_500K, BITRATE_250K, BITRATE_125K, 
 //                BITRATE_100K, BITRATE_50K, BITRATE_20K, BITRATE_10K
@@ -91,7 +96,11 @@ typedef CPeakCAN  CCanDriver;
 
 //  (§6) define macros for workarounds (e.g. TC01_3_ISSUE)
 #define TC04_8_ISSUE_QUEUE_SIZE  WORKAROUND_DISABLED  // 2023-08-20: last element of receive queue is not accessible
-#define TC09_8_ISSUE_BUS_OFF  WORKAROUND_ENABLED  // 2023-08-29: no bus off from device (known issue)
+#define TC09_8_ISSUE_BUS_OFF     WORKAROUND_ENABLED   // 2023-08-29: no bus off from device (known issue)
+#ifdef __linux__
+#define TC04_15_ISSUE_PCBUSB_WARNING_LEVEL WORKAROUND_ENABLED  // 2023-09-13: no warning level from device (Linux)
+#define TC09_9_ISSUE_PCBUSB_WARNING_LEVEL  WORKAROUND_ENABLED  // 2023-09-13: no warning level from device (Linux)
+#endif
 //#define TC0x_y_ISSUE_  WORKAROUND_ENABLED
 //  (§6.1) old PCANBasic issues (see macros in 'Settings.h')
 #define PCBUSB_INIT_DELAY_WORKAROUND  WORKAROUND_ENABLED

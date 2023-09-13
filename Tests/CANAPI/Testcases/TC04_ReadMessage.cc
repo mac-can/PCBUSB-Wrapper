@@ -670,7 +670,12 @@ TEST_F(ReadMessage, GTEST_TESTCASE(IfReceiveQueueEmpty, GTEST_ENABLED)) {
 //
 // @expected: CANERR_NOERROR but status bit 'queue_overrun' set
 //
-TEST_F(ReadMessage, GTEST_TESTCASE(IfReceiveQueueFull, GTEST_ENABLED)) {
+#if (FEATURE_SIZE_RECEIVE_QUEUE != 0)
+#define GTEST_RECEIVE_QUEUE_FULL  GTEST_ENABLED
+#else
+#define GTEST_RECEIVE_QUEUE_FULL  GTEST_DISABLED
+#endif
+TEST_F(ReadMessage, GTEST_TESTCASE(IfReceiveQueueFull, GTEST_RECEIVE_QUEUE_FULL)) {
     CCanDevice dut1 = CCanDevice(TEST_DEVICE(DUT1));
     CCanDevice dut2 = CCanDevice(TEST_DEVICE(DUT2));
     CANAPI_Message_t trmMsg = {};
@@ -1367,6 +1372,9 @@ TEST_F(ReadMessage, GTEST_TESTCASE(WithFlagStsInOperationModeNoErr, GTEST_ENABLE
     trmMsg.esi = 0;
     trmMsg.dlc = 0;
     memset(trmMsg.data, 0, CANFD_MAX_LEN);
+#endif
+#if (TC04_15_ISSUE_PCBUSB_WARNING_LEVEL == WORKAROUND_ENABLED)
+    ASSERT_TRUE(false) << "[  TC04.15 ] No warning level from device!";
 #endif
     // @
     // @note: This test cannot run if there is another device on bus!
