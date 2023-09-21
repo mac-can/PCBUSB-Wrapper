@@ -117,26 +117,27 @@ Type `can_test --help` to display all program options.
 ### Target Platform
 
 - macOS 11.0 and later (Intel x64 and Apple silicon)
+- Debian GNU/Linux 12 (Linux Kernel 6.x)
 
 ### Development Environment
 
 #### macOS Ventura
 
-- macOS Ventura (13.5.1) on a Mac mini (M1, 2020)
+- macOS Ventura (13.5.2) on a Mac mini (M1, 2020)
 - Apple clang version 14.0.3 (clang-1403.0.22.14.1)
 - Xcode Version 14.3.1 (14E300c)
 
 #### macOS Big Sur
 
-- macOS Big Sur (11.7.9) on a MacBook Pro (2019)
+- macOS Big Sur (11.7.10) on a MacBook Pro (2019)
 - Apple clang version 13.0.0 (clang-1300.0.29.30)
 - Xcode Version 13.2.1 (13C100)
 
-#### macOS High Sierra
+#### Debian Bookworm
 
-- macOS High Sierra (10.13.6) on a MacBook Pro (late 2011)
-- Apple LLVM version 10.0.0 (clang-1000.11.45.5)
-- Xcode Version 10.1 (10B61)
+- Debian Bookworm (Debian GNU/Linux 12) on an Intel Core i5
+- gcc (Debian 12.2.0-14) 12.2.0
+- PCAN Driver and Library for Linux v8.16
 
 ### Required PCBUSB Library
 
@@ -157,13 +158,22 @@ General test settings can be adapted in the file `Settings.h`.
 ## This and That
 
 ### PCBUSB Library for macOS&reg;
+
 The PCBUSB library can be downloaded form the [MacCAN](https://mac-can.com/) website (binaries only). \
 Please note the copyright and license agreements.
+
+### PCAN Linux&reg; Driver and Library
+
+The PCAN Linux (chardev) driver and library can be downloaded form [Peak's](https://www.peak-system.com/fileadmin/media/linux/index.htm/) website.
 
 ### Wrapper Library for Windows&reg;
 
 A CAN API V3 compatible Wrapper Library for Windows is also available.
 It is build upon Peak´s PCANBasic DLL and can be downloaded from / cloned at [GitHub](https://github.com/uv-software/PCANBasic-Wrapper).
+
+### CAN API V3 Reference
+
+A generic documentation of the CAN API V3 application programming interface can be found [here](https://uv-software.github.io/CANAPI-Docs/#/).
 
 ### Dual-License
 
