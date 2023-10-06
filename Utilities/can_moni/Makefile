@@ -61,7 +61,8 @@ OBJECTS  += $(BINDIR)/libPeakCAN.a
 
 LIBRARIES =
 
-LDFLAGS  += -lpthread
+LDFLAGS  += -lpthread \
+	-rpath /usr/local/lib
 
 ifeq ($(BINARY),UNIVERSAL)
 CFLAGS += -arch arm64 -arch x86_64

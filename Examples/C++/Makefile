@@ -3,7 +3,7 @@ OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown OS')
 ifeq ($(OS),Darwin)  # macOS - libPeakCAN.dylib
 LIBRARY = libPeakCAN.a
 CXXFLAGS =
-LDFLAGS =
+LDFLAGS = -rpath /usr/local/lib
 CXX = clang++
 LD = clang++
 RM = rm -f
