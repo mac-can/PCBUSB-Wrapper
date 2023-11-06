@@ -63,22 +63,22 @@ typedef CPeakCAN  CCanDriver;
 
 //  ($4) define macros for driver-specific features
 //       at least the mandatory macros (cf. compiler warnings)
-#define FEATURE_BITRATE_5K          FEATURE_UNSUPPORTED
-#define FEATURE_BITRATE_800K        FEATURE_SUPPORTED
-#define FEATURE_BITRATE_SAM         FEATURE_SUPPORTED
-#define FEATURE_BITRATE_FD_SAM      FEATURE_UNSUPPORTED
-#define FEATURE_BITRATE_SJA1000     FEATURE_SUPPORTED
-#define FEATURE_ERROR_FRAMES        FEATURE_UNSUPPORTED
-#define FEATURE_ERROR_CODE_CAPTURE  FEATURE_UNSUPPORTED
-#define FEATURE_BLOCKING_READ       FEATURE_SUPPORTED
-#define FEATURE_BLOCKING_WRITE      FEATURE_UNSUPPORTED
+#define FEATURE_BITRATE_5K           FEATURE_UNSUPPORTED
+#define FEATURE_BITRATE_800K         FEATURE_SUPPORTED
+#define FEATURE_BITRATE_SAM          FEATURE_SUPPORTED
+#define FEATURE_BITRATE_FD_SAM       FEATURE_UNSUPPORTED
+#define FEATURE_BITRATE_SJA1000      FEATURE_SUPPORTED
+#define FEATURE_ERROR_FRAMES         FEATURE_UNSUPPORTED
+#define FEATURE_ERROR_CODE_CAPTURE   FEATURE_UNSUPPORTED
+#define FEATURE_BLOCKING_READ        FEATURE_SUPPORTED
+#define FEATURE_BLOCKING_WRITE       FEATURE_UNSUPPORTED
 #ifdef __APPLE__
-#define FEATURE_SIZE_RECEIVE_QUEUE  65536
-#define FEATURE_SIZE_TRANSMIT_QUEUE 0
+#define FEATURE_SIZE_RECEIVE_QUEUE   65536U
+#define FEATURE_SIZE_TRANSMIT_QUEUE  0U
 #else
 //  note: These values seem to be dynamic on Linux
-#define FEATURE_SIZE_RECEIVE_QUEUE  0
-#define FEATURE_SIZE_TRANSMIT_QUEUE 0
+#define FEATURE_SIZE_RECEIVE_QUEUE   0U
+#define FEATURE_SIZE_TRANSMIT_QUEUE  0U
 #endif
 //  (§5) define macros for CAN 2.0 bit-rate settings
 //       at least BITRATE_1M, BITRATE_500K, BITRATE_250K, BITRATE_125K, 
@@ -95,8 +95,8 @@ typedef CPeakCAN  CCanDriver;
 #define BITRATE_5K(x)    PEAKCAN_BR_5K(x)
 
 //  (§6) define macros for workarounds (e.g. TC01_3_ISSUE)
-#define TC04_8_ISSUE_QUEUE_SIZE  WORKAROUND_DISABLED  // 2023-08-20: last element of receive queue is not accessible
-#define TC09_8_ISSUE_BUS_OFF     WORKAROUND_ENABLED   // 2023-08-29: no bus off from device (known issue)
+#define TC04_8_ISSUE_QUEUE_SIZE  WORKAROUND_ENABLED  // 2023-08-20: last element of receive queue is not accessible
+#define TC09_8_ISSUE_BUS_OFF     WORKAROUND_ENABLED  // 2023-08-29: no bus off from device (known issue)
 #ifdef __linux__
 #define TC04_15_ISSUE_PCBUSB_WARNING_LEVEL WORKAROUND_ENABLED  // 2023-09-13: no warning level from device (Linux)
 #define TC09_9_ISSUE_PCBUSB_WARNING_LEVEL  WORKAROUND_ENABLED  // 2023-09-13: no warning level from device (Linux)

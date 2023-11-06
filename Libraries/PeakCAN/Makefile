@@ -65,7 +65,7 @@ LIBRARY = libPeakCAN
 
 MAJOR = 0
 MINOR = 2
-PATCH = 6
+PATCH = 7
 
 VERSION = $(MAJOR).$(MINOR).$(PATCH)
 TARGET  = $(LIBRARY).$(VERSION).dylib
@@ -103,7 +103,8 @@ LDFLAGS  += -lpthread \
 	-nostartfiles -dynamiclib -fvisibility=hidden \
 	-Wl,-install_name,$(INSTALL_NAME) \
 	-Wl,-current_version,$(CURRENT_VERSION) \
-	-Wl,-compatibility_version,$(COMPATIBILITY_VERSION)
+	-Wl,-compatibility_version,$(COMPATIBILITY_VERSION) \
+	-rpath $(INSTALL)
 
 LTFLAGS += -static
 
@@ -125,7 +126,7 @@ LIBRARY = libpeakcan
 
 MAJOR = 0
 MINOR = 2
-PATCH = 6
+PATCH = 7
 
 VERSION = $(MAJOR).$(MINOR).$(PATCH)
 SONAME  = $(LIBRARY).so
