@@ -34,7 +34,7 @@ OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o \
 
 ifeq ($(current_OS),Darwin)  # macOS - libPeakCAN.dylib
 
-VERSION = 0.2.6
+VERSION = 0.2.7
 
 TARGET  = can_moni
 
@@ -77,7 +77,7 @@ endif
 
 ifeq ($(current_OS),Linux)  # linux - libuvcanpcb.so
 
-VERSION = 0.2.6
+VERSION = 0.2.7
 
 TARGET  = can_moni
 
