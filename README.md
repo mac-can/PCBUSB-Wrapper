@@ -1,6 +1,6 @@
-### macOS&reg; Wrapper Library for PCAN-USB Interfaces from PEAK-System
+### macOS&reg; Wrapper Library for PCAN Interfaces from PEAK-System
 
-_Copyright&copy; 2005-2010, 2012-2023  Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
+_Copyright&copy; 2005-2010,2012-2024 Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
 
 # CAN API V3 for PCAN-USB Interfaces
 
@@ -68,7 +68,6 @@ public:
 };
 /// \}
 ```
-See header file `PeakCAN.h` for a description of the provided methods.
 
 ### Build Targets
 
@@ -87,7 +86,7 @@ uv-pc013mac:PeakCAN eris$ make all
 uv-pc013mac:PeakCAN eris$ sudo make install
 uv-pc013mac:PeakCAN eris$
 ```
-_(The version number of the library can be adapted by editing the appropriated `Makefile` and changing the variable `VERSION` accordingly. Don´t forget to set the version number also in the source files.)_
+_(The version number of the libraries can be adapted by editing the `Makefile`s in the subfolders and changing the variable `VERSION` accordingly.  Don´t forget to set the version number also in the header file `Version.h`.)_
 
 #### libPeakCAN
 
@@ -114,40 +113,34 @@ Originally developed for electronic environmental tests on an embedded Linux sys
 
 Type `can_test --help` to display all program options.
 
-### Target Platform
+### Target Platforms
 
-- macOS 11.0 and later (Intel x64 and Apple silicon)
+- macOS 12.0 and later (Intel x64 and Apple silicon)
 - Debian GNU/Linux 12 (Linux Kernel 6.x)
 
-### Development Environment
+### Development Environments
 
-#### macOS Ventura
+#### macOS Sonoma
 
-- macOS Ventura (13.6.1) on a Mac mini (M1, 2020)
-- Apple clang version 15.0.0 (clang-1500.0.40.1)
-- Xcode Version 15.0.1 (15A507)
+- macOS Sonoma (14.4.1) on a Mac mini (M1, 2020)
+- Apple clang version 15.0.0 (clang-1500.3.9.4)
+- Xcode Version 15.3 (15E204a)
 
-#### macOS Big Sur
+#### macOS Monterey
 
-- macOS Big Sur (11.7.10) on a MacBook Pro (2019)
+- macOS Monterey (12.7.4) on a MacBook Pro (2019)
 - Apple clang version 13.0.0 (clang-1300.0.29.30)
 - Xcode Version 13.2.1 (13C100)
 
-#### Debian Bookworm
+#### Debian "bookworm" (12.5)
 
-- Debian Bookworm (Debian GNU/Linux 12) on an Intel Core i5
+- Debian 6.1,76-1 (2024-02-01) x86_64 GNU/Linux
 - gcc (Debian 12.2.0-14) 12.2.0
-- PCAN Driver and Library for Linux v8.16
+- PCAN Driver and Library for Linux v8.17
 
 ### Required PCBUSB Library
 
 - `libPCBUSB.x.y.dylib` - Version 0.9 or later _(Latest is Greatest!)_
-
-### Testing
-
-The Xcode project for the trial program includes an xctest target with one test suite for each CAN API V3 **C** interface function.
-To run the test suites or single test cases two CAN devices are required.
-General test settings can be adapted in the file `Settings.h`.
 
 ## Known Bugs and Caveats
 
@@ -177,9 +170,9 @@ A generic documentation of the CAN API V3 application programming interface can 
 
 ### Dual-License
 
-This work is dual-licensed under the terms of the BSD 2-Clause "Simplified" License
+Except where otherwise noted, this work is dual-licensed under the terms of the BSD 2-Clause "Simplified" License
 and under the terms of the GNU General Public License v3.0 (or any later version).
-You can choose between one of them if you use this work in whole or in part.
+You can choose between one of them if you use these portions of this work in whole or in part.
 
 `SPDX-License-Identifier: BSD-2-Clause OR GPL-3.0-or-later`
 
@@ -187,8 +180,10 @@ You can choose between one of them if you use this work in whole or in part.
 
 Mac and macOS are trademarks of Apple Inc., registered in the U.S. and other countries. \
 PCAN is a registered trademark of PEAK-System Technik GmbH, Darmstadt, Germany. \
-Windows is a registered trademark of Microsoft Corporation in the United States and/or other countries. \
+POSIX is a registered trademark of the Institute of Electrical and Electronic Engineers, Inc. \
+GNU C/C++ is a registered trademark of Free Software Foundation, Inc. \
 Linux is a registered trademark of Linus Torvalds. \
+Windows is a registered trademark of Microsoft Corporation in the United States and/or other countries. \
 All other company, product and service names mentioned herein may be trademarks, registered trademarks, or service marks of their respective owners.
 
 ### Hazard Note
