@@ -47,38 +47,34 @@
 //
 #include "pch.h"
 
-#ifndef CAN_FD_SUPPORTED
-#define CAN_FD_SUPPORTED  FEATURE_SUPPORTED
+#ifndef FEATURE_FILTERING
+#define FEATURE_FILTERING  FEATURE_UNSUPPORTED
 #ifdef _MSC_VER
-#pragma message ( "CAN_FD_SUPPORTED not set, default = FEATURE_SUPPORTED" )
+#pragma message ( "FEATURE_FILTERING not set, default = FEATURE_UNSUPPORTED" )
 #else
-#warning CAN_FD_SUPPORTED not set, default = FEATURE_SUPPORTED
+#warning FEATURE_FILTERING not set, default = FEATURE_UNSUPPORTED
 #endif
 #endif
+#if (FEATURE_FILTERING != FEATURE_UNSUPPORTED)
 
-#define CLEAR_BTR(btr)  memset(&btr, 0, sizeof(CANAPI_Bitrate_t))
-#define CLEAR_BPS(bps)  memset(&bps, 0, sizeof(CANAPI_BusSpeed_t))
-
-class GetBusSpeed : public testing::Test {
+class ResetFilter : public testing::Test {
     virtual void SetUp() {}
     virtual void TearDown() {}
 protected:
     // ...
 };
 
-// @gtest TC21.0: Get CAN transmission rate (sunnyday scenario)
+// @gtest TC27.0: Reset CAN acceptance filter (sunnyday scenario)
 //
 // @expected: CANERR_NOERROR
 //
-// @disabled: This test is already covered by TC11.0 (suite 'GetBitrate')
-//
-TEST_F(GetBusSpeed, GTEST_TESTCASE(SunnydayScenario, GTEST_DISABLED)) {  // TODO: DISABLED)) {
+TEST_F(ResetFilter, GTEST_TESTCASE(SunnydayScenario, GTEST_SUNNYDAY)) {
     CCanDevice dut1 = CCanDevice(TEST_DEVICE(DUT1));
     CCanDevice dut2 = CCanDevice(TEST_DEVICE(DUT2));
     CCanApi::EChannelState state;
-    CANAPI_Bitrate_t bitrate = {};
-    CANAPI_BusSpeed_t speed = {};
     CANAPI_Status_t status = {};
+    uint32_t codeGet, maskGet;
+    uint32_t codeSet, maskSet;
     CANAPI_Return_t retVal;
     // @pre:
     // @- probe if DUT1 is present and not occupied
@@ -91,7 +87,7 @@ TEST_F(GetBusSpeed, GTEST_TESTCASE(SunnydayScenario, GTEST_DISABLED)) {  // TODO
     ASSERT_EQ(CCanApi::ChannelAvailable, state) << "[  ERROR!  ] " << g_Options.GetDeviceName(DUT2) << " is not available";
     // @- check if different channels have been selected
     ASSERT_TRUE((g_Options.GetChannelNo(DUT1) != g_Options.GetChannelNo(DUT2)) || \
-                (g_Options.GetLibraryId(DUT1) != g_Options.GetLibraryId(DUT2))) << "[  ERROR!  ] same channel selected twice";
+        (g_Options.GetLibraryId(DUT1) != g_Options.GetLibraryId(DUT2))) << "[  ERROR!  ] same channel selected twice";
     // @- initialize DUT1 with configured settings
     retVal = dut1.InitializeChannel();
     ASSERT_EQ(CCanApi::NoError, retVal) << "[  ERROR!  ] dut1.InitializeChannel() failed with error code " << retVal;
@@ -99,6 +95,63 @@ TEST_F(GetBusSpeed, GTEST_TESTCASE(SunnydayScenario, GTEST_DISABLED)) {  // TODO
     retVal = dut1.GetStatus(status);
     EXPECT_EQ(CCanApi::NoError, retVal);
     EXPECT_TRUE(status.can_stopped);
+    // @test:
+    // @sub(1): 11-bit identifier
+    // @- get 11-bit filter (code 0x000 and mask 0x000)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter11Bit(codeGet, maskGet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_EQ(CANACC_CODE_11BIT, codeGet);
+    EXPECT_EQ(CANACC_MASK_11BIT, maskGet);
+    // @- set 11-bit filter (code 0x000 and mask 0x500)
+    // @  note: DUT2 is sending test frames with 0x200!
+    codeSet = 0x00000000U; maskSet = 0x0000000500U;
+    retVal = dut1.SetFilter11Bit(codeSet, maskSet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    // @- get 11-bit filter (code 0x000 and mask 0x500)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter11Bit(codeGet, maskGet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_EQ(codeSet, codeGet);
+    EXPECT_EQ(maskGet, maskGet);
+    // @- reset acceptance filter
+    // @  note: SJA100 has only one filter for 11-bit and 29-bit identifier!
+    retVal = dut1.ResetFilters();
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    // @- get 11-bit filter (code 0x000 and mask 0x000)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter11Bit(codeGet, maskGet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_EQ(CANACC_CODE_11BIT, codeGet);
+    EXPECT_EQ(CANACC_MASK_11BIT, maskGet);
+    // @sub(2): 29-bit identifier
+    // @- get 29-bit filter (code 0x00000000 and mask 0x00000000)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter29Bit(codeGet, maskGet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_EQ(CANACC_CODE_29BIT, codeGet);
+    EXPECT_EQ(CANACC_MASK_29BIT, maskGet);
+    // @- set 29-bit filter (code 0x00001000 and mask 0x00000500)
+    codeSet = 0x00001000U; maskSet = 0x00000500U;
+    retVal = dut1.SetFilter29Bit(codeSet, maskSet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    // @- get 29-bit filter (code 0x00001000 and mask 0x00000500)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter29Bit(codeGet, maskGet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_EQ(codeSet, codeGet);
+    EXPECT_EQ(maskGet, maskGet);
+    // @- reset acceptance filter
+    // @  note: SJA100 has only one filter for 11-bit and 29-bit identifier!
+    retVal = dut1.ResetFilters();
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    // @- get 29-bit filter (code 0x00000000 and mask 0x00000000)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter29Bit(codeGet, maskGet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_EQ(CANACC_CODE_29BIT, codeGet);
+    EXPECT_EQ(CANACC_MASK_29BIT, maskGet);
+    // @post:
     // @- start DUT1 with configured bit-rate settings
     retVal = dut1.StartController();
     EXPECT_EQ(CCanApi::NoError, retVal);
@@ -106,17 +159,6 @@ TEST_F(GetBusSpeed, GTEST_TESTCASE(SunnydayScenario, GTEST_DISABLED)) {  // TODO
     retVal = dut1.GetStatus(status);
     EXPECT_EQ(CCanApi::NoError, retVal);
     EXPECT_FALSE(status.can_stopped);
-    // @test:
-    // @- get bit-rate settings from DUT1
-    retVal = dut1.GetBitrate(bitrate);
-    EXPECT_EQ(CCanApi::NoError, retVal);
-    // @- get transmission rate from DUT1
-    retVal = dut1.GetBusSpeed(speed);
-    EXPECT_EQ(CCanApi::NoError, retVal);
-    // @- compare configured and actual bit-rate settings
-    // dut1.ShowBitrateSettings();
-    EXPECT_TRUE(CCanDevice::CompareBitrates(dut1.GetBitrate(), bitrate, dut1.GetOpMode().brse));
-    // @post
     // @- send some frames to DUT2 and receive some frames from DUT2
     int32_t frames = g_Options.GetNumberOfTestFrames();
     EXPECT_EQ(frames, dut1.SendSomeFrames(dut2, frames));
@@ -135,46 +177,28 @@ TEST_F(GetBusSpeed, GTEST_TESTCASE(SunnydayScenario, GTEST_DISABLED)) {  // TODO
     // @- tear down DUT1
     retVal = dut1.TeardownChannel();
     EXPECT_EQ(CCanApi::NoError, retVal);
-    // @- end
+    // @end.
 }
 
-// @gtest TC21.1: Get CAN transmission rate with invalid interface handle(s)
+// @gtest TC27.1: Reset CAN acceptance filter with invalid interface handle(s)
 //
 // @note: checking channel handles is not possible with the C++ API!
 
-// @gtest TC21.2: Give a NULL pointer as argument for parameter 'bitrate'
-//
-// @note: passing a pointer for 'bitrate' is not possible with the C++ API!
-
-// @gtest TC21.3: Give a NULL pointer as argument for parameter 'speed'
-//
-// @note: passing a pointer for 'speed' is not possible with the C++ API!
-
-// @gtest TC21.4: Give a NULL pointer as argument for parameter 'bitrate' and 'speed'
-//
-// @note: passing a pointer for 'bitrate' and 'speed' is not possible with the C++ API!
-
-// @gtest TC21.5: Get CAN transmission rate if CAN channel is not initialized
+// @gtest TC27.2: Reset CAN acceptance filter if CAN channel is not initialized
 //
 // @expected: CANERR_NOTINIT
 //
-// @disabled: This test is already covered by TC11.5 (suite 'GetBitrate')
-//
-TEST_F(GetBusSpeed, GTEST_TESTCASE(IfChannelNotInitialized, GTEST_DISABLED)) {
+TEST_F(ResetFilter, GTEST_TESTCASE(IfChannelNotInitialized, GTEST_ENABLED)) {
     CCanDevice dut1 = CCanDevice(TEST_DEVICE(DUT1));
     CCanDevice dut2 = CCanDevice(TEST_DEVICE(DUT2));
-    CANAPI_Bitrate_t bitrate = {};
-    CANAPI_BusSpeed_t speed = {};
     CANAPI_Status_t status = {};
     CANAPI_Return_t retVal;
+ 
     // @test:
-    // @- get bit-rate settings from DUT1
-    retVal = dut1.GetBitrate(bitrate);
+    // @- try to reset acceptance filter
+    retVal = dut1.ResetFilters();
     EXPECT_EQ(CCanApi::NotInitialized, retVal);
-    // @- get transmission rate from DUT1
-    retVal = dut1.GetBusSpeed(speed);
-    EXPECT_EQ(CCanApi::NotInitialized, retVal);
-    // @post
+    // @post:
     // @- initialize DUT1 with configured settings
     retVal = dut1.InitializeChannel();
     ASSERT_EQ(CCanApi::NoError, retVal) << "[  ERROR!  ] dut1.InitializeChannel() failed with error code " << retVal;
@@ -210,19 +234,16 @@ TEST_F(GetBusSpeed, GTEST_TESTCASE(IfChannelNotInitialized, GTEST_DISABLED)) {
     // @end.
 }
 
-// @gtest TC21.6: Get CAN transmission rate if CAN controller is not started
+// @gtest TC27.2: Reset CAN acceptance filter if CAN controller is not started
 //
 // @expected: CANERR_NOERROR
-// @todo: check CAN API V3!
 //
-// @disabled: This test is already covered by TC11.6 (suite 'GetBitrate')
-//
-TEST_F(GetBusSpeed, GTEST_TESTCASE(IfChannelInitialized, GTEST_DISABLED)) {
+TEST_F(ResetFilter, GTEST_TESTCASE(IfControllerNotStarted, GTEST_ENABLED)) {
     CCanDevice dut1 = CCanDevice(TEST_DEVICE(DUT1));
     CCanDevice dut2 = CCanDevice(TEST_DEVICE(DUT2));
-    CANAPI_Bitrate_t bitrate = {};
-    CANAPI_BusSpeed_t speed = {};
     CANAPI_Status_t status = {};
+    uint32_t codeGet, maskGet;
+    uint32_t codeSet, maskSet;
     CANAPI_Return_t retVal;
     // @pre:
     // @- initialize DUT1 with configured settings
@@ -233,17 +254,62 @@ TEST_F(GetBusSpeed, GTEST_TESTCASE(IfChannelInitialized, GTEST_DISABLED)) {
     EXPECT_EQ(CCanApi::NoError, retVal);
     EXPECT_TRUE(status.can_stopped);
     // @test:
-    // @- get bit-rate settings from DUT1
-    retVal = dut1.GetBitrate(bitrate);
+    // @sub(1): 11-bit identifier
+    // @- get 11-bit filter (code 0x000 and mask 0x000)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter11Bit(codeGet, maskGet);
     EXPECT_EQ(CCanApi::NoError, retVal);
-    // @- get transmission rate from DUT1
-    retVal = dut1.GetBusSpeed(speed);
+    EXPECT_EQ(CANACC_CODE_11BIT, codeGet);
+    EXPECT_EQ(CANACC_MASK_11BIT, maskGet);
+    // @- set 11-bit filter (code 0x000 and mask 0x500)
+    // @  note: DUT2 is sending test frames with 0x200!
+    codeSet = 0x00000000U; maskSet = 0x0000000500U;
+    retVal = dut1.SetFilter11Bit(codeSet, maskSet);
     EXPECT_EQ(CCanApi::NoError, retVal);
-    // @- get status of DUT1 and check to be in INIT state
-    retVal = dut1.GetStatus(status);
+    // @- get 11-bit filter (code 0x000 and mask 0x500)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter11Bit(codeGet, maskGet);
     EXPECT_EQ(CCanApi::NoError, retVal);
-    EXPECT_TRUE(status.can_stopped);
-    // @post
+    EXPECT_EQ(codeSet, codeGet);
+    EXPECT_EQ(maskGet, maskGet);
+    // @- reset acceptance filter
+    // @  note: SJA100 has only one filter for 11-bit and 29-bit identifier!
+    retVal = dut1.ResetFilters();
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    // @- get 11-bit filter (code 0x000 and mask 0x000)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter11Bit(codeGet, maskGet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_EQ(CANACC_CODE_11BIT, codeGet);
+    EXPECT_EQ(CANACC_MASK_11BIT, maskGet);
+    // @sub(2): 29-bit identifier
+    // @- get 29-bit filter (code 0x00000000 and mask 0x00000000)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter29Bit(codeGet, maskGet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_EQ(CANACC_CODE_29BIT, codeGet);
+    EXPECT_EQ(CANACC_MASK_29BIT, maskGet);
+    // @- set 29-bit filter (code 0x00001000 and mask 0x00000500)
+    codeSet = 0x00001000U; maskSet = 0x00000500U;
+    retVal = dut1.SetFilter29Bit(codeSet, maskSet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    // @- get 29-bit filter (code 0x00001000 and mask 0x00000500)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter29Bit(codeGet, maskGet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_EQ(codeSet, codeGet);
+    EXPECT_EQ(maskGet, maskGet);
+    // @- reset acceptance filter
+    // @  note: SJA100 has only one filter for 11-bit and 29-bit identifier!
+    retVal = dut1.ResetFilters();
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    // @- get 29-bit filter (code 0x00000000 and mask 0x00000000)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter29Bit(codeGet, maskGet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_EQ(CANACC_CODE_29BIT, codeGet);
+    EXPECT_EQ(CANACC_MASK_29BIT, maskGet);
+    // @post:
     // @- start DUT1 with configured bit-rate settings
     retVal = dut1.StartController();
     EXPECT_EQ(CCanApi::NoError, retVal);
@@ -272,81 +338,17 @@ TEST_F(GetBusSpeed, GTEST_TESTCASE(IfChannelInitialized, GTEST_DISABLED)) {
     // @end.
 }
 
-// @gtest TC21.7: Get CAN transmission rate if CAN controller is started
+// @gtest TC27.4: Reset CAN acceptance filter if CAN controller is started
 //
-// @expected: CANERR_NOERROR
+// @expected: CANERR_ONLINE
 //
-// @disabled: This test is already covered by TC11.7 (suite 'GetBitrate')
-//
-TEST_F(GetBusSpeed, GTEST_TESTCASE(IfControllerStarted, GTEST_DISABLED)) {
+TEST_F(ResetFilter, GTEST_TESTCASE(IfControllerStarted, GTEST_ENABLED)) {
     CCanDevice dut1 = CCanDevice(TEST_DEVICE(DUT1));
     CCanDevice dut2 = CCanDevice(TEST_DEVICE(DUT2));
-    CANAPI_Bitrate_t bitrate = {};
-    CANAPI_BusSpeed_t speed = {};
     CANAPI_Status_t status = {};
+    uint32_t codeGet, maskGet;
     CANAPI_Return_t retVal;
-    // @pre:
-    // @- initialize DUT1 with configured settings
-    retVal = dut1.InitializeChannel();
-    ASSERT_EQ(CCanApi::NoError, retVal) << "[  ERROR!  ] dut1.InitializeChannel() failed with error code " << retVal;
-    // @- get status of DUT1 and check to be in INIT state
-    retVal = dut1.GetStatus(status);
-    EXPECT_EQ(CCanApi::NoError, retVal);
-    EXPECT_TRUE(status.can_stopped);
-    // @- start DUT1 with configured bit-rate settings
-    retVal = dut1.StartController();
-    EXPECT_EQ(CCanApi::NoError, retVal);
-    // @- get status of DUT1 and check to be in RUNNING state
-    retVal = dut1.GetStatus(status);
-    EXPECT_EQ(CCanApi::NoError, retVal);
-    EXPECT_FALSE(status.can_stopped);
-    // @test:
-    // @- get bit-rate settings from DUT1
-    retVal = dut1.GetBitrate(bitrate);
-    EXPECT_EQ(CCanApi::NoError, retVal);
-    // @- get transmission rate from DUT1
-    retVal = dut1.GetBusSpeed(speed);
-    EXPECT_EQ(CCanApi::NoError, retVal);
-    // @- get status of DUT1 and check to be in RUNNING state
-    retVal = dut1.GetStatus(status);
-    EXPECT_EQ(CCanApi::NoError, retVal);
-    EXPECT_FALSE(status.can_stopped);
-    // @post
-    // @- send some frames to DUT2 and receive some frames from DUT2
-    int32_t frames = g_Options.GetNumberOfTestFrames();
-    EXPECT_EQ(frames, dut1.SendSomeFrames(dut2, frames));
-    EXPECT_EQ(frames, dut1.ReceiveSomeFrames(dut2, frames));
-    // @- get status of DUT1 and check to be in RUNNING state
-    retVal = dut1.GetStatus(status);
-    EXPECT_EQ(CCanApi::NoError, retVal);
-    EXPECT_FALSE(status.can_stopped);
-    // @- stop/reset DUT1
-    retVal = dut1.ResetController();
-    EXPECT_EQ(CCanApi::NoError, retVal);
-    // @- get status of DUT1 and check to be in INIT state
-    retVal = dut1.GetStatus(status);
-    EXPECT_EQ(CCanApi::NoError, retVal);
-    EXPECT_TRUE(status.can_stopped);
-    // @- tear down DUT1
-    retVal = dut1.TeardownChannel();
-    EXPECT_EQ(CCanApi::NoError, retVal);
-    // @end.
-}
 
-// @gtest TC21.8: Get CAN transmission rate if CAN controller is stopped
-//
-// @expected: CANERR_NOERROR
-// @todo: check CAN API V3!
-//
-// @disabled: This test is already covered by TC11.8 (suite 'GetBitrate')
-//
-TEST_F(GetBusSpeed, GTEST_TESTCASE(IfControllerStopped, GTEST_DISABLED)) {
-    CCanDevice dut1 = CCanDevice(TEST_DEVICE(DUT1));
-    CCanDevice dut2 = CCanDevice(TEST_DEVICE(DUT2));
-    CANAPI_Bitrate_t bitrate = {};
-    CANAPI_BusSpeed_t speed = {};
-    CANAPI_Status_t status = {};
-    CANAPI_Return_t retVal;
     // @pre:
     // @- initialize DUT1 with configured settings
     retVal = dut1.InitializeChannel();
@@ -362,6 +364,88 @@ TEST_F(GetBusSpeed, GTEST_TESTCASE(IfControllerStopped, GTEST_DISABLED)) {
     retVal = dut1.GetStatus(status);
     EXPECT_EQ(CCanApi::NoError, retVal);
     EXPECT_FALSE(status.can_stopped);
+    // @test:
+    // @sub(1): 11-bit identifier
+    // @- reset acceptance filter
+    // @  note: SJA100 has only one filter for 11-bit and 29-bit identifier!
+    retVal = dut1.ResetFilters();
+    EXPECT_EQ(CCanApi::ControllerOnline, retVal);
+    // @- get 11-bit filter (code 0x000 and mask 0x000)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter11Bit(codeGet, maskGet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_EQ(CANACC_CODE_11BIT, codeGet);
+    EXPECT_EQ(CANACC_MASK_11BIT, maskGet);
+    // @- get status of DUT1 and check to be in RUNNING state
+    retVal = dut1.GetStatus(status);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_FALSE(status.can_stopped);
+    // @sub(2): 29-bit identifier
+    // @- reset acceptance filter
+    // @  note: SJA100 has only one filter for 11-bit and 29-bit identifier!
+    retVal = dut1.ResetFilters();
+    EXPECT_EQ(CCanApi::ControllerOnline, retVal);
+    // @- get 29-bit filter (code 0x00000000 and mask 0x00000000)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter29Bit(codeGet, maskGet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_EQ(CANACC_CODE_29BIT, codeGet);
+    EXPECT_EQ(CANACC_MASK_29BIT, maskGet);
+    // @- get status of DUT1 and check to be in RUNNING state
+    retVal = dut1.GetStatus(status);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_FALSE(status.can_stopped);
+    // @- try to reset acceptance filter
+    retVal = dut1.ResetFilters();
+    EXPECT_EQ(CCanApi::ControllerOnline, retVal);   
+    // @post:
+    // @- send some frames to DUT2 and receive some frames from DUT2
+    int32_t frames = g_Options.GetNumberOfTestFrames();
+    EXPECT_EQ(frames, dut1.SendSomeFrames(dut2, frames));
+    EXPECT_EQ(frames, dut1.ReceiveSomeFrames(dut2, frames));
+    // @- get status of DUT1 and check to be in RUNNING state
+    retVal = dut1.GetStatus(status);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_FALSE(status.can_stopped);
+    // @- stop/reset DUT1
+    retVal = dut1.ResetController();
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    // @- get status of DUT1 and check to be in INIT state
+    retVal = dut1.GetStatus(status);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_TRUE(status.can_stopped);
+    // @- tear down DUT1
+    retVal = dut1.TeardownChannel();
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    // @end.
+}
+
+// @gtest TC27.5: Reset CAN acceptance filter if CAN controller was previously stopped
+//
+// @expected: CANERR_NOERROR
+//
+TEST_F(ResetFilter, GTEST_TESTCASE(IfControllerStopped, GTEST_ENABLED)) {
+    CCanDevice dut1 = CCanDevice(TEST_DEVICE(DUT1));
+    CCanDevice dut2 = CCanDevice(TEST_DEVICE(DUT2));
+    CANAPI_Status_t status = {};
+    uint32_t codeGet, maskGet;
+    uint32_t codeSet, maskSet;
+    CANAPI_Return_t retVal;
+    // @pre:
+    // @- initialize DUT1 with configured settings
+    retVal = dut1.InitializeChannel();
+    ASSERT_EQ(CCanApi::NoError, retVal) << "[  ERROR!  ] dut1.InitializeChannel() failed with error code " << retVal;
+    // @- get status of DUT1 and check to be in INIT state
+    retVal = dut1.GetStatus(status);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_TRUE(status.can_stopped);
+    // @- start DUT1 with configured bit-rate settings
+    retVal = dut1.StartController();
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    // @- get status of DUT1 and check to be in RUNNING state
+    retVal = dut1.GetStatus(status);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_FALSE(status.can_stopped);
     // @- send some frames to DUT2 and receive some frames from DUT2
     int32_t frames = g_Options.GetNumberOfTestFrames();
     EXPECT_EQ(frames, dut1.SendSomeFrames(dut2, frames));
@@ -378,36 +462,100 @@ TEST_F(GetBusSpeed, GTEST_TESTCASE(IfControllerStopped, GTEST_DISABLED)) {
     EXPECT_EQ(CCanApi::NoError, retVal);
     EXPECT_TRUE(status.can_stopped);
     // @test:
-    // @- get bit-rate settings from DUT1
-    retVal = dut1.GetBitrate(bitrate);
+    // @sub(1): 11-bit identifier
+    // @- get 11-bit filter (code 0x000 and mask 0x000)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter11Bit(codeGet, maskGet);
     EXPECT_EQ(CCanApi::NoError, retVal);
-    // @- get transmission rate from DUT1
-    retVal = dut1.GetBusSpeed(speed);
+    EXPECT_EQ(CANACC_CODE_11BIT, codeGet);
+    EXPECT_EQ(CANACC_MASK_11BIT, maskGet);
+    // @- set 11-bit filter (code 0x000 and mask 0x500)
+    // @  note: DUT2 is sending test frames with 0x200!
+    codeSet = 0x00000000U; maskSet = 0x0000000500U;
+    retVal = dut1.SetFilter11Bit(codeSet, maskSet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    // @- get 11-bit filter (code 0x000 and mask 0x500)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter11Bit(codeGet, maskGet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_EQ(codeSet, codeGet);
+    EXPECT_EQ(maskGet, maskGet);
+    // @- reset acceptance filter
+    // @  note: SJA100 has only one filter for 11-bit and 29-bit identifier!
+    retVal = dut1.ResetFilters();
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    // @- get 11-bit filter (code 0x000 and mask 0x000)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter11Bit(codeGet, maskGet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_EQ(CANACC_CODE_11BIT, codeGet);
+    EXPECT_EQ(CANACC_MASK_11BIT, maskGet);
+    // @sub(2): 29-bit identifier
+    // @- get 29-bit filter (code 0x00000000 and mask 0x00000000)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter29Bit(codeGet, maskGet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_EQ(CANACC_CODE_29BIT, codeGet);
+    EXPECT_EQ(CANACC_MASK_29BIT, maskGet);
+    // @- set 29-bit filter (code 0x00001000 and mask 0x00000500)
+    codeSet = 0x00001000U; maskSet = 0x00000500U;
+    retVal = dut1.SetFilter29Bit(codeSet, maskSet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    // @- get 29-bit filter (code 0x00001000 and mask 0x00000500)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter29Bit(codeGet, maskGet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_EQ(codeSet, codeGet);
+    EXPECT_EQ(maskGet, maskGet);
+    // @- reset acceptance filter
+    // @  note: SJA100 has only one filter for 11-bit and 29-bit identifier!
+    retVal = dut1.ResetFilters();
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    // @- get 29-bit filter (code 0x00000000 and mask 0x00000000)
+    codeGet = 0xFFFFFFFFU; maskGet = 0xFFFFFFFFU;
+    retVal = dut1.GetFilter29Bit(codeGet, maskGet);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_EQ(CANACC_CODE_29BIT, codeGet);
+    EXPECT_EQ(CANACC_MASK_29BIT, maskGet);
+    // @post:
+    // @- start DUT1 with configured bit-rate settings
+    retVal = dut1.StartController();
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    // @- get status of DUT1 and check to be in RUNNING state
+    retVal = dut1.GetStatus(status);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_FALSE(status.can_stopped);
+    // @- send some frames to DUT2 and receive some frames from DUT2
+    /*int32_t*/ frames = g_Options.GetNumberOfTestFrames();
+    EXPECT_EQ(frames, dut1.SendSomeFrames(dut2, frames));
+    EXPECT_EQ(frames, dut1.ReceiveSomeFrames(dut2, frames));
+    // @- get status of DUT1 and check to be in RUNNING state
+    retVal = dut1.GetStatus(status);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_FALSE(status.can_stopped);
+    // @- stop/reset DUT1
+    retVal = dut1.ResetController();
     EXPECT_EQ(CCanApi::NoError, retVal);
     // @- get status of DUT1 and check to be in INIT state
     retVal = dut1.GetStatus(status);
     EXPECT_EQ(CCanApi::NoError, retVal);
     EXPECT_TRUE(status.can_stopped);
-    // @post
     // @- tear down DUT1
     retVal = dut1.TeardownChannel();
     EXPECT_EQ(CCanApi::NoError, retVal);
     // @end.
 }
 
-// @gtest TC21.9: Get CAN transmission rate if CAN channel is torn down
+// @gtest TC27.6: Reset CAN acceptance filter if CAN channel was previously torn down
 //
 // @expected: CANERR_NOTINIT
 //
-// @disabled: This test is already covered by TC11.9 (suite 'GetBitrate')
-//
-TEST_F(GetBusSpeed, GTEST_TESTCASE(IfChannelTornDown, GTEST_DISABLED)) {
+TEST_F(ResetFilter, GTEST_TESTCASE(IfChannelTornDown, GTEST_ENABLED)) {
     CCanDevice dut1 = CCanDevice(TEST_DEVICE(DUT1));
     CCanDevice dut2 = CCanDevice(TEST_DEVICE(DUT2));
-    CANAPI_Bitrate_t bitrate = {};
-    CANAPI_BusSpeed_t speed = {};
     CANAPI_Status_t status = {};
     CANAPI_Return_t retVal;
+
     // @pre:
     // @- initialize DUT1 with configured settings
     retVal = dut1.InitializeChannel();
@@ -442,225 +590,12 @@ TEST_F(GetBusSpeed, GTEST_TESTCASE(IfChannelTornDown, GTEST_DISABLED)) {
     retVal = dut1.TeardownChannel();
     EXPECT_EQ(CCanApi::NoError, retVal);
     // @test:
-    // @- get bit-rate settings from DUT1
-    retVal = dut1.GetBitrate(bitrate);
-    EXPECT_EQ(CCanApi::NotInitialized, retVal);
-    // @- get transmission rate from DUT1
-    retVal = dut1.GetBusSpeed(speed);
+    // @- try to reset acceptance filter
+    retVal = dut1.ResetFilters();
     EXPECT_EQ(CCanApi::NotInitialized, retVal);
     // @end.
 }
 
-// @gtest TC21.10: Get CAN transmission rate if running with various CAN 2.0 bit-rate settings and check for correctness
-//
-// @expected: CANERR_NOERROR
-//
-// @disabled: This test is already covered by TC11.10 (suite 'GetBitrate')
-//
-TEST_F(GetBusSpeed, GTEST_TESTCASE(WithVariousCanBitrateSettings, GTEST_DISABLED)) {
-    CCanDevice dut1 = CCanDevice(TEST_DEVICE(DUT1));
-    CCanDevice dut2 = CCanDevice(TEST_DEVICE(DUT2));
-    CANAPI_Bitrate_t bitrate = {};
-    CANAPI_BusSpeed_t speed = {};
-    CANAPI_OpMode_t opMode = {};
-    CANAPI_Status_t status = {};
-    CANAPI_Return_t retVal;
-    // @loop over valid CAN FD bit-rate settings
-    CCounter counter = CCounter();
-    counter.Increment();
-    for (int i = 0; i < 8; i++) {
-        counter.Increment();
-        CLEAR_BTR(bitrate);
-        switch (i) {
-        // @sub(1): 1Mbps
-        case 0: BITRATE_1M(bitrate); break;
-        // @sub(2): 500kbps
-        case 1: BITRATE_500K(bitrate); break;
-        // @sub(3): 250kbps
-        case 2: BITRATE_250K(bitrate); break;
-        // @sub(4): 125kbps
-        case 3: BITRATE_125K(bitrate); break;
-        // @sub(5): 100kbps
-        case 4: BITRATE_100K(bitrate); break;
-        // @sub(6): 50kbps
-        case 5: BITRATE_50K(bitrate); break;
-        // @sub(7): 20kbps
-        case 6: BITRATE_20K(bitrate); break;
-        // @sub(8): 10kbps
-        case 7: BITRATE_10K(bitrate); break;
-        default: return;  // Get out of here!
-        }
-        // @pre:
-        // @- initialize DUT1 in CAN 2.0 operation mode
-        opMode.fdoe = 0;
-        opMode.brse = 0;
-        dut1.SetOpMode(opMode);
-        // dut1.ShowOperationMode();
-        dut1.SetBitrate(bitrate);
-        // dut1.ShowBitrateSettings();
-        retVal = dut1.InitializeChannel();
-        ASSERT_EQ(CCanApi::NoError, retVal) << "[  ERROR!  ] dut1.InitializeChannel() failed with error code " << retVal;
-        // @- get status of DUT1 and check to be in INIT state
-        retVal = dut1.GetStatus(status);
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        EXPECT_TRUE(status.can_stopped);
-        // @- start DUT1 with configured bit-rate settings
-        retVal = dut1.StartController();
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        // @- get status of DUT1 and check to be in RUNNING state
-        retVal = dut1.GetStatus(status);
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        EXPECT_FALSE(status.can_stopped);
-        // @test:
-        CLEAR_BTR(bitrate);
-        CLEAR_BPS(speed);
-        // @- get bit-rate settings from DUT1
-        retVal = dut1.GetBitrate(bitrate);
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        // @- get transmission rate from DUT1
-        retVal = dut1.GetBusSpeed(speed);
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        // @- compare configured and actual bit-rate settings
-        // dut1.ShowBitrateSettings();
-        EXPECT_TRUE(CCanDevice::CompareBitrates(dut1.GetBitrate(), bitrate, dut1.GetOpMode().brse));
-        // @post
-        if (!g_Options.Is3rdDevicePresent()) {
-            counter.Clear();
-            // @  only if no other CAN device is on bus:
-            // @- tell DUT2 about the changed settings
-            dut2.SetOpMode(opMode);
-            dut2.SetBitrate(bitrate);
-            // @- send some frames to DUT2 and receive some frames from DUT2
-            int32_t frames = g_Options.GetNumberOfTestFrames();
-            EXPECT_EQ(frames, dut1.SendSomeFrames(dut2, frames));
-            EXPECT_EQ(frames, dut1.ReceiveSomeFrames(dut2, frames));
-        }
-        // @- get status of DUT1 and check to be in RUNNING state
-        retVal = dut1.GetStatus(status);
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        EXPECT_FALSE(status.can_stopped);
-        // @- stop/reset DUT1
-        retVal = dut1.ResetController();
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        // @- get status of DUT1 and check to be in INIT state
-        retVal = dut1.GetStatus(status);
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        EXPECT_TRUE(status.can_stopped);
-        // @- tear down DUT1
-        retVal = dut1.TeardownChannel();
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        // @- endloop
-    }
-    counter.Clear();
-    // @end.
-}
+#endif // FEATURE_FILTERING != FEATURE_UNSUPPORTED
 
-#if (CAN_FD_SUPPORTED == FEATURE_SUPPORTED)
-// @gtest TC21.11: Get CAN transmission rate if running with various CAN FD bit-rate settings and check for correctness
-//
-// @expected: CANERR_NOERROR
-//
-// @disabled: This test is already covered by TC11.11 (suite 'GetBitrate')
-//
-TEST_F(GetBusSpeed, GTEST_TESTCASE(WithVariousCanFdBitrateSettings, GTEST_DISABLED)) {
-    CCanDevice dut1 = CCanDevice(TEST_DEVICE(DUT1));
-    CCanDevice dut2 = CCanDevice(TEST_DEVICE(DUT2));
-    CANAPI_Bitrate_t bitrate = {};
-    CANAPI_BusSpeed_t speed = {};
-    CANAPI_OpMode_t opMode = {};
-    CANAPI_Status_t status = {};
-    CANAPI_Return_t retVal;
-    // @
-    // @note: This test requires two CAN FD capable devices!
-    if ((!dut1.IsCanFdCapable() || !dut2.IsCanFdCapable()) || g_Options.RunCanClassicOnly())
-        GTEST_SKIP() << "At least one device is not CAN FD capable!";
-    // @loop over valid CAN FD bit-rate settings
-    CCounter counter = CCounter();
-    counter.Increment();
-    for (int i = 0; i < 8; i++) {
-        counter.Increment();
-        CLEAR_BTR(bitrate);
-        switch (i) {
-        // @sub(1): nominal 1Mbps
-        case 0: BITRATE_FD_1M(bitrate); opMode.fdoe = 1; opMode.brse = 0; break;
-        // @sub(2): nominal 500kbps
-        case 1: BITRATE_FD_500K(bitrate);  opMode.fdoe = 1; opMode.brse = 0; break;
-        // @sub(3): nominal 250kbps
-        case 2: BITRATE_FD_250K(bitrate); opMode.fdoe = 1; opMode.brse = 0; break;
-        // @sub(4): nominal 125kbps
-        case 3: BITRATE_FD_125K(bitrate); opMode.fdoe = 1; opMode.brse = 0; break;
-        // @sub(5): nominal 1Mbps, data phase 8Mbps
-        case 4: BITRATE_FD_1M8M(bitrate); opMode.fdoe = 1; opMode.brse = 1; break;
-        // @sub(6): nominal 500kbps, data phase 4Mbps
-        case 5: BITRATE_FD_500K4M(bitrate);  opMode.fdoe = 1; opMode.brse = 1; break;
-        // @sub(7): nominal 250kbps, data phase 2Mbps
-        case 6: BITRATE_FD_250K2M(bitrate); opMode.fdoe = 1; opMode.brse = 1; break;
-        // @sub(8): nominal 125kbps, data phase 1Mbps
-        case 7: BITRATE_FD_125K1M(bitrate); opMode.fdoe = 1; opMode.brse = 1; break;
-        default: return;  // Get out of here!
-        }
-        // @pre:
-        // @- initialize DUT1 in CAN FD operation mode
-        dut1.SetOpMode(opMode);
-        // dut1.ShowOperationMode();
-        dut1.SetBitrate(bitrate);
-        // dut1.ShowBitrateSettings();
-        retVal = dut1.InitializeChannel();
-        ASSERT_EQ(CCanApi::NoError, retVal) << "[  ERROR!  ] dut1.InitializeChannel() failed with error code " << retVal;
-        // @- get status of DUT1 and check to be in INIT state
-        retVal = dut1.GetStatus(status);
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        EXPECT_TRUE(status.can_stopped);
-        // @- start DUT1 with configured bit-rate settings
-        retVal = dut1.StartController();
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        // @- get status of DUT1 and check to be in RUNNING state
-        retVal = dut1.GetStatus(status);
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        EXPECT_FALSE(status.can_stopped);
-        // @test:
-        CLEAR_BTR(bitrate);
-        CLEAR_BPS(speed);
-        // @- get bit-rate settings from DUT1
-        retVal = dut1.GetBitrate(bitrate);
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        // @- get transmission rate from DUT1
-        retVal = dut1.GetBusSpeed(speed);
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        // @- compare configured and actual bit-rate settings
-        // dut1.ShowBitrateSettings();
-        EXPECT_TRUE(CCanDevice::CompareBitrates(dut1.GetBitrate(), bitrate, dut1.GetOpMode().brse));
-        // @post
-        if (!g_Options.Is3rdDevicePresent()) {
-            counter.Clear();
-            // @  only if no other CAN device is on bus:
-            // @- tell DUT2 about the changed settings
-            dut2.SetOpMode(opMode);
-            dut2.SetBitrate(bitrate);
-            // @- send some frames to DUT2 and receive some frames from DUT2
-            int32_t frames = g_Options.GetNumberOfTestFrames();
-            EXPECT_EQ(frames, dut1.SendSomeFrames(dut2, frames));
-            EXPECT_EQ(frames, dut1.ReceiveSomeFrames(dut2, frames));
-        }
-        // @- get status of DUT1 and check to be in RUNNING state
-        retVal = dut1.GetStatus(status);
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        EXPECT_FALSE(status.can_stopped);
-        // @- stop/reset DUT1
-        retVal = dut1.ResetController();
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        // @- get status of DUT1 and check to be in INIT state
-        retVal = dut1.GetStatus(status);
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        EXPECT_TRUE(status.can_stopped);
-        // @- tear down DUT1
-        retVal = dut1.TeardownChannel();
-        EXPECT_EQ(CCanApi::NoError, retVal);
-        // @- endloop
-    }
-    counter.Clear();
-    // @end.
-}
-#endif  // (CAN_FD_SUPPORTED == FEATURE_SUPPORTED)
-
-//  $Id: TC21_GetBusSpeed.cc 1272 2024-04-16 19:55:27Z makemake $  Copyright (c) UV Software, Berlin.
+//  $Id: TC27_ResetFilter.cc 1272 2024-04-16 19:55:27Z makemake $  Copyright (c) UV Software, Berlin.
