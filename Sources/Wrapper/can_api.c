@@ -1,6 +1,6 @@
 /*  SPDX-License-Identifier: BSD-2-Clause OR GPL-3.0-or-later */
 /*
- *  CAN Interface API, Version 3 (for Peak-System PCAN Interfaces)
+ *  CAN Interface API, Version 3 (for PEAK-System PCAN Interfaces)
  *
  *  Copyright (c) 2005-2012 Uwe Vogt, UV Software, Friedrichshafen
  *  Copyright (c) 2013-2024 Uwe Vogt, UV Software, Berlin (info@uv-software.de.com)
@@ -49,18 +49,6 @@
 /** @addtogroup  can_api
  *  @{
  */
-#include "build_no.h"
-#ifdef _MSC_VER
-#define VERSION_MAJOR    0
-#define VERSION_MINOR    5
-#define VERSION_PATCH    0
-#else
-#define VERSION_MAJOR    0
-#define VERSION_MINOR    2
-#define VERSION_PATCH    99
-#endif
-#define VERSION_BUILD    BUILD_NO
-#define VERSION_STRING   TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) " (" TOSTRING(BUILD_NO) ")"
 #ifdef _MSC_VER
 //no Microsoft extensions please!
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -97,6 +85,7 @@
 #include "PCANBasic.h"
 #endif
 #endif
+#include "Version.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -107,7 +96,7 @@
 #if (OPTION_CAN_2_0_ONLY != 0)
 #error Compilation with legacy CAN 2.0 frame format!
 #endif
-#if (OPTION_CANAPI_PCBUSB_DYLIB != 0)
+#if (OPTION_CANAPI_PCBUSB_DYLIB != 0) || (OPTION_CANAPI_PCANBASIC_SO != 0)
 __attribute__((constructor))
 static void _initializer() {
     // default initializer
@@ -205,7 +194,11 @@ static int drv_parameter(int handle, uint16_t param, void *value, size_t nbyte);
 
 /*  -----------  variables  ----------------------------------------------
  */
-static const char version[] = "CAN API V3 for PEAK-System PCAN-USB Interfaces, Version " VERSION_STRING;
+#if !defined(__APPLE__)
+static const char version[] = "CAN API V3 for PEAK-System PCAN Interfaces, Version " VERSION_STRING;
+#else
+static const char version[] = "CAN API V3 for PEAK-System PCAN USB Interfaces, Version " VERSION_STRING;
+#endif
 
 EXPORT
 can_board_t can_boards[PCAN_BOARDS+1]=// list of CAN Interface boards:

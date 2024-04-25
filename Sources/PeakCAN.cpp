@@ -1,6 +1,6 @@
 //  SPDX-License-Identifier: BSD-2-Clause OR GPL-3.0-or-later
 //
-//  CAN Interface API, Version 3 (for Peak-System PCAN Interfaces)
+//  CAN Interface API, Version 3 (for PEAK-System PCAN Interfaces)
 //
 //  Copyright (c) 2005-2012 Uwe Vogt, UV Software, Friedrichshafen
 //  Copyright (c) 2013-2024 Uwe Vogt, UV Software, Berlin (info@uv-software.de.com)
@@ -46,18 +46,6 @@
 //  You should have received a copy of the GNU General Public License
 //  along with PCANBasic-Wrapper.  If not, see <https://www.gnu.org/licenses/>.
 //
-#include "build_no.h"
-#ifdef _MSC_VER
-#define VERSION_MAJOR    0
-#define VERSION_MINOR    5
-#define VERSION_PATCH    0
-#else
-#define VERSION_MAJOR    0
-#define VERSION_MINOR    2
-#define VERSION_PATCH    99
-#endif
-#define VERSION_BUILD    BUILD_NO
-#define VERSION_STRING   TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) " (" TOSTRING(BUILD_NO) ")"
 #ifdef _MSC_VER
 //no Microsoft extensions please!
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -65,6 +53,8 @@
 #endif
 #endif
 #include "PeakCAN.h"
+#include "Version.h"
+
 #include "can_defs.h"
 #include "can_api.h"
 #include "can_btr.h"
@@ -98,7 +88,7 @@
 #define SPRINTF_S(buf,size,format,...)  sprintf_s(buf,size,format,__VA_ARGS__)
 #endif
 
-#if (OPTION_PEAKCAN_DYLIB != 0)
+#if (OPTION_PEAKCAN_DYLIB != 0) || (OPTION_PEAKCAN_SO != 0)
 __attribute__((constructor))
 static void _initializer() {
     // default initializer
@@ -112,7 +102,11 @@ static void _finalizer() {
 #define EXPORT
 #endif
 
-static const char version[] = "CAN API V3 for PEAK-System PCAN-USB Interfaces, Version " VERSION_STRING;
+#if !defined(__APPLE__)
+static const char version[] = "CAN API V3 for PEAK-System PCAN Interfaces, Version " VERSION_STRING;
+#else
+static const char version[] = "CAN API V3 for PEAK-System PCAN USB Interfaces, Version " VERSION_STRING;
+#endif
 
 EXPORT
 CPeakCAN::CPeakCAN() {
