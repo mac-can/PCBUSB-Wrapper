@@ -2,7 +2,7 @@
 #
 #   CAN Interface API, Version 3 (Python Wrapper)
 #
-#   Copyright (c) 2005-2023 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
+#   Copyright (c) 2005-2024 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 #	All rights reserved.
 #
 #   This file is part of CAN API V3.
@@ -43,7 +43,7 @@
 #	GNU General Public License for more details.
 #
 #	You should have received a copy of the GNU General Public License
-#	along with CAN API V3.  If not, see <http://www.gnu.org/licenses/>.
+#	along with CAN API V3.  If not, see <https://www.gnu.org/licenses/>.
 #
 """
     CAN API V3 Python Wrapper for generic CAN Interfaces.
@@ -54,7 +54,7 @@
 
     $Author: makemake $
 
-    $Rev: 1198 $
+    $Rev: 1274 $
 """
 from ctypes import *
 import platform
@@ -69,7 +69,7 @@ if platform.system() == "Darwin":
 
 # CAN API V3 - Python Wrapper
 #
-CAN_API_V3_PYTHON = {'major': 0, 'minor': 2, 'patch': 0}
+CAN_API_V3_PYTHON = {'major': 0, 'minor': 2, 'patch': 2}
 
 # CAN Identifier Ranges
 #
@@ -210,8 +210,9 @@ CANBRD_NOT_TESTABLE = (-2)  # CAN board not testable (e.g. legacy API)
 
 # Control of blocking read
 #
-CANREAD_INFINITE = c_uint16(65535)  # infinite time-out (blocking read)
-
+CANWAIT_INFINITE = 65535  # infinite time-out (blocking operation)
+CANREAD_INFINITE = CANWAIT_INFINITE
+CANWRITE_INFINITE = CANWAIT_INFINITE
 
 # CAN Status-register
 #
@@ -637,6 +638,69 @@ class CANAPI:
             print('+++ exception: {}'.format(e))
             raise
 
+    def hardware(self):
+        """
+          retrieves the hardware version of the CAN controller
+          board as a zero-terminated string.
+
+          note: API function 'can_hardware' is marked as deprecated.
+
+          :return: version
+            version: version information as string
+        """
+        try:
+            self.__m_library.can_hardware.restype = c_char_p
+            version_c = self.__m_library.can_hardware(self.__m_handle)
+            if version_c is not None:
+                return version_c.decode('utf-8')
+            else:
+                raise Exception('+++ error: can_hardware returned None')
+        except Exception as e:
+            print('+++ exception: {}'.format(e))
+            raise
+
+    def firmware(self):
+        """
+          retrieves the firmware version of the CAN controller
+          board as a zero-terminated string.
+
+          note: API function 'can_firmware' is marked as deprecated.
+
+          :return: version
+            version: version information as string
+        """
+        try:
+            self.__m_library.can_firmware.restype = c_char_p
+            version_c = self.__m_library.can_firmware(self.__m_handle)
+            if version_c is not None:
+                return version_c.decode('utf-8')
+            else:
+                raise Exception('+++ error: can_firmware returned None')
+        except Exception as e:
+            print('+++ exception: {}'.format(e))
+            raise
+
+    def software(self):
+        """
+          retrieves version information of the CAN API V3 DLL
+          as a zero-terminated string.
+
+          note: API function 'can_version' is marked as deprecated.
+
+          :return: version
+            version: version information as string
+        """
+        try:
+            self.__m_library.can_version.restype = c_char_p
+            version_c = self.__m_library.can_version()
+            if version_c is not None:
+                return version_c.decode('utf-8')
+            else:
+                raise Exception('+++ error: can_version returned None')
+        except Exception as e:
+            print('+++ exception: {}'.format(e))
+            raise
+
     @staticmethod
     def version():
         """
@@ -703,6 +767,7 @@ if __name__ == '__main__':
     print(CANAPI.version())
     print('>>> can = CANAPI(' + lib + ')')
     can = CANAPI(lib)
+    print(can.software())
 
     # initialize the CAN interface
     print('>>> can.init({}, 0x{:02X})'.format(chn, opMode.byte))
@@ -753,6 +818,10 @@ if __name__ == '__main__':
     else:
         print('>>> can.status() >>> 0x{:02X}'.format(status.byte))
 
+    # print some version information
+    print('>>> can.hardware() >>> ' + can.hardware())
+    print('>>> can.firmware() >>> ' + can.firmware())
+
     # shutdown the CAN interface
     print('>>> can.exit()')
     res = can.exit()
@@ -762,5 +831,5 @@ if __name__ == '__main__':
     # have a great time
     print('Bye, bye!')
 
-# * $Id: CANAPI.py 1198 2023-09-13 08:43:19Z makemake $ *** (c) UV Software, Berlin ***
+# * $Id: CANAPI.py 1274 2024-04-21 17:34:21Z makemake $ *** (c) UV Software, Berlin ***
 #
