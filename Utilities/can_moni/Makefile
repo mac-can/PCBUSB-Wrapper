@@ -1,7 +1,7 @@
 #
 #	CAN Monitor for PEAK-System PCAN-USB Interfaces (CAN API V3)
 #
-#	Copyright (c) 2007,2012-2023  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+#	Copyright (c) 2007,2012-2024 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 #
 #	This program is free software: you can redistribute it and/or modify
 #	it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 #	GNU General Public License for more details.
 #
 #	You should have received a copy of the GNU General Public License
-#	along with this program   If not, see <http://www.gnu.org/licenses/>.
+#	along with this program   If not, see <https://www.gnu.org/licenses/>.
 #
 current_OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown OS')
 current_OS := $(patsubst CYGWIN%,Cygwin,$(current_OS))
@@ -34,7 +34,7 @@ OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o \
 
 ifeq ($(current_OS),Darwin)  # macOS - libPeakCAN.dylib
 
-VERSION = 0.2.7
+VERSION = 0.2.8
 
 TARGET  = can_moni
 
@@ -77,7 +77,7 @@ endif
 
 ifeq ($(current_OS),Linux)  # linux - libuvcanpcb.so
 
-VERSION = 0.2.7
+VERSION = 0.2.8
 
 TARGET  = can_moni
 

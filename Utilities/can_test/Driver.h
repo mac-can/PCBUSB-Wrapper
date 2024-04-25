@@ -2,7 +2,7 @@
 //
 //  CAN Tester for generic Interfaces (CAN API V3)
 //
-//  Copyright (c) 2008-2010,2014-2023 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+//  Copyright (c) 2008-2010,2014-2024 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 //
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -15,14 +15,14 @@
 //  GNU General Public License for more details.
 //
 //  You should have received a copy of the GNU General Public License
-//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 #ifndef DRIVER_H_INCLUDED
 #define DRIVER_H_INCLUDED
 #include "build_no.h"
 #define VERSION_MAJOR      0
 #define VERSION_MINOR      2
-#define VERSION_PATCH      7
+#define VERSION_PATCH      8
 #define VERSION_BUILD      BUILD_NO
 #define VERSION_STRING     TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) " (" TOSTRING(BUILD_NO) ")"
 #if defined(_WIN64)
@@ -44,7 +44,7 @@
 #define CAN_FD_SUPPORTED   1  // don't touch that dial
 #endif
 #define TESTER_INTEFACE   "PEAK-System PCAN-USB Interfaces"
-#define TESTER_COPYRIGHT  "2008-2010,2014-2023 by Uwe Vogt, UV Software, Berlin"
+#define TESTER_COPYRIGHT  "2008-2010,2014-2024 by Uwe Vogt, UV Software, Berlin"
 
 #include "PeakCAN.h"
 

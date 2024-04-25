@@ -1,7 +1,7 @@
 #
 #	CAN Interface API, Version 3 (for PEAK-System PCAN-USB Interfaces)
 #
-#	Copyright (c) 2012-2023  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+#	Copyright (c) 2012-204 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 #	All rights reserved.
 #
 #	This library is part of PCBUSB-Wrapper.
@@ -65,7 +65,7 @@ LIBRARY = libUVCANPCB
 
 MAJOR = 0
 MINOR = 2
-PATCH = 7
+PATCH = 8
 
 VERSION = $(MAJOR).$(MINOR).$(PATCH)
 TARGET  = $(LIBRARY).$(VERSION).dylib
@@ -126,7 +126,7 @@ LIBRARY = libuvcanpcb
 
 MAJOR = 0
 MINOR = 2
-PATCH = 7
+PATCH = 8
 
 VERSION = $(MAJOR).$(MINOR).$(PATCH)
 SONAME  = $(LIBRARY).so

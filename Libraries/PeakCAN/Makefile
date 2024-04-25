@@ -1,7 +1,7 @@
 #
 #	CAN Interface API, Version 3 (for PEAK-System PCAN-USB Interfaces)
 #
-#	Copyright (c) 2012-2023  Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+#	Copyright (c) 2012-2024 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 #	All rights reserved.
 #
 #	This library is part of PCBUSB-Wrapper.
@@ -42,7 +42,7 @@
 #	GNU General Public License for more details.
 #
 #	You should have received a copy of the GNU General Public License
-#	along with PCBUSB-Wrapper.  If not, see <http://www.gnu.org/licenses/>.
+#	along with PCBUSB-Wrapper.  If not, see <https://www.gnu.org/licenses/>.
 #
 current_OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown OS')
 current_OS := $(patsubst CYGWIN%,Cygwin,$(current_OS))
@@ -65,7 +65,7 @@ LIBRARY = libPeakCAN
 
 MAJOR = 0
 MINOR = 2
-PATCH = 7
+PATCH = 8
 
 VERSION = $(MAJOR).$(MINOR).$(PATCH)
 TARGET  = $(LIBRARY).$(VERSION).dylib
@@ -126,7 +126,7 @@ LIBRARY = libpeakcan
 
 MAJOR = 0
 MINOR = 2
-PATCH = 7
+PATCH = 8
 
 VERSION = $(MAJOR).$(MINOR).$(PATCH)
 SONAME  = $(LIBRARY).so
