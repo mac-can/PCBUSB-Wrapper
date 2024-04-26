@@ -1,6 +1,8 @@
 ### macOS&reg; Wrapper Library for PCAN Interfaces from PEAK-System
 
-_Copyright&copy; 2005-2010,2012-2024 Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
+_Copyright&copy; 2005-2010, 2012-2024 Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
+
+![macOS Build](https://github.com/mac-can/PCBUSB-Wrapper/actions/workflows/macos-build.yml/badge.svg)
 
 # CAN API V3 for PCAN-USB Interfaces
 
