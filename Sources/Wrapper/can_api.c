@@ -1,17 +1,18 @@
 /*  SPDX-License-Identifier: BSD-2-Clause OR GPL-3.0-or-later */
 /*
- *  CAN Interface API, Version 3 (for PEAK-System PCAN-USB Interfaces)
+ *  CAN Interface API, Version 3 (for PEAK-System PCAN Interfaces)
  *
- *  Copyright (c) 2012-2023 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+ *  Copyright (c) 2005-2012 Uwe Vogt, UV Software, Friedrichshafen
+ *  Copyright (c) 2013-2024 Uwe Vogt, UV Software, Berlin (info@uv-software.de.com)
  *  All rights reserved.
  *
- *  This file is part of PCBUSB-Wrapper.
+ *  This file is part of PCANBasic-Wrapper.
  *
- *  PCBUSB-Wrapper is dual-licensed under the BSD 2-Clause "Simplified" License
+ *  PCANBasic-Wrapper is dual-licensed under the BSD 2-Clause "Simplified" License
  *  and under the GNU General Public License v3.0 (or any later version). You can
- *  choose between one of them if you use PCBUSB-Wrapper in whole or in part.
+ *  choose between one of them if you use PCANBasic-Wrapper in whole or in part.
  *
- *  BSD 2-Clause Simplified License:
+ *  BSD 2-Clause "Simplified" License:
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *  1. Redistributions of source code must retain the above copyright notice, this
@@ -20,7 +21,7 @@
  *     this list of conditions and the following disclaimer in the documentation
  *     and/or other materials provided with the distribution.
  *
- *  PCBUSB-Wrapper IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS AS IS
+ *  PCANBasic-Wrapper IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
@@ -29,37 +30,31 @@
  *  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
  *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  *  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- *  OF PCBUSB-Wrapper, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *  OF PCANBasic-Wrapper, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *  GNU General Public License v3.0 or later:
- *  PCBUSB-Wrapper is free software: you can redistribute it and/or modify
+ *  PCANBasic-Wrapper is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
- *  PCBUSB-Wrapper is distributed in the hope that it will be useful,
+ *  PCANBasic-Wrapper is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with PCBUSB-Wrapper.  If not, see <http://www.gnu.org/licenses/>.
+ *  along with PCANBasic-Wrapper.  If not, see <https://www.gnu.org/licenses/>.
  */
 /** @addtogroup  can_api
  *  @{
  */
-#include "build_no.h"
 #ifdef _MSC_VER
-#define VERSION_MAJOR    0
-#define VERSION_MINOR    4
-#define VERSION_PATCH    7
-#else
-#define VERSION_MAJOR    0
-#define VERSION_MINOR    2
-#define VERSION_PATCH    7
+//no Microsoft extensions please!
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS 1
 #endif
-#define VERSION_BUILD    BUILD_NO
-#define VERSION_STRING   TOSTRING(VERSION_MAJOR) "." TOSTRING(VERSION_MINOR) "." TOSTRING(VERSION_PATCH) " (" TOSTRING(BUILD_NO) ")"
+#endif
 #if defined(_WIN64)
 #define PLATFORM        "x64"
 #elif defined(_WIN32)
@@ -69,27 +64,15 @@
 #elif defined(__APPLE__)
 #define PLATFORM        "macOS"
 #else
-#error Unsupported architecture
+#error Platform not supported
 #endif
-static const char version[] = "CAN API V3 for PEAK-System PCAN-USB Interfaces, Version " VERSION_STRING;
-
 
 /*  -----------  includes  -----------------------------------------------
  */
-
-#ifdef _MSC_VER
-//no Microsoft extensions please!
-#ifndef _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS 1
-#endif
-#endif
 #include "can_defs.h"
 #include "can_api.h"
 #include "can_btr.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #include "PCANBasic.h"
@@ -102,11 +85,18 @@ static const char version[] = "CAN API V3 for PEAK-System PCAN-USB Interfaces, V
 #include "PCANBasic.h"
 #endif
 #endif
+#include "Version.h"
+
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
 
 /*  -----------  options  ------------------------------------------------
  */
-
-#if (OPTION_CANAPI_PCBUSB_DYLIB != 0)
+#if (OPTION_CAN_2_0_ONLY != 0)
+#error Compilation with legacy CAN 2.0 frame format!
+#endif
+#if (OPTION_CANAPI_PCBUSB_DYLIB != 0) || (OPTION_CANAPI_PCANBASIC_SO != 0)
 __attribute__((constructor))
 static void _initializer() {
     // default initializer
@@ -122,10 +112,8 @@ static void _finalizer() {
 #define ISSUE_303_WORKAROUND    // PCBUSB issue #303: first transmit message will be swallowed
 #define ISSUE_276_UNSOLVED      // PCBUSB issue #276: parameter PCAN_RECEIVE_STATUS reverted
 
-
 /*  -----------  defines  ------------------------------------------------
  */
-
 #ifndef PCAN_MAX_HANDLES
 #define PCAN_MAX_HANDLES        (16)    // maximum number of open handles
 #endif
@@ -147,9 +135,18 @@ static void _finalizer() {
 #define BTR0BTR1_DEFAULT        PCAN_BAUD_250K
 #define BIT_RATE_DEFAULT        "f_clock_mhz=80,nom_brp=20,nom_tseg1=12,nom_tseg2=3,nom_sjw=1," \
                                               "data_brp=4,data_tseg1=7,data_tseg2=2,data_sjw=1"
+#define FILTER_STD_CODE         (uint32_t)(0x000)
+#define FILTER_STD_MASK         (uint32_t)(0x000)
+#define FILTER_XTD_CODE         (uint32_t)(0x00000000)
+#define FILTER_XTD_MASK         (uint32_t)(0x00000000)
 #ifndef SYSERR_OFFSET
 #define SYSERR_OFFSET           (-10000)
 #endif
+#define LIB_ID                  PCAN_LIB_ID
+#define LIB_DLLNAME             PCAN_LIB_WRAPPER
+#define DEV_VENDOR              PCAN_LIB_VENDOR
+#define DEV_DLLNAME             PCAN_LIB_BASIC
+#define NUM_CHANNELS            PCAN_BOARDS
 
 /*  -----------  types  --------------------------------------------------
  */
@@ -171,9 +168,10 @@ typedef struct {                        // PCAN interface:
     BYTE  brd_type;                     //   board type (none PnP hardware)
     DWORD brd_port;                     //   board parameter: I/O port address
     WORD  brd_irq;                      //   board parameter: interrupt number
-#if !defined(_WIN32) && !defined(_WIN64)
-    int   fdes;                         //   file descriptor (for blocking read)
+#if defined(_WIN32) || defined(_WIN64)
+    HANDLE event;                       //   event handle for blocking read
 #else
+    int   fdes;                         //   file descriptor for blocking read
 #endif
     can_mode_t mode;                    //   operation mode of the CAN channel
     can_status_t status;                //   8-bit status register
@@ -184,16 +182,23 @@ typedef struct {                        // PCAN interface:
 
 /*  -----------  prototypes  ---------------------------------------------
  */
+static void var_init(void);             // initialize variables
 
 static int pcan_error(TPCANStatus);     // PCAN specific errors
 static int pcan_compatibility(void);    // PCAN compatibility check
+
 static TPCANStatus pcan_capability(TPCANHandle board, can_mode_t *capability);
+
 static int lib_parameter(uint16_t param, void *value, size_t nbyte);
 static int drv_parameter(int handle, uint16_t param, void *value, size_t nbyte);
 
-
 /*  -----------  variables  ----------------------------------------------
  */
+#if !defined(__APPLE__)
+static const char version[] = "CAN API V3 for PEAK-System PCAN Interfaces, Version " VERSION_STRING;
+#else
+static const char version[] = "CAN API V3 for PEAK-System PCAN USB Interfaces, Version " VERSION_STRING;
+#endif
 
 EXPORT
 can_board_t can_boards[PCAN_BOARDS+1]=// list of CAN Interface boards:
@@ -222,8 +227,7 @@ static const uint8_t dlc_table[16] = {  // DLC to length
     0,1,2,3,4,5,6,7,8,12,16,20,24,32,48,64
 };
 static can_interface_t can[PCAN_MAX_HANDLES]; // interface handles
-static int init =  0;  // initialization flag
-
+static int init = 0;                    // initialization flag
 
 /*  -----------  functions  ----------------------------------------------
  */
@@ -240,23 +244,7 @@ int can_test(int32_t board, uint8_t mode, const void *param, int *result)
         return pcan_error(PCAN_ERROR_ILLCLIENT);
 
     if (!init) {                        // when not init before:
-        for (i = 0; i < PCAN_MAX_HANDLES; i++) {
-            can[i].board = PCAN_NONEBUS;
-            can[i].brd_type = 0u;
-            can[i].brd_port = 0u;
-            can[i].brd_irq = 0u;
-#if !defined(_WIN32) && !defined(_WIN64)
-            can[i].fdes = -1;
-#endif
-            can[i].mode.byte = CANMODE_DEFAULT;
-            can[i].status.byte = CANSTAT_RESET;
-            can[i].error.lec = 0x00u;
-            can[i].error.rx_err = 0u;
-            can[i].error.tx_err = 0u;
-            can[i].counters.tx = 0ull;
-            can[i].counters.rx = 0ull;
-            can[i].counters.err = 0ull;
-        }
+        var_init();                     //   initialize variables
         init = 1;                       //   set initialization flag
     }
     if ((rc = CAN_GetValue((TPCANHandle)board, PCAN_CHANNEL_CONDITION,
@@ -316,23 +304,7 @@ int can_init(int32_t board, uint8_t mode, const void *param)
         return pcan_error(PCAN_ERROR_ILLCLIENT);
 
     if (!init) {                        // when not init before:
-        for (i = 0; i < PCAN_MAX_HANDLES; i++) {
-            can[i].board = PCAN_NONEBUS;
-            can[i].brd_type = 0u;
-            can[i].brd_port = 0u;
-            can[i].brd_irq = 0u;
-#if !defined(_WIN32) && !defined(_WIN64)
-            can[i].fdes = -1;
-#endif
-            can[i].mode.byte = CANMODE_DEFAULT;
-            can[i].status.byte = CANSTAT_RESET;
-            can[i].error.lec = 0x00u;
-            can[i].error.rx_err = 0u;
-            can[i].error.tx_err = 0u;
-            can[i].counters.tx = 0ull;
-            can[i].counters.rx = 0ull;
-            can[i].counters.err = 0ull;
-        }
+        var_init();                     //   initialize variables
         init = 1;                       //   set initialization flag
     }
     for (i = 0; i < PCAN_MAX_HANDLES; i++) {
@@ -477,7 +449,6 @@ int can_start(int handle, const can_bitrate_t *bitrate)
     uint16_t btr0btr1 = BTR0BTR1_DEFAULT;  // btr0btr1 value
     char string[PCAN_MAX_BUFFER_SIZE];  // bit-rate string
     DWORD value;                        // parameter value
-    //UINT64 filter;                       // for 29-bit filter
     TPCANStatus rc;                     // return value
 
     strcpy(string, "");                 // empty string
@@ -542,7 +513,7 @@ int can_start(int handle, const can_bitrate_t *bitrate)
         return pcan_error(rc);
     }
 #endif
-    /* note: the receiver is automatically switched ON by CAN_Uninitialize() */
+    /* note: the receiver is automatically switched ON by CAN_Initialize[FD]() */
     if (can[handle].mode.fdoe) {        // CAN FD operation mode?
         if ((rc = CAN_InitializeFD(can[handle].board, string)) != PCAN_ERROR_OK)
             return pcan_error(rc);
@@ -563,7 +534,7 @@ int can_start(int handle, const can_bitrate_t *bitrate)
 #ifndef ISSUE_303_WORKAROUND
     value = (can[handle].mode.mon) ? PCAN_PARAMETER_ON : PCAN_PARAMETER_OFF;
     if ((rc = CAN_SetValue(can[handle].board, PCAN_LISTEN_ONLY,
-                   (void*)&value, sizeof(value))) != PCAN_ERROR_OK) {
+                  (void*)&value, sizeof(value))) != PCAN_ERROR_OK) {
         CAN_Uninitialize(can[handle].board);
         return pcan_error(rc);
     }
@@ -571,7 +542,7 @@ int can_start(int handle, const can_bitrate_t *bitrate)
 #if (0)
     value = (can[handle].mode.err) ? PCAN_PARAMETER_ON : PCAN_PARAMETER_OFF;
     if ((rc = CAN_SetValue(can[handle].board, PCAN_ALLOW_ERROR_FRAMES,
-                     (void*)&value, sizeof(value))) != PCAN_ERROR_OK) {
+                  (void*)&value, sizeof(value))) != PCAN_ERROR_OK) {
         CAN_Uninitialize(can[handle].board);
         return pcan_error(rc);
     }
@@ -1121,6 +1092,31 @@ char *can_firmware(int handle)
 
 /*  -----------  local functions  ----------------------------------------
  */
+static void var_init(void)
+{
+    int i;
+
+    for (i = 0; i < PCAN_MAX_HANDLES; i++) {
+        memset(&can[i], 0, sizeof(can_interface_t));
+        can[i].board = PCAN_NONEBUS;
+        can[i].brd_type = 0u;
+        can[i].brd_port = 0u;
+        can[i].brd_irq = 0u;
+#if defined(_WIN32) || defined(_WIN64)
+        can[i].event = NULL;
+#else
+        can[i].fdes = -1;
+#endif
+        can[i].mode.byte = CANMODE_DEFAULT;
+        can[i].status.byte = CANSTAT_RESET;
+        can[i].error.lec = 0x00u;
+        can[i].error.rx_err = 0u;
+        can[i].error.tx_err = 0u;
+        can[i].counters.tx = 0ull;
+        can[i].counters.rx = 0ull;
+        can[i].counters.err = 0ull;
+    }
+}
 
 #define PCAN_ERROR_MASK  (PCAN_ERROR_REGTEST | PCAN_ERROR_NODRIVER | PCAN_ERROR_HWINUSE | PCAN_ERROR_NETINUSE | \
                           PCAN_ERROR_ILLHW | PCAN_ERROR_ILLHW | PCAN_ERROR_ILLCLIENT)
@@ -1215,13 +1211,13 @@ static TPCANStatus pcan_capability(TPCANHandle board, can_mode_t *capability)
 static int lib_parameter(uint16_t param, void *value, size_t nbyte)
 {
     int rc = CANERR_ILLPARA;            // suppose an invalid parameter
-
     static int idx_board = EOF;         // actual index in the interface list
     TPCANStatus sts;                    // status or error code
 
     if (value == NULL) {                // check for null-pointer
         if ((param != CANPROP_SET_FIRST_CHANNEL) &&
-           (param != CANPROP_SET_NEXT_CHANNEL))
+            (param != CANPROP_SET_NEXT_CHANNEL) &&
+            (param != CANPROP_SET_FILTER_RESET))
             return CANERR_NULLPTR;
     }
     /* CAN library properties */
@@ -1253,7 +1249,7 @@ static int lib_parameter(uint16_t param, void *value, size_t nbyte)
         break;
     case CANPROP_GET_LIBRARY_ID:        // library id of the library (int32_t)
         if (nbyte >= sizeof(int32_t)) {
-            *(int32_t*)value = (int32_t)PCAN_LIB_ID;
+            *(int32_t*)value = (int32_t)LIB_ID;
             rc = CANERR_NOERROR;
         }
         break;
@@ -1264,20 +1260,20 @@ static int lib_parameter(uint16_t param, void *value, size_t nbyte)
         }
         break;
     case CANPROP_GET_LIBRARY_DLLNAME:   // file name of the library (char[256])
-        if ((nbyte > strlen(PCAN_LIB_WRAPPER)) && (nbyte <= CANPROP_MAX_BUFFER_SIZE)) {
-            strcpy((char*)value, PCAN_LIB_WRAPPER);
+        if ((nbyte > strlen(LIB_DLLNAME)) && (nbyte <= CANPROP_MAX_BUFFER_SIZE)) {
+            strcpy((char*)value, LIB_DLLNAME);
             rc = CANERR_NOERROR;
         }
         break;
     case CANPROP_GET_DEVICE_VENDOR:     // vendor name of the CAN interface (char[256])
-        if ((nbyte > strlen(PCAN_LIB_VENDOR)) && (nbyte <= CANPROP_MAX_BUFFER_SIZE)) {
-            strcpy((char*)value, PCAN_LIB_VENDOR);
+        if ((nbyte > strlen(DEV_VENDOR)) && (nbyte <= CANPROP_MAX_BUFFER_SIZE)) {
+            strcpy((char*)value, DEV_VENDOR);
             rc = CANERR_NOERROR;
         }
         break;
     case CANPROP_GET_DEVICE_DLLNAME:    // file name of the CAN interface DLL (char[256])
-        if ((nbyte > strlen(PCAN_LIB_BASIC)) && (nbyte <= CANPROP_MAX_BUFFER_SIZE)) {
-            strcpy((char*)value, PCAN_LIB_BASIC);
+        if ((nbyte > strlen(DEV_DLLNAME)) && (nbyte <= CANPROP_MAX_BUFFER_SIZE)) {
+            strcpy((char*)value, DEV_DLLNAME);
             rc = CANERR_NOERROR;
         }
         break;
@@ -1286,7 +1282,7 @@ static int lib_parameter(uint16_t param, void *value, size_t nbyte)
         rc = (can_boards[idx_board].type != EOF) ? CANERR_NOERROR : CANERR_RESOURCE;
         break;
     case CANPROP_SET_NEXT_CHANNEL:      // set index to the next entry in the interface list (NULL)
-        if ((0 <= idx_board) && (idx_board < PCAN_BOARDS)) {
+        if ((0 <= idx_board) && (idx_board < NUM_CHANNELS)) {
             if (can_boards[idx_board].type != EOF)
                 idx_board++;
             rc = (can_boards[idx_board].type != EOF) ? CANERR_NOERROR : CANERR_RESOURCE;
@@ -1296,7 +1292,7 @@ static int lib_parameter(uint16_t param, void *value, size_t nbyte)
         break;
     case CANPROP_GET_CHANNEL_NO:        // get channel no. at actual index in the interface list (int32_t)
         if (nbyte >= sizeof(int32_t)) {
-            if ((0 <= idx_board) && (idx_board < PCAN_BOARDS) &&
+            if ((0 <= idx_board) && (idx_board < NUM_CHANNELS) &&
                 (can_boards[idx_board].type != EOF)) {
                 *(int32_t*)value = (int32_t)can_boards[idx_board].type;
                 rc = CANERR_NOERROR;
@@ -1307,7 +1303,7 @@ static int lib_parameter(uint16_t param, void *value, size_t nbyte)
         break;
     case CANPROP_GET_CHANNEL_NAME:      // get channel name at actual index in the interface list (char[256])
         if ((0U < nbyte) && (nbyte <= CANPROP_MAX_BUFFER_SIZE)) {
-            if ((0 <= idx_board) && (idx_board < PCAN_BOARDS) &&
+            if ((0 <= idx_board) && (idx_board < NUM_CHANNELS) &&
                 (can_boards[idx_board].type != EOF)) {
                 strncpy((char*)value, can_boards[idx_board].name, nbyte);
                 ((char*)value)[(nbyte - 1)] = '\0';
@@ -1319,9 +1315,9 @@ static int lib_parameter(uint16_t param, void *value, size_t nbyte)
         break;
     case CANPROP_GET_CHANNEL_DLLNAME:   // get file name of the DLL at actual index in the interface list (char[256])
         if ((0U < nbyte) && (nbyte <= CANPROP_MAX_BUFFER_SIZE)) {
-            if ((0 <= idx_board) && (idx_board < PCAN_BOARDS) &&
+            if ((0 <= idx_board) && (idx_board < NUM_CHANNELS) &&
                 (can_boards[idx_board].type != EOF)) {
-                strncpy((char*)value, PCAN_LIB_BASIC, nbyte);
+                strncpy((char*)value, DEV_DLLNAME, nbyte);
                 ((char*)value)[(nbyte - 1)] = '\0';
                 rc = CANERR_NOERROR;
             }
@@ -1331,9 +1327,9 @@ static int lib_parameter(uint16_t param, void *value, size_t nbyte)
         break;
     case CANPROP_GET_CHANNEL_VENDOR_ID: // get library id at actual index in the interface list (int32_t)
         if (nbyte >= sizeof(int32_t)) {
-            if ((0 <= idx_board) && (idx_board < PCAN_BOARDS) &&
+            if ((0 <= idx_board) && (idx_board < NUM_CHANNELS) &&
                 (can_boards[idx_board].type != EOF)) {
-                *(int32_t*)value = (int32_t)PCAN_LIB_ID;
+                *(int32_t*)value = (int32_t)LIB_ID;
                 rc = CANERR_NOERROR;
             }
             else
@@ -1342,9 +1338,9 @@ static int lib_parameter(uint16_t param, void *value, size_t nbyte)
         break;
     case CANPROP_GET_CHANNEL_VENDOR_NAME: // get vendor name at actual index in the interface list (char[256])
         if ((0U < nbyte) && (nbyte <= CANPROP_MAX_BUFFER_SIZE)) {
-            if ((0 <= idx_board) && (idx_board < PCAN_BOARDS) &&
+            if ((0 <= idx_board) && (idx_board < NUM_CHANNELS) &&
                 (can_boards[idx_board].type != EOF)) {
-                strncpy((char*)value, PCAN_LIB_VENDOR, nbyte);
+                strncpy((char*)value, DEV_VENDOR, nbyte);
                 ((char*)value)[(nbyte - 1)] = '\0';
                 rc = CANERR_NOERROR;
             }
@@ -1402,19 +1398,20 @@ static int lib_parameter(uint16_t param, void *value, size_t nbyte)
 static int drv_parameter(int handle, uint16_t param, void *value, size_t nbyte)
 {
     int rc = CANERR_ILLPARA;            // suppose an invalid parameter
-    can_bitrate_t bitrate;
-    can_speed_t speed;
-    can_mode_t mode;
-    uint8_t status = 0U;
-    uint8_t load = 0U;
-    TPCANStatus sts;
+    can_bitrate_t bitrate;              // bit-rate settings
+    can_speed_t speed;                  // current bus speed
+    can_mode_t mode;                    // current operation mode
+    uint8_t status = 0U;                // status register
+    uint8_t load = 0U;                  // bus load
+    TPCANStatus sts;                    // status or error code
 
     assert(IS_HANDLE_VALID(handle));    // just to make sure
 
     if (value == NULL) {                // check for null-pointer
         if ((param != CANPROP_SET_FIRST_CHANNEL) &&
-           (param != CANPROP_SET_NEXT_CHANNEL))
-        return CANERR_NULLPTR;
+            (param != CANPROP_SET_NEXT_CHANNEL) &&
+            (param != CANPROP_SET_FILTER_RESET))
+            return CANERR_NULLPTR;
     }
     /* CAN interface properties */
     switch (param) {
@@ -1434,14 +1431,14 @@ static int drv_parameter(int handle, uint16_t param, void *value, size_t nbyte)
         }
         break;
     case CANPROP_GET_DEVICE_VENDOR:     // vendor name of the CAN interface (char[256])
-        if ((nbyte > strlen(PCAN_LIB_VENDOR)) && (nbyte <= CANPROP_MAX_BUFFER_SIZE)) {
-            strcpy((char*)value, PCAN_LIB_VENDOR);
+        if ((nbyte > strlen(DEV_VENDOR)) && (nbyte <= CANPROP_MAX_BUFFER_SIZE)) {
+            strcpy((char*)value, DEV_VENDOR);
             rc = CANERR_NOERROR;
         }
         break;
     case CANPROP_GET_DEVICE_DLLNAME:    // file name of the CAN interface DLL (char[256])
-        if ((nbyte > strlen(PCAN_LIB_BASIC)) && (nbyte <= CANPROP_MAX_BUFFER_SIZE)) {
-            strcpy((char*)value, PCAN_LIB_BASIC);
+        if ((nbyte > strlen(DEV_DLLNAME)) && (nbyte <= CANPROP_MAX_BUFFER_SIZE)) {
+            strcpy((char*)value, DEV_DLLNAME);
             rc = CANERR_NOERROR;
         }
         break;
@@ -1564,9 +1561,8 @@ static int drv_parameter(int handle, uint16_t param, void *value, size_t nbyte)
 
 /*  -----------  revision control  ---------------------------------------
  */
-
 EXPORT
-char* can_version(void)
+char *can_version(void)
 {
     return (char*)version;
 }
@@ -1818,5 +1814,5 @@ TPCANStatus CAN_LookUpChannel(LPSTR Parameters, TPCANHandle* FoundChannel)
 /*  ----------------------------------------------------------------------
  *  Uwe Vogt,  UV Software,  Chausseestrasse 33 A,  10115 Berlin,  Germany
  *  Tel.: +49-30-46799872,  Fax: +49-30-46799873,  Mobile: +49-170-3801903
- *  E-Mail: uwe.vogt@uv-software.de,  Homepage: http://www.uv-software.de/
+ *  E-Mail: uwe.vogt@uv-software.de, Homepage: https://www.uv-software.de/
  */

@@ -1,15 +1,16 @@
 //  SPDX-License-Identifier: BSD-2-Clause OR GPL-3.0-or-later
 //
-//  CAN Interface API, Version 3 (for PEAK-System PCAN-USB Interfaces)
+//  CAN Interface API, Version 3 (for PEAK-System PCAN Interfaces)
 //
-//  Copyright (c) 2012-2023 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+//  Copyright (c) 2005-2012 Uwe Vogt, UV Software, Friedrichshafen
+//  Copyright (c) 2013-2024 Uwe Vogt, UV Software, Berlin (info@uv-software.de.com)
 //  All rights reserved.
 //
-//  This file is part of PCBUSB-Wrapper.
+//  This file is part of PCANBasic-Wrapper.
 //
-//  PCBUSB-Wrapper is dual-licensed under the BSD 2-Clause "Simplified" License
+//  PCANBasic-Wrapper is dual-licensed under the BSD 2-Clause "Simplified" License
 //  and under the GNU General Public License v3.0 (or any later version). You can
-//  choose between one of them if you use PCBUSB-Wrapper in whole or in part.
+//  choose between one of them if you use PCANBasic-Wrapper in whole or in part.
 //
 //  BSD 2-Clause "Simplified" License:
 //  Redistribution and use in source and binary forms, with or without
@@ -20,7 +21,7 @@
 //     this list of conditions and the following disclaimer in the documentation
 //     and/or other materials provided with the distribution.
 //
-//  PCBUSB-Wrapper IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+//  PCANBasic-Wrapper IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 //  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
 //  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
 //  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
@@ -29,21 +30,21 @@
 //  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 //  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 //  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-//  OF PCBUSB-Wrapper, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//  OF PCANBasic-Wrapper, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //  GNU General Public License v3.0 or later:
-//  PCBUSB-Wrapper is free software: you can redistribute it and/or modify
+//  PCANBasic-Wrapper is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
 //  the Free Software Foundation, either version 3 of the License, or
 //  (at your option) any later version.
 //
-//  PCBUSB-Wrapper is distributed in the hope that it will be useful,
+//  PCANBasic-Wrapper is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
 //  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //  GNU General Public License for more details.
 //
 //  You should have received a copy of the GNU General Public License
-//  along with PCBUSB-Wrapper.  If not, see <https://www.gnu.org/licenses/>.
+//  along with PCANBasic-Wrapper.  If not, see <https://www.gnu.org/licenses/>.
 //
 #ifndef PEAKCAN_H_INCLUDED
 #define PEAKCAN_H_INCLUDED
@@ -59,7 +60,7 @@
 #define PEAKCAN_LIBRARY_NAME  CANDLL_PCANBASIC
 #define PEAKCAN_LIBRARY_VENDOR  "UV Software, Berlin"
 #define PEAKCAN_LIBRARY_LICENSE  "BSD-2-Clause OR GPL-3.0-or-later"
-#define PEAKCAN_LIBRARY_COPYRIGHT  "Copyright (c) 2012-2023  Uwe Vogt, UV Software, Berlin"
+#define PEAKCAN_LIBRARY_COPYRIGHT  "Copyright (c) 2005-2024 by Uwe Vogt, UV Software, Berlin"
 #define PEAKCAN_LIBRARY_HAZARD_NOTE  "If you connect your CAN device to a real CAN network when using this library,\n" \
                                      "you might damage your application."
 /// \}
@@ -71,13 +72,6 @@
 class CANCPP CPeakCAN : public CCanApi {
 private:
     CANAPI_Handle_t m_Handle;  ///< CAN interface handle
-    CANAPI_OpMode_t m_OpMode;  ///< CAN operation mode
-    CANAPI_Bitrate_t m_Bitrate;  ///< CAN bitrate settings
-    struct {
-        uint64_t u64TxMessages;  ///< number of transmitted CAN messages
-        uint64_t u64RxMessages;  ///< number of received CAN messages
-        uint64_t u64ErrorFrames;  ///< number of received status messages
-    } m_Counter;
 public:
     // constructor / destructor
     CPeakCAN();
@@ -116,7 +110,7 @@ public:
     CANAPI_Return_t ResetController();
 
     CANAPI_Return_t WriteMessage(CANAPI_Message_t message, uint16_t timeout = 0U);
-    CANAPI_Return_t ReadMessage(CANAPI_Message_t &message, uint16_t timeout = CANREAD_INFINITE);
+    CANAPI_Return_t ReadMessage(CANAPI_Message_t &message, uint16_t timeout = CANWAIT_INFINITE);
 
     CANAPI_Return_t GetStatus(CANAPI_Status_t &status);
     CANAPI_Return_t GetBusLoad(uint8_t &load);
@@ -126,6 +120,12 @@ public:
 
     CANAPI_Return_t GetProperty(uint16_t param, void *value, uint32_t nbyte);
     CANAPI_Return_t SetProperty(uint16_t param, const void *value, uint32_t nbyte);
+
+    CANAPI_Return_t SetFilter11Bit(uint32_t code, uint32_t mask);
+    CANAPI_Return_t SetFilter29Bit(uint32_t code, uint32_t mask);
+    CANAPI_Return_t GetFilter11Bit(uint32_t &code, uint32_t &mask);
+    CANAPI_Return_t GetFilter29Bit(uint32_t &code, uint32_t &mask);
+    CANAPI_Return_t ResetFilters();
 
     char *GetHardwareVersion();  // (for compatibility reasons)
     char *GetFirmwareVersion();  // (for compatibility reasons)

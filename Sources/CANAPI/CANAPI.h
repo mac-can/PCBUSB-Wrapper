@@ -2,13 +2,13 @@
 //
 //  CAN Interface API, Version 3 (Interface Definition)
 //
-//  Copyright (c) 2004-2023 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
+//  Copyright (c) 2004-2024 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 //  All rights reserved.
 //
 //  This file is part of CAN API V3.
 //
-//  CAN API V3 is dual-licensed under the BSD 2-Clause "Simplified" License and
-//  under the GNU General Public License v3.0 (or any later version).
+//  CAN API V3 is dual-licensed under the BSD 2-Clause "Simplified" License
+//  and under the GNU General Public License v3.0 (or any later version).
 //  You can choose between one of them if you use this file.
 //
 //  BSD 2-Clause "Simplified" License:
@@ -43,7 +43,7 @@
 //  GNU General Public License for more details.
 //
 //  You should have received a copy of the GNU General Public License
-//  along with CAN API V3.  If not, see <http://www.gnu.org/licenses/>.
+//  along with CAN API V3.  If not, see <https://www.gnu.org/licenses/>.
 //
 /// \file        CANAPI.h
 //
@@ -73,9 +73,9 @@
 ///              zero to compile your program with the CAN API source files or to
 ///              link your program with the static library at compile-time.
 ///
-/// \author      $Author: haumea $
+/// \author      $Author: eris $
 //
-/// \version     $Rev: 1212 $
+/// \version     $Rev: 1270 $
 //
 /// \defgroup    can_api CAN Interface API, Version 3
 /// \{
@@ -227,21 +227,16 @@ public:
     static bool GetFirstChannel(SChannelInfo &info, void *param = NULL);
 #endif
 
-    /// \brief       query channel information of the first CAN interface in the
+    /// \brief       query channel information of the next CAN interface in the
     ///              list of CAN interfaces, if any.
     //
-    /// \param[in]   library - library id of the CAN interface list, or -1 for all vendors
     /// \param[out]  info    - the channel information of the next entry in the list
     /// \param[out]  param   - pointer to channel-specific parameters
     //
     /// \returns     true if channel information have been successfully read, or
     ///              false on error.
     //
-#if (OPTION_CANAPI_LIBRARY != 0)
-    static bool GetNextChannel(int32_t library, SChannelInfo &info, void *param = NULL);
-#else
-   static bool GetNextChannel(SChannelInfo &info, void *param = NULL);
-#endif
+    static bool GetNextChannel(SChannelInfo &info, void *param = NULL);
 
     /// \brief       probes if the CAN interface (hardware and driver) given by
     ///              the argument [ 'library' and ] 'channel' is present,
@@ -397,7 +392,7 @@ public:
     //
     /// \param[in]   param    - property id to be read
     /// \param[out]  value    - pointer to a buffer for the value to be read
-    /// \param[in]   nbyte   -  size of the given buffer in byte
+    /// \param[in]   nbyte    - size of the given buffer in byte
     //
     /// \returns     0 if successful, or a negative value on error.
     //
@@ -407,11 +402,53 @@ public:
     //
     /// \param[in]   param    - property id to be written
     /// \param[in]   value    - pointer to a buffer with the value to be written
-    /// \param[in]   nbyte   -  size of the given buffer in byte
+    /// \param[in]   nbyte    - size of the given buffer in byte
     //
     /// \returns     0 if successful, or a negative value on error.
     //
     virtual CANAPI_Return_t SetProperty(uint16_t param, const void *value, uint32_t nbyte) = 0;
+
+    /// \brief       sets the filter for 11-bit CAN identifiers.
+    //
+    /// \param[in]   code    - 11-bit code for the filter
+    /// \param[in]   mask    - 11-bit mask for the filter
+    //
+    /// \returns     0 if successful, or a negative value on error.
+    //
+    virtual CANAPI_Return_t SetFilter11Bit(uint32_t code, uint32_t mask) = 0;
+
+    /// \brief       retrieves the filter for 11-bit CAN identifiers.
+    //
+    /// \param[out]  code    - 11-bit code for the filter
+    /// \param[out]  mask    - 11-bit mask for the filter
+    //
+    /// \returns     0 if successful, or a negative value on error.
+    //
+    virtual CANAPI_Return_t GetFilter11Bit(uint32_t &code, uint32_t &mask) = 0;
+
+    /// \brief       sets the filter for 29-bit CAN identifiers.
+    //
+    /// \param[in]   code    - 29-bit code for the filter
+    /// \param[in]   mask    - 29-bit mask for the filter
+    //
+    /// \returns     0 if successful, or a negative value on error.
+    //
+    virtual CANAPI_Return_t SetFilter29Bit(uint32_t code, uint32_t mask) = 0;
+
+    /// \brief       retrieves the filter for 29-bit CAN identifiers.
+    //
+    /// \param[out]  code    - 29-bit code for the filter
+    /// \param[out]  mask    - 29-bit mask for the filter
+    //
+    /// \returns     0 if successful, or a negative value on error.
+    //
+    virtual CANAPI_Return_t GetFilter29Bit(uint32_t &code, uint32_t &mask) = 0;
+
+    /// \brief       resets the filters for CAN identifiers (11-bit and 29-bit).
+    //
+    /// \returns     0 if successful, or a negative value on error.
+    //
+    virtual CANAPI_Return_t ResetFilters() = 0;
 
     /// \brief       retrieves the hardware version of the CAN controller
     ///              board as a zero-terminated string.
@@ -478,4 +515,4 @@ public:
 /// \}
 #endif // CANAPI_H_INCLUDED
 /// \}
-// $Id: CANAPI.h 1212 2023-10-04 15:41:24Z haumea $  Copyright (c) UV Software //
+// $Id: CANAPI.h 1270 2024-04-15 18:42:43Z eris $  Copyright (c) UV Software //

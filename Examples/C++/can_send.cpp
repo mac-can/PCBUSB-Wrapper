@@ -1,3 +1,15 @@
+//
+//  can_send.cpp
+//  PCANBasic-Wrapper
+//  Send some CAN messages using the C API (can_api.h)
+//  Library: u3canpcb.dll, libUVCANPCB.dylib, libuvcanpcb.so
+//
+#ifdef _MSC_VER
+//no Microsoft extensions please!
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS 1
+#endif
+#endif
 #include <iostream>
 #if !defined(_WIN32) && !defined(_WIN64)
 #include <unistd.h>
@@ -15,7 +27,7 @@
 #endif
 #define FRAMES  (CAN_MAX_STD_ID+1)
 
-int main(int argc, const char * argv[]) {
+int main(/*int argc, const char * argv[]*/) {
     int handle, result, i;
     can_bitrate_t bitrate;
     can_message_t message;
@@ -64,6 +76,6 @@ reset:
 end:
     if ((result = can_exit(handle)) < CANERR_NOERROR)
         std::cerr << "+++ error: interface could not be shutdown" << std::endl;
-    std::cerr << "Cheers!" << std::endl;
+    std::cout << "Cheers!" << std::endl;
     return result;
 }

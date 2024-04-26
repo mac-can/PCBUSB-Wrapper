@@ -1,30 +1,30 @@
 OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown OS')
 
-ifeq ($(OS),Darwin)  # macOS - libPeakCAN.dylib
-LIBRARY = libPeakCAN.a
-CXXFLAGS =
+ifeq ($(OS),Darwin)  # macOS - libPeakCAN.a (C++) and libUVCANPCB.a (C)
+LIBRARY1 = libPeakCAN.a
+LIBRARY2 = libUVCANPCB.a
+CXXFLAGS = -Wall -Wextra -pthread
 LDFLAGS = -rpath /usr/local/lib
 CXX = clang++
-LD = clang++
 RM = rm -f
 endif
-ifeq ($(OS),Linux)  # Linux - libpeakcan.so
-LIBRARY = libpeakcan.a
-CXXFLAGS =
+ifeq ($(OS),Linux)  # Linux - libpeakcan.a (C++) and libuvcanpcb.a (C)
+LIBRARY1 = libpeakcan.a
+LIBRARY2 = libuvcanpcb.a
+CXXFLAGS = -Wall -Wextra -pthread
 LDFLAGS =
 CXX = g++
-LD = g++
 RM = rm -f
 endif
 BINARIES = ../../Binaries
 INCLUDES = ../../Includes
 
 TARGET1 = can_recv
-SOURCE1 = $(TARGET1).cpp $(BINARIES)/$(LIBRARY)
+SOURCE1 = $(TARGET1).cpp $(BINARIES)/$(LIBRARY1)
 DEFINES1 = -DCHANNEL=0x51 -DBAUDRATE=CANBTR_INDEX_250K
 
 TARGET2 = can_send
-SOURCE2 = $(TARGET2).cpp $(BINARIES)/$(LIBRARY)
+SOURCE2 = $(TARGET2).cpp $(BINARIES)/$(LIBRARY2)
 DEFINES2 = -DCHANNEL=0x52 -DBAUDRATE=CANBTR_INDEX_250K
 
 
