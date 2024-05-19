@@ -388,7 +388,7 @@ TEST_F(GetStatus, GTEST_TESTCASE(IfChannelTornDown, GTEST_ENABLED)) {
 //
 // @expected: CANERR_NOERROR but status bit 'bus_off' is set
 //
-#if defined(__MAC_11_0)
+#if !defined(__APPLE__) || defined(__MAC_11_0)
 #define GTEST_TC09_8_ENABLED  GTEST_ENABLED
 #else
 #define GTEST_TC09_8_ENABLED  GTEST_DISABLED
@@ -553,7 +553,7 @@ TEST_F(GetStatus, GTEST_TESTCASE(IfInBusOffState, GTEST_TC09_8_ENABLED)) {
 //
 // @expected: CANERR_NOERROR but status bit 'warning_level' is set
 //
-#if defined(__MAC_11_0)
+#if !defined(__APPLE__) || defined(__MAC_11_0)
 #define GTEST_TC09_9_ENABLED  GTEST_ENABLED
 #else
 #define GTEST_TC09_9_ENABLED  GTEST_DISABLED
@@ -581,13 +581,13 @@ TEST_F(GetStatus, GTEST_TESTCASE(IfWarningLevelReached, GTEST_TC09_9_ENABLED)) {
     trmMsg.dlc = 0;
     memset(trmMsg.data, 0, CANFD_MAX_LEN);
 #endif
+    // @
     // @note: This test can be very fragile
     if (g_Options.RunQuick())
         GTEST_SKIP() << "This test can be very fragile!";
 #if (TC09_9_ISSUE_PCBUSB_WARNING_LEVEL == WORKAROUND_ENABLED)
     ASSERT_TRUE(false) << "[  TC09.9  ] No warning level from device!";
 #endif
-    // @
     // @note: This test cannot run if there is another device on bus!
     if (g_Options.Is3rdDevicePresent())
         GTEST_SKIP() << "This test cannot run if there is another device on bus!";
@@ -744,6 +744,9 @@ TEST_F(GetStatus, GTEST_TESTCASE(IfErrorsOnBus, GTEST_TC09_10_ENABLED)) {
     memset(trmMsg.data, 0, CANFD_MAX_LEN);
 #endif
     // @
+    // @note: This test can be very fragile
+    if (g_Options.RunQuick())
+        GTEST_SKIP() << "This test can be very fragile!";
     // @note: This test cannot run if there is another device on bus!
     if (g_Options.Is3rdDevicePresent())
         GTEST_SKIP() << "This test cannot run if there is another device on bus!";
@@ -1334,4 +1337,4 @@ TEST_F(GetStatus, GTEST_TESTCASE(IfReceiveQueueFull, GTEST_TC09_14_ENABLED)) {
     // @end.
 }
 
-//  $Id: TC09_GetStatus.cc 1298 2024-05-19 12:25:37Z makemake $  Copyright (c) UV Software, Berlin.
+//  $Id: TC09_GetStatus.cc 1300 2024-05-19 13:14:53Z quaoar $  Copyright (c) UV Software, Berlin.
