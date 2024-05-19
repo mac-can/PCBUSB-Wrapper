@@ -74,13 +74,20 @@ OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Device.o $(OUTDIR)/Options.o \
 	$(OUTDIR)/TCx1_CallSequences.o $(OUTDIR)/TCx2_BitrateConverter.o \
 	$(OUTDIR)/Timer.o $(OUTDIR)/Progress.o
 
+ifeq ($(REGRESSION),ON)  # disable all workarounds
+REGRESSION_TEST = 1
+else
+REGRESSION_TEST = 0
+endif
+
 ifeq ($(current_OS),Darwin)  # macOS - libPeakCAN.dylib
 
 TARGET	= pcb_testing
 
 INSTALL = ~/bin
 
-DEFINES = -DOPTION_CAN_2_0_ONLY=0 \
+DEFINES = -DOPTION_REGRESSION_TEST=$(REGRESSION_TEST) \
+	-DOPTION_CAN_2_0_ONLY=0 \
 	-DOPTION_CANAPI_RETVALS=1
 
 HEADERS = -I$(HOME_DIR) \
@@ -121,7 +128,8 @@ TARGET	= pcb_testing
 
 INSTALL = ~/bin
 
-DEFINES = -DOPTION_CAN_2_0_ONLY=0 \
+DEFINES = -DOPTION_REGRESSION_TEST=$(REGRESSION_TEST) \
+	-DOPTION_CAN_2_0_ONLY=0 \
 	-DOPTION_CANAPI_RETVALS=1
 
 HEADERS = -I$(HOME_DIR) \
