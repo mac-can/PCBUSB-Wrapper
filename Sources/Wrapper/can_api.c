@@ -56,13 +56,15 @@
 #endif
 #endif
 #if defined(_WIN64)
-#define PLATFORM        "x64"
+#define PLATFORM  "x64"
 #elif defined(_WIN32)
-#define PLATFORM        "x86"
+#define PLATFORM  "x86"
 #elif defined(__linux__)
-#define PLATFORM        "Linux"
+#define PLATFORM  "Linux"
 #elif defined(__APPLE__)
-#define PLATFORM        "macOS"
+#define PLATFORM  "macOS"
+#elif defined(__CYGWIN__)
+#define PLATFORM  "Cygwin"
 #else
 #error Platform not supported
 #endif
@@ -85,7 +87,6 @@
 #include "PCANBasic.h"
 #endif
 #endif
-#include "Version.h"
 
 #include <stdio.h>
 #include <string.h>

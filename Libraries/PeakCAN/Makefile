@@ -53,7 +53,7 @@ current_OS := $(patsubst MSYS%,MinGW,$(current_OS))
 
 MAJOR = 0
 MINOR = 2
-PATCH = 8
+PATCH = 9
 
 ifeq ($(PATCH),0)
 VERSION = $(MAJOR).$(MINOR)
