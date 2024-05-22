@@ -1365,7 +1365,7 @@ TEST_F(ReadMessage, GTEST_TESTCASE(WithFlagRtrInOperationModeNoRtr, GTEST_ENABLE
 //
 // @expected: CANERR_NOERROR but status bit 'warning_level' is set and no status frame in the receive queue
 //
-#if defined(__MAC_11_0)
+#if !defined(__APPLE__) || defined(__MAC_11_0)
 #define GTEST_TC04_15_ENABLED   GTEST_ENABLED
 #else
 #define GTEST_TC04_15_ENABLED   GTEST_DISABLED
@@ -1528,7 +1528,7 @@ TEST_F(ReadMessage, GTEST_TESTCASE(WithFlagStsInOperationModeNoErr, GTEST_TC04_1
 //
 // @expected: CANERR_NOERROR but status bit 'warning_level' is set and a status frame in the receive queue
 //
-#if (FEATURE_ERROR_FRAMES != FEATURE_UNSUPPORTED) && defined(__MAC_11_0)
+#if (FEATURE_ERROR_FRAMES != FEATURE_UNSUPPORTED) && (!defined(__APPLE__) || defined(__MAC_11_0))
 #define GTEST_TC04_16_ENABLED  GTEST_ENABLED
 #else
 #define GTEST_TC04_16_ENABLED  GTEST_DISABLED
@@ -1978,4 +1978,4 @@ TEST_F(ReadMessage, GTEST_TESTCASE(WithDifferentTimeoutValues, GTEST_ENABLED)) {
 // @todo: (1) blocking read
 // @todo: (2) test reentrancy
 
-//  $Id: TC04_ReadMessage.cc 1272 2024-04-16 19:55:27Z makemake $  Copyright (c) UV Software, Berlin.
+//  $Id: TC04_ReadMessage.cc 1307 2024-05-22 20:25:38Z makemake $  Copyright (c) UV Software, Berlin.
