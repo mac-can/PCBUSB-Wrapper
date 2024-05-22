@@ -10,18 +10,23 @@ Options:
  -a, --ascii=(ON|OFF)                 display data bytes in ASCII (default=ON)
  -w, --wrap=(NO|8|10|16|32|64)        wraparound after n data bytes (default=NO)
  -x, --exclude=[~]<id-list>           exclude CAN-IDs: <id-list> = <id>[-<id>]{,<id>[-<id>]}
+     --code=<id>                      acceptance code for 11-bit IDs (default=0x000)
+     --mask=<id>                      acceptance mask for 11-bit IDs (default=0x000)
+     --xtd-code=<id>                  acceptance code for 29-bit IDs (default=0x00000000)
+     --xtd-mask=<id>                  acceptance mask for 29-bit IDs (default=0x00000000)
  -m, --mode=(2.0|FDF[+BRS])           CAN operation mode: CAN 2.0 or CAN FD mode
      --shared                         shared CAN controller access (if supported)
-     --listen-only                    monitor mode (listen-only, transmitter is off)
+     --listen-only                    monitor mode (listen-only mode)
      --error-frames                   allow reception of error frames
      --no-remote-frames               suppress remote frames (RTR frames)
      --no-extended-frames             suppress extended frames (29-bit identifier)
  -b, --baudrate=<baudrate>            CAN bit-timing in kbps (default=250), or
-     --bitrate=<bit-rate>             CAN bit-rate settings (as a string)
+     --bitrate=<bit-rate>             CAN bit-rate settings (as key/value list)
  -v, --verbose                        show detailed bit-rate settings
-     --list-bitrates[=<mode>]         list standard bit-rate settings
+     --list-bitrates[=<mode>]         list standard bit-rate settings and exit
  -L, --list-boards                    list all supported CAN interfaces and exit
  -T, --test-boards                    list all available CAN interfaces and exit
+ -J, --json=<filename>                write configuration into JSON file and exit
  -h, --help                           display this help screen and exit
      --version                        show version information and exit
 Arguments:
@@ -37,7 +42,7 @@ Arguments:
                  6 = 50 kbps
                  7 = 20 kbps
                  8 = 10 kbps
-  <bitrate>      comma-separated <key>=<value>-list:
+  <bitrate>      comma-separated key/value list:
                  f_clock=<value>      frequency in Hz or
                  f_clock_mhz=<value>  frequency in MHz
                  nom_brp=<value>      bit-rate prescaler (nominal)

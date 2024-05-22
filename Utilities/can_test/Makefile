@@ -34,7 +34,7 @@ MAIN_DIR = ./Sources
 DRIVER_DIR = $(PROJ_DIR)/Sources
 CANAPI_DIR = $(PROJ_DIR)/Sources/CANAPI
 
-OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Timer.o 
+OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Options.o $(OUTDIR)/Timer.o 
 
 DEFINES = -DOPTION_CANAPI_DRIVER=1 \
 	-DOPTION_CANAPI_COMPANIONS=1
@@ -133,7 +133,10 @@ install:
 	$(CP) $(TARGET) $(INSTALL)
 
 
-$(OUTDIR)/main.o: $(MAIN_DIR)/main.cpp $(MAIN_DIR)/main_p.cpp
+$(OUTDIR)/main.o: $(MAIN_DIR)/main.cpp
+	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/Options.o: $(MAIN_DIR)/Options_p.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 $(OUTDIR)/Timer.o: $(MAIN_DIR)/Timer.cpp
