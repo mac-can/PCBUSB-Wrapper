@@ -34,7 +34,7 @@ MAIN_DIR = ./Sources
 DRIVER_DIR = $(PROJ_DIR)/Sources
 CANAPI_DIR = $(PROJ_DIR)/Sources/CANAPI
 
-OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Options.o $(OUTDIR)/Timer.o 
+OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Options.o $(OUTDIR)/Timer.o
 
 DEFINES = -DOPTION_CANAPI_DRIVER=1 \
 	-DOPTION_CANAPI_COMPANIONS=1

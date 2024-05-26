@@ -35,7 +35,7 @@ DRIVER_DIR = $(PROJ_DIR)/Sources
 CANAPI_DIR = $(PROJ_DIR)/Sources/CANAPI
 
 OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Options.o $(OUTDIR)/Timer.o \
-	$(OUTDIR)/Message.o $(OUTDIR)/can_msg.o 
+	$(OUTDIR)/Message.o $(OUTDIR)/can_msg.o
 
 DEFINES = -DOPTION_CANAPI_DRIVER=1 \
 	-DOPTION_CANAPI_COMPANIONS=1

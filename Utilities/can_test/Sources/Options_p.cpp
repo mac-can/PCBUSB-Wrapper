@@ -27,6 +27,7 @@
 #include <limits.h>
 #include <getopt.h>
 #include <libgen.h>
+#include <inttypes.h>
 #include <errno.h>
 #include <time.h>
 
@@ -195,7 +196,7 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
                 fprintf(err, "%s: missing argument for option `--baudrate' (%c)\n", m_szBasename, opt);
                 return 1;
             }
-            if (sscanf(optarg, "%lli", &intarg) != 1) {
+            if (sscanf(optarg, "%" SCNi64, &intarg) != 1) {
                 fprintf(err, "%s: illegal argument for option `--baudrate' (%c)\n", m_szBasename, opt);
                 return 1;
             }
@@ -361,7 +362,7 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
                 fprintf(err, "%s: missing argument for option `--code'\n", m_szBasename);
                 return 1;
             }
-            if (sscanf(optarg, "%llx", &intarg) != 1) {
+            if (sscanf(optarg, "%" SCNx64, &intarg) != 1) {
                 fprintf(err, "%s: illegal argument for option `--code'\n", m_szBasename);
                 return 1;
             }
@@ -381,7 +382,7 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
                 fprintf(err, "%s: missing argument for option `--mask'\n", m_szBasename);
                 return 1;
             }
-            if (sscanf(optarg, "%llx", &intarg) != 1) {
+            if (sscanf(optarg, "%" SCNx64, &intarg) != 1) {
                 fprintf(err, "%s: illegal argument for option --mask'\n", m_szBasename);
                 return 1;
             }
@@ -401,7 +402,7 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
                 fprintf(err, "%s: missing argument for option `--xtd-code'\n", m_szBasename);
                 return 1;
             }
-            if (sscanf(optarg, "%llx", &intarg) != 1) {
+            if (sscanf(optarg, "%" SCNx64, &intarg) != 1) {
                 fprintf(err, "%s: illegal argument for option --xtd-code'\n", m_szBasename);
                 return 1;
             }
@@ -421,7 +422,7 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
                 fprintf(err, "%s: missing argument for option `--xtd-mask'\n", m_szBasename);
                 return 1;
             }
-            if (sscanf(optarg, "%llx", &intarg) != 1) {
+            if (sscanf(optarg, "%" SCNx64, &intarg) != 1) {
                 fprintf(err, "%s: illegal argument for option --xtd-mask'\n", m_szBasename);
                 return 1;
             }
@@ -453,7 +454,7 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
                 fprintf(err, "%s: missing argument for option `--number' (%c)\n", m_szBasename, opt);
                 return 1;
             }
-            if (sscanf(optarg, "%lli", &intarg) != 1) {
+            if (sscanf(optarg, "%" SCNi64, &intarg) != 1) {
                 fprintf(err, "%s: illegal argument for option `--number' (%c)\n", m_szBasename, opt);
                 return 1;
             }
@@ -486,7 +487,7 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
                 fprintf(err, "%s: missing argument for `--transmit' (%c)\n", m_szBasename, opt);
                 return 1;
             }
-            if (sscanf(optarg, "%lli", &intarg) != 1) {
+            if (sscanf(optarg, "%" SCNi64, &intarg) != 1) {
                 fprintf(err, "%s: illegal argument for option `--transmit' (%c)\n", m_szBasename, opt);
                 return 1;
             }
@@ -507,7 +508,7 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
                 fprintf(err, "%s: missing argument for option `--frames' (%c)\n", m_szBasename, opt);
                 return 1;
             }
-            if (sscanf(optarg, "%lli", &intarg) != 1) {
+            if (sscanf(optarg, "%" SCNi64, &intarg) != 1) {
                 fprintf(err, "%s: illegal argument for option `--frames' (%c)\n", m_szBasename, opt);
                 return 1;
             }
@@ -528,7 +529,7 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
                 fprintf(err, "%s: missing argument for option `--random'\n", m_szBasename);
                 return 1;
             }
-            if (sscanf(optarg, "%lli", &intarg) != 1) {
+            if (sscanf(optarg, "%" SCNi64, &intarg) != 1) {
                 fprintf(err, "%s: illegal argument for option `--random'\n", m_szBasename);
                 return 1;
             }
@@ -551,7 +552,7 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
                 fprintf(err, "%s: missing argument for option `--cycle' (%c)\n", m_szBasename, opt);
                 return 1;
             }
-            if (sscanf(optarg, "%lli", &intarg) != 1) {
+            if (sscanf(optarg, "%" SCNi64, &intarg) != 1) {
                 fprintf(err, "%s: illegal argument for option `--cycle' (%c)\n", m_szBasename, opt);
                 return 1;
             }
@@ -571,7 +572,7 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
                 fprintf(err, "%s: missing argument for option `--usec' (%c)\n", m_szBasename, opt);
                 return 1;
             }
-            if (sscanf(optarg, "%lli", &intarg) != 1) {
+            if (sscanf(optarg, "%" SCNi64, &intarg) != 1) {
                 fprintf(err, "%s: illegal argument for option `--usec' (%c)\n", m_szBasename, opt);
                 return 1;
             }
@@ -591,7 +592,7 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
                 fprintf(err, "%s: missing argument for option `--dlc' (%c)\n", m_szBasename, opt);
                 return 1;
             }
-            if (sscanf(optarg, "%lli", &intarg) != 1) {
+            if (sscanf(optarg, "%" SCNi64, &intarg) != 1) {
                 fprintf(err, "%s: illegal argument for option `--dlc' (%c)\n", m_szBasename, opt);
                 return 1;
             }
@@ -615,7 +616,7 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
                 fprintf(err, "%s: missing argument for option `--id' (%c)\n", m_szBasename, opt);
                 return 1;
             }
-            if (sscanf(optarg, "%lli", &intarg) != 1) {
+            if (sscanf(optarg, "%" SCNi64, &intarg) != 1) {
                 fprintf(err, "%s: illegal argument for option `--id' (%c)\n", m_szBasename, opt);
                 return 1;
             }
