@@ -36,8 +36,10 @@
 #define TESTER_COPYRIGHT  "2005-2010,2012-2024 by Uwe Vogt, UV Software, Berlin"
 #if defined(_WIN32) || defined(_WIN64)
 #define TESTER_PLATFORM   "Windows"
-#else
-#define TESTER_PLATFORM   "POSIX"
+#elif defined(__linux__)
+#define TESTER_PLATFORM   "Linux"
+#elif defined(__APPLE__)
+#define TESTER_PLATFORM   "Darwin"
 #endif
 #define TESTER_ALIASNAME  "PCB:"
 

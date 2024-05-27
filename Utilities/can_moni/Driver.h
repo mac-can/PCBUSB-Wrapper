@@ -35,8 +35,10 @@
 #define MONITOR_COPYRIGHT  "2007,2012-2024 by Uwe Vogt, UV Software, Berlin"
 #if defined(_WIN32) || defined(_WIN64)
 #define MONITOR_PLATFORM   "Windows"
-#else
-#define MONITOR_PLATFORM   "POSIX"
+#elif defined(__linux__)
+#define MONITOR_PLATFORM   "Linux"
+#elif defined(__APPLE__)
+#define MONITOR_PLATFORM   "Darwin"
 #endif
 #define MONITOR_ALIASNAME  "PCB:"
 
