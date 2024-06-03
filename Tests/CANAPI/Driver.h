@@ -97,8 +97,9 @@ typedef CPeakCAN  CCanDriver;
 
 //  (§6) define macros for workarounds (e.g. TC01_3_ISSUE)
 #if (OPTION_REGRESSION_TEST == 0)
-#define TC04_8_ISSUE_QUEUE_SIZE  WORKAROUND_ENABLED  // 2023-08-20: last element of receive queue is not accessible
-#define TC09_8_ISSUE_BUS_OFF     WORKAROUND_ENABLED  // 2023-08-29: no bus off from device (known issue)
+#define TC04_3_ISSUE_PCBUSB_BUFFERED_MSGS  WORKAROUND_ENABLED  // 2024-04-29: buffered messages from device (PCAN-USB [Pro] FD)
+#define TC04_8_ISSUE_PCBUSB_QUEUE_SIZE  WORKAROUND_ENABLED  // 2023-08-20: last element of receive queue is not accessible (PCAN-USB)
+#define TC09_8_ISSUE_BUS_OFF  WORKAROUND_ENABLED  // 2023-08-29: no bus off from device (general issue)
 #ifdef __linux__
 #define TC04_15_ISSUE_PCBUSB_WARNING_LEVEL WORKAROUND_ENABLED  // 2023-09-13: no warning level from device (Linux)
 #define TC09_9_ISSUE_PCBUSB_WARNING_LEVEL  WORKAROUND_ENABLED  // 2023-09-13: no warning level from device (Linux)

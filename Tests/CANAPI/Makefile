@@ -72,7 +72,7 @@ OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Device.o $(OUTDIR)/Options.o \
 	$(OUTDIR)/TC11_GetBitrate.o $(OUTDIR)/Bitrates.o \
 	$(OUTDIR)/TC12_GetProperty.o $(OUTDIR)/Properties.o \
 	$(OUTDIR)/TCx1_CallSequences.o $(OUTDIR)/TCx2_BitrateConverter.o \
-	$(OUTDIR)/Timer.o $(OUTDIR)/Progress.o
+	$(OUTDIR)/TCxX_Summary.o $(OUTDIR)/Timer.o $(OUTDIR)/Progress.o
 
 ifeq ($(REGRESSION),ON)  # disable all workarounds
 REGRESSION_TEST = 1
@@ -88,7 +88,7 @@ INSTALL = ~/bin
 
 DEFINES = -DOPTION_REGRESSION_TEST=$(REGRESSION_TEST) \
 	-DOPTION_CAN_2_0_ONLY=0 \
-	-DOPTION_CANAPI_RETVALS=1
+	-DOPTION_CANAPI_RETVALS=0
 
 HEADERS = -I$(HOME_DIR) \
 	-I$(MAIN_DIR) \
@@ -130,7 +130,7 @@ INSTALL = ~/bin
 
 DEFINES = -DOPTION_REGRESSION_TEST=$(REGRESSION_TEST) \
 	-DOPTION_CAN_2_0_ONLY=0 \
-	-DOPTION_CANAPI_RETVALS=1
+	-DOPTION_CANAPI_RETVALS=0
 
 HEADERS = -I$(HOME_DIR) \
 	-I$(MAIN_DIR) \
@@ -223,6 +223,9 @@ $(OUTDIR)/TCx1_CallSequences.o: $(TEST_DIR)/TCx1_CallSequences.cc
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 $(OUTDIR)/TCx2_BitrateConverter.o: $(TEST_DIR)/TCx2_BitrateConverter.cc
+	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/TCxX_Summary.o: $(TEST_DIR)/TCxX_Summary.cc
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 $(OUTDIR)/main.o: $(MAIN_DIR)/main.cpp
