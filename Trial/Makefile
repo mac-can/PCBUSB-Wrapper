@@ -8,6 +8,11 @@ current_OS := $(patsubst CYGWIN%,Cygwin,$(current_OS))
 current_OS := $(patsubst MINGW%,MinGW,$(current_OS))
 current_OS := $(patsubst MSYS%,MinGW,$(current_OS))
 
+
+TARGET	= pcb_test
+
+INSTALL = ~/bin
+
 HOME_DIR = ..
 MAIN_DIR = ./Sources
 
@@ -20,13 +25,6 @@ OBJECTS = $(OUTDIR)/can_api.o $(OUTDIR)/can_btr.o \
 	$(OUTDIR)/PeakCAN.o $(OUTDIR)/main.o
 
 
-ifeq ($(current_OS),Darwin)  # macOS - libPeakCAN.dylib
-
-VERSION = 0
-TARGET	= pcb_test
-
-INSTALL = ~/bin
-
 DEFINES = -DOPTION_CAN_2_0_ONLY=0 \
 	-DOPTION_CANAPI_DRIVER=1 \
 	-DOPTION_CANAPI_RETVALS=0 \
@@ -34,10 +32,12 @@ DEFINES = -DOPTION_CAN_2_0_ONLY=0 \
 	-DOPTION_CANBTR_PEAK_FREQUENCIES=1
 
 HEADERS = -I$(SOURCE_DIR) \
-	-I$(PCBUSB_DIR)/macOS \
 	-I$(CANAPI_DIR) \
 	-I$(WRAPPER_DIR) \
 	-I$(MAIN_DIR)
+
+
+ifeq ($(current_OS),Darwin)  # macOS - libPeakCAN.dylib
 
 CFLAGS += -O0 -g -Wall -Wextra -Wno-parentheses \
 	-fmessage-length=0 -fno-strict-aliasing \
@@ -48,16 +48,15 @@ CXXFLAGS += -O0 -g -Wall -Wextra -pthread \
 	$(DEFINES) \
 	$(HEADERS)
 
-LIBRARIES =
-
-LDFLAGS  += -lpthread \
-	-rpath /usr/local/lib
+LDFLAGS  += -rpath /usr/local/lib
 
 ifeq ($(BINARY),UNIVERSAL)
 CFLAGS += -arch arm64 -arch x86_64
 CXXFLAGS += -arch arm64 -arch x86_64
 LDFLAGS += -arch arm64 -arch x86_64
 endif
+
+LIBRARIES = -lpthread
 
 CHECKER  = warning,information
 IGNORE   = -i can_msg.c -i can_dev.c
@@ -78,23 +77,7 @@ endif
 
 ifeq ($(current_OS),Linux)  # Linux - libpeakcan.so
 
-VERSION = 0
-
-TARGET	= pcb_test
-
-INSTALL = ~/bin
-
-DEFINES = -DOPTION_CAN_2_0_ONLY=0 \
-	-DOPTION_CANAPI_DRIVER=1 \
-	-DOPTION_CANAPI_RETVALS=0 \
-	-DOPTION_CANAPI_COMPANIONS=1 \
-	-DOPTION_CANBTR_PEAK_FREQUENCIES=1
-
-HEADERS = -I$(SOURCE_DIR) \
-	-I$(PCBUSB_DIR)/Linux \
-	-I$(CANAPI_DIR) \
-	-I$(WRAPPER_DIR) \
-	-I$(MAIN_DIR)
+HEADERS += -I$(PCBUSB_DIR)/Linux
 
 CFLAGS += -O0 -g -Wall -Wextra -Wno-parentheses \
 	-fmessage-length=0 -fno-strict-aliasing \
