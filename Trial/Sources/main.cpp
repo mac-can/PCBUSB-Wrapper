@@ -153,7 +153,7 @@ int main(int argc, const char * argv[]) {
     int option_xor = OPTION_NO;
     uint64_t received = 0ULL;
     uint64_t expected = 0ULL;
-    time_t now = time(NULL);
+    time_t now = 0L;
 
     for (int i = 1, opt = 0; i < argc; i++) {
         /* PCAN-USB channel */

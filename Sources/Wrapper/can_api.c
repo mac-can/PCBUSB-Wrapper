@@ -1179,18 +1179,20 @@ static int pcan_error(TPCANStatus status)
 static int pcan_compatibility(void) {
     TPCANStatus sts;                    // channel status
     unsigned int major = 0, minor = 0;  // channel version
-    char version[MAX_LENGTH_VERSION_STRING] = "";
-    char channel[MAX_LENGTH_VERSION_STRING] = "";
+    char str[MAX_LENGTH_VERSION_STRING+1] = "";
+    char tmp[MAX_LENGTH_VERSION_STRING+1] = "";
 
     /* note: PCAN_CHANNEL_VERSION is a pre-initialization parameter
      *       and can be read from any valid channel handle
      *       independent if the device is present or not.
      */
     // get channel version (as a string)
-    if ((sts = CAN_GetValue(PCAN_USBBUS1, PCAN_CHANNEL_VERSION, (void*)version, 256)) != PCAN_ERROR_OK)
+    if ((sts = CAN_GetValue(PCAN_USBBUS1, PCAN_CHANNEL_VERSION, (void*)str, 256)) != PCAN_ERROR_OK)
         return pcan_error(sts);
+    // to be on the safe side, append a zero-terminator
+    str[MAX_LENGTH_VERSION_STRING] = '\0';
     // extract major and minor revision
-    if (sscanf(version, "%s %u.%u", channel, &major, &minor) != 3)
+    if (sscanf(str, "%256s %u.%u", tmp, &major, &minor) != 3)
         return CANERR_FATAL;
     // check for minimal required version
 #if (PCAN_LIB_MIN_MINOR != 0)
