@@ -39,6 +39,10 @@ HEADERS = -I$(SOURCE_DIR) \
 
 ifeq ($(current_OS),Darwin)  # macOS - libPeakCAN.dylib
 
+OBJECTS += $(OUTDIR)/PCBUSB.o
+
+HEADERS += -I$(PCBUSB_DIR)/macOS
+
 CFLAGS += -O0 -g -Wall -Wextra -Wno-parentheses \
 	-fmessage-length=0 -fno-strict-aliasing \
 	$(DEFINES) \
@@ -136,6 +140,10 @@ xctest:
 	xcodebuild clean build test -project PCBUSB.xcodeproj -scheme Testing $(TESTING)
 
 
+ifeq ($(current_OS),Darwin)
+$(OUTDIR)/PCBUSB.o: $(PCBUSB_DIR)/macOS/PCBUSB.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+endif
 $(OUTDIR)/can_api.o: $(WRAPPER_DIR)/can_api.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
