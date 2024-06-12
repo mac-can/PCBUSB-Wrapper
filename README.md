@@ -136,7 +136,7 @@ Type `can_test --help` to display all program options.
 
 #### Debian "bookworm" (12.5)
 
-- Debian 6.1,76-1 (2024-02-01) x86_64 GNU/Linux
+- Debian 6.1.90-1 (2024-05-03) x86_64 GNU/Linux
 - gcc (Debian 12.2.0-14) 12.2.0
 - PCAN Driver and Library for Linux v8.17
 
