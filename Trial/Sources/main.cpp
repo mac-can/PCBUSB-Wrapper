@@ -20,8 +20,11 @@
 #include <inttypes.h>
 
 //#define SECOND_CHANNEL
+#ifdef __APPLE__
 #define ISSUE_198   (1)
-
+#else
+#define ISSUE_198   (0)
+#endif
 #if (OPTION_PCAN_BIT_TIMING == 1)
 #define BITRATE_1M(x)    PEAKCAN_BR_1M(x)
 #define BITRATE_800K(x)  PEAKCAN_BR_800K(x)
@@ -116,6 +119,10 @@ int main(int argc, const char * argv[]) {
     message.timestamp.tv_nsec = 0;
     CANAPI_Return_t retVal = 0;
     int32_t channel = (int32_t)CHANNEL;
+    uint32_t accCode11 = CANACC_CODE_11BIT;
+    uint32_t accMask11 = CANACC_MASK_11BIT;
+    uint32_t accCode29 = CANACC_CODE_29BIT;
+    uint32_t accMask29 = CANACC_MASK_29BIT;
     uint16_t rxTimeout = CANWAIT_INFINITE;
     uint16_t txTimeout = 0U;
     useconds_t txDelay = 0U;
@@ -146,7 +153,7 @@ int main(int argc, const char * argv[]) {
     int option_xor = OPTION_NO;
     uint64_t received = 0ULL;
     uint64_t expected = 0ULL;
-    time_t now = time(NULL);
+    time_t now = 0L;
 
     for (int i = 1, opt = 0; i < argc; i++) {
         /* PCAN-USB channel */
@@ -240,6 +247,11 @@ int main(int argc, const char * argv[]) {
         if (!strcmp(argv[i], "ERR:ON")) opMode.err = 1;
         if (!strcmp(argv[i], "XTD:OFF")) opMode.nxtd = 1;
         if (!strcmp(argv[i], "RTR:OFF")) opMode.nrtr = 1;
+        /* acceptance filtering */
+        if (!strncmp(argv[i], "CODE:", 5) && sscanf(argv[i], "CODE:%x", &opt) == 1) accCode11 = (uint32_t)opt;
+        if (!strncmp(argv[i], "MASK:", 5) && sscanf(argv[i], "MASK:%x", &opt) == 1) accMask11 = (uint32_t)opt;
+        if (!strncmp(argv[i], "XCODE:", 6) && sscanf(argv[i], "XCODE:%x", &opt) == 1) accCode29 = (uint32_t)opt;
+        if (!strncmp(argv[i], "XMASK:", 6) && sscanf(argv[i], "XMASK:%x", &opt) == 1) accMask29 = (uint32_t)opt;
     }
     fprintf(stdout, ">>> %s\n", CCanDriver::GetVersion());
     if ((signal(SIGINT, sigterm) == SIG_ERR) ||
@@ -476,6 +488,21 @@ int main(int argc, const char * argv[]) {
         if (myDriver.GetProperty(CANPROP_GET_OP_MODE, (void *)&u8Val, sizeof(uint8_t)) == CCanApi::NoError)
             fprintf(stdout, ">>> myDriver.GetProperty(CANPROP_GET_OP_MODE): value = 0x%02X\n", u8Val);
     }
+    /* acceptance filtering */
+    if ((accCode11 != CANACC_CODE_11BIT) || (accMask11 != CANACC_MASK_11BIT)) {
+        retVal = myDriver.SetFilter11Bit(accCode11, accMask11);
+        if (retVal != CCanApi::NoError) {
+            fprintf(stderr, "+++ error: myDriver.SetFilter11Bit returned %i\n", retVal);
+            goto teardown;
+        }
+    }
+    if ((accCode29 != CANACC_CODE_29BIT) || (accMask29 != CANACC_MASK_29BIT)) {
+        retVal = myDriver.SetFilter29Bit(accCode29, accMask29);
+        if (retVal != CCanApi::NoError) {
+            fprintf(stderr, "+++ error: myDriver.SetFilter29Bit returned %i\n", retVal);
+            goto teardown;
+        }
+    }
     /* start communication */
     retVal = myDriver.StartController(bitrate);
     if (retVal != CCanApi::NoError) {
@@ -490,6 +517,14 @@ int main(int argc, const char * argv[]) {
         if ((myDriver.GetBitrate(bitrate) == CCanApi::NoError) &&
             (myDriver.GetBusSpeed(speed) == CCanApi::NoError))
             verbose(opMode, bitrate, speed);
+
+        uint32_t code, mask;
+        if ((myDriver.GetFilter11Bit(code, mask) == CCanApi::NoError) && 
+            ((code != CANACC_CODE_11BIT) || (mask != CANACC_MASK_11BIT)))
+            fprintf(stdout, "    Filter11: code = 0x%03X, mask = 0x%03X\n", code, mask);
+        if ((myDriver.GetFilter29Bit(code, mask) == CCanApi::NoError) &&
+            ((code != CANACC_CODE_29BIT) || (mask != CANACC_MASK_29BIT)))
+            fprintf(stdout, "    Filter29: code = 0x%08X, mask = 0x%08X\n", code, mask);
     }
 #ifdef SECOND_CHANNEL
     retVal = mySecond.InitializeChannel(channel+1U, opMode);

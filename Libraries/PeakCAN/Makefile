@@ -53,7 +53,7 @@ current_OS := $(patsubst MSYS%,MinGW,$(current_OS))
 
 MAJOR = 0
 MINOR = 2
-PATCH = 8
+PATCH = 9
 
 ifeq ($(PATCH),0)
 VERSION = $(MAJOR).$(MINOR)
@@ -77,7 +77,6 @@ DEFINES = -DOPTION_CAN_2_0_ONLY=0 \
 
 HEADERS = -I$(SOURCE_DIR) \
 	-I$(CANAPI_DIR) \
-	-I$(PCBUSB_DIR)/macOS \
 	-I$(WRAPPER_DIR)
 
 
@@ -94,8 +93,12 @@ COMPATIBILITY_VERSION = $(MAJOR).$(MINOR).0
 
 INSTALL = /usr/local/lib
 
+OBJECTS += $(OUTDIR)/PCBUSB.o
+
 DEFINES += -DOPTION_CANAPI_PCBUSB_DYLIB=0 \
 	-DOPTION_PEAKCAN_DYLIB=1
+
+HEADERS += -I$(PCBUSB_DIR)/macOS
 
 CFLAGS += -O2 -Wall -Wextra -Wno-parentheses \
 	-fno-strict-aliasing \
@@ -139,8 +142,13 @@ STATIC  = $(LIBRARY).a
 
 INSTALL = /usr/local/lib
 
+# note: take the loader from MacCAN-PCBUSB dylib
+OBJECTS += $(OUTDIR)/PCBUSB.o
+
 DEFINES += -DOPTION_CANAPI_PCANBASIC_SO=0 \
 	-DOPTION_PEAKCAN_SO=1
+
+HEADERS += -I$(PCBUSB_DIR)/Linux
 
 CFLAGS += -fPIC -O2 -Wall -Wextra -Wno-parentheses \
 	-fno-strict-aliasing \
@@ -224,6 +232,10 @@ ifeq ($(current_OS),Linux)
 endif
 
 
+ifeq ($(current_OS),$(filter $(current_OS),Linux Darwin))
+$(OUTDIR)/PCBUSB.o: $(PCBUSB_DIR)/macOS/PCBUSB.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+endif
 $(OUTDIR)/can_api.o: $(WRAPPER_DIR)/can_api.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 

@@ -30,6 +30,8 @@
 		0FB7FEB225AEED5500A2B7B1 /* can_btr.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FB7FEB125AEED5500A2B7B1 /* can_btr.c */; };
 		0FC6171925CC66F30010B15D /* PeakCAN.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0FC6171725CC66F30010B15D /* PeakCAN.cpp */; };
 		0FC6171E25CC67360010B15D /* can_api.c in Sources */ = {isa = PBXBuildFile; fileRef = 0FC6171D25CC67360010B15D /* can_api.c */; };
+		443FBFC72C15E46700E46982 /* PCBUSB.c in Sources */ = {isa = PBXBuildFile; fileRef = 443FBFC62C15E46700E46982 /* PCBUSB.c */; };
+		443FBFC82C15E46700E46982 /* PCBUSB.c in Sources */ = {isa = PBXBuildFile; fileRef = 443FBFC62C15E46700E46982 /* PCBUSB.c */; };
 		44E1A86D289075E50096F308 /* test_can_property.mm in Sources */ = {isa = PBXBuildFile; fileRef = 44E1A86C289075E50096F308 /* test_can_property.mm */; };
 		44F4A11D2A97A29A00AC2CF4 /* test_can_btr.mm in Sources */ = {isa = PBXBuildFile; fileRef = 44F4A11A2A97A29A00AC2CF4 /* test_can_btr.mm */; };
 		44F4A11E2A97A29A00AC2CF4 /* Bitrates.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 44F4A11B2A97A29A00AC2CF4 /* Bitrates.cpp */; };
@@ -82,6 +84,7 @@
 		0FC6171B25CC67360010B15D /* can_defs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = can_defs.h; path = ../Sources/Wrapper/can_defs.h; sourceTree = "<group>"; };
 		0FC6171D25CC67360010B15D /* can_api.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = can_api.c; path = ../Sources/Wrapper/can_api.c; sourceTree = "<group>"; };
 		0FE14B1725AEEA4900E87475 /* PCBUSB */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = PCBUSB; sourceTree = BUILT_PRODUCTS_DIR; };
+		443FBFC62C15E46700E46982 /* PCBUSB.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = PCBUSB.c; path = ../Sources/PCANBasic/macOS/PCBUSB.c; sourceTree = "<group>"; };
 		44CB06332A6DCCC0000D9246 /* PeakCAN_Defaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PeakCAN_Defaults.h; path = ../Sources/PeakCAN_Defaults.h; sourceTree = "<group>"; };
 		44CB06342A6DD1F5000D9246 /* CANBTR_Defaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CANBTR_Defaults.h; path = ../Sources/CANAPI/CANBTR_Defaults.h; sourceTree = "<group>"; };
 		44E1A86C289075E50096F308 /* test_can_property.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = test_can_property.mm; path = ../Tests/UnitTests/test_can_property.mm; sourceTree = "<group>"; };
@@ -145,6 +148,7 @@
 			isa = PBXGroup;
 			children = (
 				44FEACB52AB1A08B00544108 /* PCBUSB.h */,
+				443FBFC62C15E46700E46982 /* PCBUSB.c */,
 				0FC6171B25CC67360010B15D /* can_defs.h */,
 				0FC6171D25CC67360010B15D /* can_api.c */,
 				0FB7FEAF25AEED5500A2B7B1 /* can_api.h */,
@@ -226,7 +230,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1500;
+				LastUpgradeCheck = 1540;
 				TargetAttributes = {
 					0F8328BF278209CB00BE8BBA = {
 						CreatedOnToolsVersion = 13.2.1;
@@ -271,6 +275,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0F8328F127822DE500BE8BBA /* test_can_reset.mm in Sources */,
+				443FBFC82C15E46700E46982 /* PCBUSB.c in Sources */,
 				0F8328D027820ABC00BE8BBA /* Testing.mm in Sources */,
 				0F8328D227820ADD00BE8BBA /* can_api.c in Sources */,
 				0F8328E627822DE500BE8BBA /* test_can_firmware.mm in Sources */,
@@ -301,6 +306,7 @@
 			files = (
 				0FC6171925CC66F30010B15D /* PeakCAN.cpp in Sources */,
 				0FC6171E25CC67360010B15D /* can_api.c in Sources */,
+				443FBFC72C15E46700E46982 /* PCBUSB.c in Sources */,
 				0FB7FEA125AEEBBA00A2B7B1 /* main.cpp in Sources */,
 				0FB7FEB225AEED5500A2B7B1 /* can_btr.c in Sources */,
 			);
@@ -318,7 +324,7 @@
 				DEAD_CODE_STRIPPING = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
-					"OPTION_XCODE_TESTING=1",
+					"OPTION_XCODE_TESTING=0",
 					"OPTION_CANAPI_RETVALS=1",
 					"$(inherited)",
 				);
@@ -351,6 +357,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -395,6 +402,7 @@
 					"$(inherited)",
 					"OPTION_CAN_2_0_ONLY=0",
 					"OPTION_CANAPI_DRIVER=1",
+					"OPTION_CANAPI_RETVALS=1",
 					"OPTION_CANAPI_COMPANIONS=1",
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -405,7 +413,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LD_RUNPATH_SEARCH_PATHS = /usr/local/lib;
 				LIBRARY_SEARCH_PATHS = "";
-				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -424,6 +432,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -461,11 +470,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"OPTION_CAN_2_0_ONLY=0",
-					"OPTION_CANAPI_DRIVER=1",
-					"OPTION_CANAPI_COMPANIONS=1",
-				);
+				GCC_PREPROCESSOR_DEFINITIONS = "";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -474,7 +479,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LD_RUNPATH_SEARCH_PATHS = /usr/local/lib;
 				LIBRARY_SEARCH_PATHS = "";
-				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;

@@ -55,6 +55,11 @@
 #warning CAN_FD_SUPPORTED not set, default = FEATURE_SUPPORTED
 #endif
 #endif
+#if (OPTION_CANAPI_LIBRARY != 0)
+#define TEST_GET_LIBRARY_ID(dut, arg)  g_Options.GetLibraryId(dut), (arg)
+#else
+#define TEST_GET_LIBRARY_ID(dut, arg)  (arg)
+#endif
 
 class ProbeChannel : public testing::Test {
     virtual void SetUp() {}
@@ -248,11 +253,11 @@ TEST_F(ProbeChannel, GTEST_TESTCASE(WithValidChannelNo, GTEST_ENABLED)) {
     // @test:
     // @- loop over the list of devices to get the channel no.
     CCounter counter = CCounter();
-    bool found = CCanDevice::GetFirstChannel(info);
+    bool found = CCanDevice::GetFirstChannel(TEST_GET_LIBRARY_ID(DUT1, info));
     while (found) {
         counter.Increment();
         // @-- probe found channel with default mode (must be supported)
-        retVal = dut1.ProbeChannel(info.m_nChannelNo, opMode, state);
+        retVal = dut1.ProbeChannel(TEST_GET_LIBRARY_ID(DUT1, info.m_nChannelNo), opMode, state);
         EXPECT_EQ(CCanApi::NoError, retVal);
         // @   note: state can take all possible values.
         if ((state == CCanApi::ChannelAvailable) || (state == CCanApi::ChannelOccupied))
@@ -301,7 +306,7 @@ TEST_F(ProbeChannel, GTEST_TESTCASE(WithValidChannelNo, GTEST_ENABLED)) {
 
 // @gtest TC01.5: Probe CAN channel with invalid channel number(s)
 //
-// @expected !CANERR_NOERROR (maybe a vendor-specific error code)
+// @expected: CANERR_NOTINIT or vendor-specific error code
 //
 TEST_F(ProbeChannel, GTEST_TESTCASE(WithInvalidChannelNo, GTEST_ENABLED)) {
     CCanDevice dut1 = CCanDevice(TEST_DEVICE(DUT1));
@@ -312,14 +317,14 @@ TEST_F(ProbeChannel, GTEST_TESTCASE(WithInvalidChannelNo, GTEST_ENABLED)) {
     CANAPI_Return_t retVal;
     // @test:
     // @- try to probe channel with invalid channel no. -1
-    retVal = dut1.ProbeChannel((-1), opMode, state);
-    EXPECT_NE(CCanApi::NoError, retVal);
+    retVal = dut1.ProbeChannel(TEST_GET_LIBRARY_ID(DUT1, (-1)), opMode, state);
+    EXPECT_TRUE((retVal == CCanApi::NotInitialized) || (retVal <= CCanApi::VendorSpecific));
     // @- try to probe channel with invalid channel no. -2
-    retVal = dut1.ProbeChannel((-2), opMode, state);
-    EXPECT_NE(CCanApi::NoError, retVal);
+    retVal = dut1.ProbeChannel(TEST_GET_LIBRARY_ID(DUT1, (-2)), opMode, state);
+    EXPECT_TRUE((retVal == CCanApi::NotInitialized) || (retVal <= CCanApi::VendorSpecific));
     // @- try to probe channel with invalid channel no. INT32_MIN
-    retVal = dut1.ProbeChannel(INT32_MIN, opMode, state);
-    EXPECT_NE(CCanApi::NoError, retVal);
+    retVal = dut1.ProbeChannel(TEST_GET_LIBRARY_ID(DUT1, INT32_MIN), opMode, state);
+    EXPECT_TRUE((retVal == CCanApi::NotInitialized) || (retVal <= CCanApi::VendorSpecific));
     // @  note: channel numbers are defined by the CAN device vendor.
     // @        Therefore, no assumptions can be made for positive values!
     //
@@ -1021,14 +1026,63 @@ TEST_F(ProbeChannel, GTEST_TESTCASE(InAllChannelStates, GTEST_ENABLED)) {
 #if (OPTION_CANAPI_LIBRARY != OPTION_DISBALED)
 // @gtest TC01.15: Probe CAN channel with invalid library number(s)
 //
-// @expected: CANERR_xyz
+// @expected: CANERR_LIBRARY
 //
-TEST_F(ProbeChannel, GTEST_TESTCASE(WithInvalidLibraryId, GTEST_DISABLED)) {
-    // @note: this test case can only run with the loader library
-    // @todo: implement with CAN API V3 loader liabrary
-    // TODO: insert coin here
+TEST_F(ProbeChannel, GTEST_TESTCASE(WithInvalidLibraryId, GTEST_ENABLED)) {
+    CCanDevice dut1 = CCanDevice(TEST_DEVICE(DUT1));
+    CCanDevice dut2 = CCanDevice(TEST_DEVICE(DUT2));
+    CCanApi::EChannelState state;
+    CANAPI_OpMode_t opMode = { TEST_CANMODE };
+    CANAPI_Status_t status = {};
+    CANAPI_Return_t retVal;
+    // @test:
+    // @- try to probe channel with invalid library id. -1
+    retVal = dut1.ProbeChannel((-1), g_Options.GetChannelNo(DUT1), opMode, state);
+    EXPECT_EQ(CCanApi::InvalidLibrary, retVal);
+    // @- try to probe channel with invalid library id. -2
+    retVal = dut1.ProbeChannel((-2), g_Options.GetChannelNo(DUT1), opMode, state);
+    EXPECT_EQ(CCanApi::InvalidLibrary, retVal);
+    // @- try to probe channel with invalid library id. INT32_MIN
+    retVal = dut1.ProbeChannel(INT32_MIN, g_Options.GetChannelNo(DUT1), opMode, state);
+    EXPECT_EQ(CCanApi::InvalidLibrary, retVal);
+    // @  note: library numbers are positive numbers, but
+    // @        no assumptions can be made for them!
+    //
+    // @post:
+    // @- initialize DUT1 with configured settings
+    retVal = dut1.InitializeChannel();
+    ASSERT_EQ(CCanApi::NoError, retVal) << "[  ERROR!  ] dut1.InitializeChannel() failed with error code " << retVal;
+    // @- get status of DUT1 and check to be in INIT state
+    retVal = dut1.GetStatus(status);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_TRUE(status.can_stopped);
+    // @- start DUT1 with configured bit-rate settings
+    retVal = dut1.StartController();
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    // @- get status of DUT1 and check to be in RUNNING state
+    retVal = dut1.GetStatus(status);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_FALSE(status.can_stopped);
+    // @- send some frames to DUT2 and receive some frames from DUT2
+    int32_t frames = g_Options.GetNumberOfTestFrames();
+    EXPECT_EQ(frames, dut1.SendSomeFrames(dut2, frames));
+    EXPECT_EQ(frames, dut1.ReceiveSomeFrames(dut2, frames));
+    // @- get status of DUT1 and check to be in RUNNING state
+    retVal = dut1.GetStatus(status);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_FALSE(status.can_stopped);
+    // @- stop/reset DUT1
+    retVal = dut1.ResetController();
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    // @- get status of DUT1 and check to be in INIT state
+    retVal = dut1.GetStatus(status);
+    EXPECT_EQ(CCanApi::NoError, retVal);
+    EXPECT_TRUE(status.can_stopped);
+    // @- tear down DUT1
+    retVal = dut1.TeardownChannel();
+    EXPECT_EQ(CCanApi::NoError, retVal);
     // @end.
 }
 #endif  // (OPTION_CANAPI_LIBRARY != OPTION_DISBALED)
 
-//  $Id: TC01_ProbeChannel.cc 1272 2024-04-16 19:55:27Z makemake $  Copyright (c) UV Software, Berlin.
+//  $Id: TC01_ProbeChannel.cc 1335 2024-06-02 16:26:04Z makemake $  Copyright (c) UV Software, Berlin.

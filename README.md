@@ -21,7 +21,7 @@ Note: _The PCBUSB library is not included in this repo, and must be installed se
 
 ```C++
 /// \name   PeakCAN API
-/// \brief  CAN API V3 wrapper for PEAK-System PCAN-USB interfaces
+/// \brief  CAN API V3 wrapper for PEAK-System PCAN USB interfaces
 /// \note   See CCanApi for a description of the overridden methods
 /// \{
 class CPeakCAN : public CCanApi {
@@ -124,19 +124,19 @@ Type `can_test --help` to display all program options.
 
 #### macOS Sonoma
 
-- macOS Sonoma (14.4.1) on a Mac mini (M1, 2020)
+- macOS Sonoma (14.5) on a Mac mini (M1, 2020)
 - Apple clang version 15.0.0 (clang-1500.3.9.4)
-- Xcode Version 15.3 (15E204a)
+- Xcode Version 15.4 (15F31d)
 
 #### macOS Monterey
 
-- macOS Monterey (12.7.4) on a MacBook Pro (2019)
+- macOS Monterey (12.7.5) on a MacBook Pro (2019)
 - Apple clang version 13.0.0 (clang-1300.0.29.30)
 - Xcode Version 13.2.1 (13C100)
 
 #### Debian "bookworm" (12.5)
 
-- Debian 6.1,76-1 (2024-02-01) x86_64 GNU/Linux
+- Debian 6.1.90-1 (2024-05-03) x86_64 GNU/Linux
 - gcc (Debian 12.2.0-14) 12.2.0
 - PCAN Driver and Library for Linux v8.17
 
@@ -161,7 +161,7 @@ Please note the copyright and license agreements.
 
 The PCAN Linux (chardev) driver and library can be downloaded form [Peak's](https://www.peak-system.com/fileadmin/media/linux/index.htm/) website.
 
-### Wrapper Library for Windows&reg;
+### PCAN Wrapper Library for Windows&reg;
 
 A CAN API V3 compatible Wrapper Library for Windows is also available.
 It is build upon Peak´s PCANBasic DLL and can be downloaded from / cloned at [GitHub](https://github.com/uv-software/PCANBasic-Wrapper).
@@ -175,8 +175,6 @@ A generic documentation of the CAN API V3 application programming interface can 
 Except where otherwise noted, this work is dual-licensed under the terms of the BSD 2-Clause "Simplified" License
 and under the terms of the GNU General Public License v3.0 (or any later version).
 You can choose between one of them if you use these portions of this work in whole or in part.
-
-`SPDX-License-Identifier: BSD-2-Clause OR GPL-3.0-or-later`
 
 ### Trademarks
 

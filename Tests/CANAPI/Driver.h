@@ -96,13 +96,16 @@ typedef CPeakCAN  CCanDriver;
 #define BITRATE_5K(x)    PEAKCAN_BR_5K(x)
 
 //  (§6) define macros for workarounds (e.g. TC01_3_ISSUE)
-#define TC04_8_ISSUE_QUEUE_SIZE  WORKAROUND_ENABLED  // 2023-08-20: last element of receive queue is not accessible
-#define TC09_8_ISSUE_BUS_OFF     WORKAROUND_ENABLED  // 2023-08-29: no bus off from device (known issue)
+#if (OPTION_REGRESSION_TEST == 0)
+#define TC04_3_ISSUE_PCBUSB_BUFFERED_MSGS  WORKAROUND_ENABLED  // 2024-04-29: buffered messages from device (PCAN-USB [Pro] FD)
+#define TC04_8_ISSUE_PCBUSB_QUEUE_SIZE  WORKAROUND_ENABLED  // 2023-08-20: last element of receive queue is not accessible (PCAN-USB)
+#define TC09_8_ISSUE_BUS_OFF  WORKAROUND_ENABLED  // 2023-08-29: no bus off from device (general issue)
 #ifdef __linux__
 #define TC04_15_ISSUE_PCBUSB_WARNING_LEVEL WORKAROUND_ENABLED  // 2023-09-13: no warning level from device (Linux)
 #define TC09_9_ISSUE_PCBUSB_WARNING_LEVEL  WORKAROUND_ENABLED  // 2023-09-13: no warning level from device (Linux)
 #endif
 //#define TC0x_y_ISSUE_  WORKAROUND_ENABLED
+#endif
 //  (§6.1) old PCANBasic issues (see macros in 'Settings.h')
 #define PCBUSB_INIT_DELAY_WORKAROUND  WORKAROUND_ENABLED
 #define PCBUSB_QXMTFULL_WORKAROUND    WORKAROUND_ENABLED
@@ -135,7 +138,9 @@ typedef CPeakCAN  CCanDriver;
 #define BITRATE_FD_125K1M(x)  PEAKCAN_FD_BR_125K1M(x)
 
 //  (§11) define macros for workarounds for CAN FD operation mode (e.g. TC01_3_ISSUE_FD)
+#if (OPTION_REGRESSION_TEST == 0)
 //#define TC0x_y_ISSUE_FD_  WORKAROUND_ENABLED
+#endif
 
 //  (§12) define macros for CAN FD bit-rate settings to be used in the tests, if supported
 #define CAN_BITRATE_FD_DEFAULT  BITRATE_FD_250K2M
