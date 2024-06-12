@@ -141,6 +141,9 @@ STATIC  = $(LIBRARY).a
 
 INSTALL = /usr/local/lib
 
+# note: take the loader from MacCAN-PCBUSB dylib
+OBJECTS += $(OUTDIR)/PCBUSB.o
+
 DEFINES += -DOPTION_CANAPI_PCANBASIC_SO=1
 
 HEADERS += -I$(PCBUSB_DIR)/Linux
@@ -227,7 +230,7 @@ ifeq ($(current_OS),Linux)
 endif
 
 
-ifeq ($(current_OS),Darwin)
+ifeq ($(current_OS),$(filter $(current_OS),Linux Darwin))
 $(OUTDIR)/PCBUSB.o: $(PCBUSB_DIR)/macOS/PCBUSB.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 endif

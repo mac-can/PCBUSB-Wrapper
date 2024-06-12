@@ -81,6 +81,9 @@ endif
 
 ifeq ($(current_OS),Linux)  # Linux - libpeakcan.so
 
+# note: take the loader from MacCAN-PCBUSB dylib
+OBJECTS += $(OUTDIR)/PCBUSB.o
+
 HEADERS += -I$(PCBUSB_DIR)/Linux
 
 CFLAGS += -O0 -g -Wall -Wextra -Wno-parentheses \
@@ -140,7 +143,7 @@ xctest:
 	xcodebuild clean build test -project PCBUSB.xcodeproj -scheme Testing $(TESTING)
 
 
-ifeq ($(current_OS),Darwin)
+ifeq ($(current_OS),$(filter $(current_OS),Linux Darwin))
 $(OUTDIR)/PCBUSB.o: $(PCBUSB_DIR)/macOS/PCBUSB.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 endif
