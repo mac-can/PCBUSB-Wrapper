@@ -105,7 +105,7 @@ static void _finalizer() {
 #endif
 #if defined(__APPLE__)
 #define ISSUE_303_WORKAROUND    // PCBUSB issue #303: first transmit message will be swallowed
-#define ISSUE_276_UNSOLVED      // PCBUSB issue #276: parameter PCAN_RECEIVE_STATUS reverted
+/*#define ISSUE_276_UNSOLVED    // PCBUSB issue #276: parameter PCAN_RECEIVE_STATUS solved by v0.13 */
 #endif
 
 /*  -----------  defines  ------------------------------------------------
