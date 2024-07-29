@@ -147,6 +147,7 @@ int main(int argc, const char * argv[]) {
     int option_retry = OPTION_NO;
     int option_reply = OPTION_NO;
     int option_transmit = OPTION_NO;
+    int option_extended = OPTION_NO;
 //    int option_device_id = OPTION_NO;
 //    int option_trace = OPTION_NO;
 //    int option_log = OPTION_NO;
@@ -212,6 +213,7 @@ int main(int argc, const char * argv[]) {
         if (!strncmp(argv[i], "R:", 2) && sscanf(argv[i], "R:%i", &opt) == 1) rxTimeout = (useconds_t)opt;
         /* transmit messages */
         if ((sscanf(argv[i], "%i", &opt) == 1) && (opt > 0)) option_transmit = opt;
+        if (!strcmp(argv[i], "EXT") || !strcmp(argv[i], "EXTENDED")) option_extended = OPTION_YES;
 //        if (!strncmp(argv[i], "T:", 2) && sscanf(argv[i], "T:%i", &opt) == 1) txTimeout = (useconds_t)opt;
         if (!strncmp(argv[i], "C:", 2) && sscanf(argv[i], "C:%i", &opt) == 1) txDelay = (useconds_t)opt * 1000U;
         if (!strncmp(argv[i], "U:", 2) && sscanf(argv[i], "U:%i", &opt) == 1) txDelay = (useconds_t)opt;
@@ -568,6 +570,7 @@ int main(int argc, const char * argv[]) {
                 message.dlc = CANFD_MAX_DLC;
             }
 #endif
+            message.xtd = option_extended ? 1 : 0;
             message.id = (uint32_t)frames & (message.xtd ? CAN_MAX_XTD_ID : CAN_MAX_STD_ID);
             message.data[0] = (uint8_t)(((uint64_t)frames & 0x00000000000000FF) >> 0);
             message.data[1] = (uint8_t)(((uint64_t)frames & 0x000000000000FF00) >> 8);
@@ -593,7 +596,8 @@ retry_write:
         if (myDriver.GetStatus(status) == CCanApi::NoError) {
             fprintf(stdout, ">>> myDriver.WriteMessage: status = 0x%02X\n", status.byte);
         }
-        fprintf(stdout, "    %i message(s) sent (took %.1lfs)\n", frames, difftime(time(NULL), now));
+        fprintf(stdout, "    %i %s message(s) sent (took %.1lfs)\n", frames, option_extended ? "extended" : "standard",
+                difftime(time(NULL), now));
         if (option_exit)
             goto teardown;
     }

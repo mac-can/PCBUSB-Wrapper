@@ -57,8 +57,8 @@
 class CCanDevice : public CCanDriver {
 public:
     uint64_t ReceiverTest(bool checkCounter = false, uint64_t expectedNumber = 0U, bool stopOnError = false);
-    uint64_t TransmitterTest(time_t duration, CANAPI_OpMode_t opMode, uint32_t id = 0x100U, uint8_t dlc = 0U, uint64_t delay = 0U, uint64_t offset = 0U);
-    uint64_t TransmitterTest(uint64_t count, CANAPI_OpMode_t opMode, bool random = false, uint32_t id = 0x100U, uint8_t dlc = 0U, uint64_t delay = 0U, uint64_t offset = 0U);
+    uint64_t TransmitterTest(time_t duration, CANAPI_OpMode_t opMode, uint32_t id = 0x100U, bool xtd = false, uint8_t dlc = 0U, uint64_t delay = 0U, uint64_t offset = 0U);
+    uint64_t TransmitterTest(uint64_t count, CANAPI_OpMode_t opMode, bool random = false, uint32_t id = 0x100U, bool xtd = false, uint8_t dlc = 0U, uint64_t delay = 0U, uint64_t offset = 0U);
 public:
     int ListCanDevices(void);
     int TestCanDevices(CANAPI_OpMode_t opMode);
@@ -303,13 +303,13 @@ int main(int argc, const char* argv[]) {
     /* - do your job well: */
     switch (opts.m_TestMode) {
     case SOptions::TxMODE:   /* transmitter test (duration) */
-        (void)canDevice.TransmitterTest(opts.m_nTxTime, opts.m_OpMode, opts.m_nTxCanId, opts.m_nTxCanDlc, opts.m_nTxDelay, opts.m_nStartNumber);
+        (void)canDevice.TransmitterTest(opts.m_nTxTime, opts.m_OpMode, opts.m_nTxCanId, opts.m_fTxXtdId, opts.m_nTxCanDlc, opts.m_nTxDelay, opts.m_nStartNumber);
         break;
     case SOptions::TxFRAMES: /* transmitter test (frames) */
-        (void)canDevice.TransmitterTest(opts.m_nTxFrames, opts.m_OpMode, false, opts.m_nTxCanId, opts.m_nTxCanDlc, opts.m_nTxDelay, opts.m_nStartNumber);
+        (void)canDevice.TransmitterTest(opts.m_nTxFrames, opts.m_OpMode, false, opts.m_nTxCanId, opts.m_fTxXtdId, opts.m_nTxCanDlc, opts.m_nTxDelay, opts.m_nStartNumber);
         break;
     case SOptions::TxRANDOM: /* transmitter test (random) */
-        (void)canDevice.TransmitterTest(opts.m_nTxFrames, opts.m_OpMode, true, opts.m_nTxCanId, opts.m_nTxCanDlc, opts.m_nTxDelay, opts.m_nStartNumber);
+        (void)canDevice.TransmitterTest(opts.m_nTxFrames, opts.m_OpMode, true, opts.m_nTxCanId, opts.m_fTxXtdId, opts.m_nTxCanDlc, opts.m_nTxDelay, opts.m_nStartNumber);
         break;
     case SOptions::RxMODE:   /* receiver test (abort with Ctrl+C) */
     default:
@@ -471,7 +471,6 @@ bool CCanDevice::IsBlacklisted(int32_t library, int32_t blacklist[]) {
 int CCanDevice::ListCanBitrates(CANAPI_OpMode_t opMode) {
     CANAPI_Bitrate_t bitrate[9];
     CANAPI_BusSpeed_t speed;
-    CANAPI_Return_t retVal;
 
     char string[CANPROP_MAX_BUFFER_SIZE] = "";
     bool hasDataPhase = false;
@@ -519,7 +518,7 @@ int CCanDevice::ListCanBitrates(CANAPI_OpMode_t opMode) {
         hasNoSamp = true;
     }
     for (i = 0; i < n; i++) {
-        if ((retVal = CCanDevice::MapBitrate2Speed(bitrate[i], speed)) == CCanApi::NoError) {
+        if (CCanDevice::MapBitrate2Speed(bitrate[i], speed) == CCanApi::NoError) {
             fprintf(stdout, "  %4.0fkbps@%.1f%%", speed.nominal.speed / 1000., speed.nominal.samplepoint * 100.);
 #if (CAN_FD_SUPPORTED != 0)
             if (opMode.brse)
@@ -652,7 +651,7 @@ bool CCanDevice::WriteJsonFile(const char* filename) {
  *  - offset for first up counting number
  *  * Note: Most CAN drivers use a transmission queue that stalls after the time period has expired.
  */
-uint64_t CCanDevice::TransmitterTest(time_t duration, CANAPI_OpMode_t opMode, uint32_t id, uint8_t dlc, uint64_t delay, uint64_t offset) {
+uint64_t CCanDevice::TransmitterTest(time_t duration, CANAPI_OpMode_t opMode, uint32_t id, bool xtd, uint8_t dlc, uint64_t delay, uint64_t offset) {
     CANAPI_Message_t message;
     CANAPI_Return_t retVal;
 
@@ -665,7 +664,7 @@ uint64_t CCanDevice::TransmitterTest(time_t duration, CANAPI_OpMode_t opMode, ui
 
     fprintf(stderr, "\nPress ^C to abort.\n");
     message.id  = id;
-    message.xtd = 0;
+    message.xtd = xtd;
     message.rtr = 0;
 #if (CAN_FD_SUPPORTED != 0)
     message.fdf = opMode.fdoe;
@@ -731,7 +730,7 @@ retry_tx_test:
  *  - offset for first up counting number
  *  * Note: Most CAN drivers use a transmission queue that stalls after the time period has expired.
  */
-uint64_t CCanDevice::TransmitterTest(uint64_t count, CANAPI_OpMode_t opMode, bool random, uint32_t id, uint8_t dlc, uint64_t delay, uint64_t offset) {
+uint64_t CCanDevice::TransmitterTest(uint64_t count, CANAPI_OpMode_t opMode, bool random, uint32_t id, bool xtd, uint8_t dlc, uint64_t delay, uint64_t offset) {
     CANAPI_Message_t message;
     CANAPI_Return_t retVal;
 
@@ -745,7 +744,7 @@ uint64_t CCanDevice::TransmitterTest(uint64_t count, CANAPI_OpMode_t opMode, boo
 
     fprintf(stderr, "\nPress ^C to abort.\n");
     message.id  = id;
-    message.xtd = 0;
+    message.xtd = xtd;
     message.rtr = 0;
 #if (CAN_FD_SUPPORTED != 0)
     message.fdf = opMode.fdoe;
