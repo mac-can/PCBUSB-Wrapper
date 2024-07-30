@@ -63,7 +63,7 @@ endif
 LIBRARIES = -lpthread
 
 CHECKER  = warning,information
-IGNORE   = -i can_msg.c -i can_dev.c
+IGNORE   = -i can_msg.c -i can_dev.c -i vanilla.c
 ifeq ($(HUNTER),BUGS)
 CHECKER += --bug-hunting
 endif

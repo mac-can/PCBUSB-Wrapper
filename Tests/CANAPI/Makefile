@@ -71,6 +71,8 @@ OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Device.o $(OUTDIR)/Options.o \
 	$(OUTDIR)/TC09_GetStatus.o \
 	$(OUTDIR)/TC11_GetBitrate.o $(OUTDIR)/Bitrates.o \
 	$(OUTDIR)/TC12_GetProperty.o $(OUTDIR)/Properties.o \
+	$(OUTDIR)/TC23_SetFilter11Bit.o $(OUTDIR)/TC25_SetFilter29Bit.o \
+	$(OUTDIR)/TC27_ResetFilter.o \
 	$(OUTDIR)/TCx1_CallSequences.o $(OUTDIR)/TCx2_BitrateConverter.o \
 	$(OUTDIR)/TCxX_Summary.o $(OUTDIR)/Timer.o $(OUTDIR)/Progress.o
 
@@ -217,6 +219,15 @@ $(OUTDIR)/TC11_GetBitrate.o: $(TEST_DIR)/TC11_GetBitrate.cc
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 $(OUTDIR)/TC12_GetProperty.o: $(TEST_DIR)/TC12_GetProperty.cc
+	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/TC23_SetFilter11Bit.o: $(TEST_DIR)/TC23_SetFilter11Bit.cc
+	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/TC25_SetFilter29Bit.o: $(TEST_DIR)/TC25_SetFilter29Bit.cc
+	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/TC27_ResetFilter.o: $(TEST_DIR)/TC27_ResetFilter.cc
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 $(OUTDIR)/TCx1_CallSequences.o: $(TEST_DIR)/TCx1_CallSequences.cc

@@ -83,6 +83,7 @@ struct SOptions {
     uint64_t m_nTxDelay;
     uint32_t m_nTxCanId;
     uint8_t m_nTxCanDlc;
+    bool m_fTxXtdId;
     bool m_fListBitrates;
     bool m_fListBoards;
     bool m_fTestBoards;

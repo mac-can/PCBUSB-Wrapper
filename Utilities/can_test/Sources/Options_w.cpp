@@ -84,19 +84,22 @@ extern "C" {
 #define CAN_CHR           41
 #define CAN_ID            42
 #define COB_ID            43
-#define LISTBITRATES_STR  44
-#define LISTBOARDS_STR    45
-#define LISTBOARDS_CHR    46
-#define TESTBOARDS_STR    47
-#define TESTBOARDS_CHR    48
-#define JSON_STR          49
-#define JSON_CHR          50
-#define HELP              51
-#define QUESTION_MARK     52
-#define ABOUT             53
-#define CHARACTER_MJU     54
-#define VERSION           55
-#define MAX_OPTIONS       56
+#define XTD_ID            44
+#define EXT_STR           45
+#define EXT_CHR           46
+#define LISTBITRATES_STR  47
+#define LISTBOARDS_STR    48
+#define LISTBOARDS_CHR    49
+#define TESTBOARDS_STR    50
+#define TESTBOARDS_CHR    51
+#define JSON_STR          52
+#define JSON_CHR          53
+#define HELP              54
+#define QUESTION_MARK     55
+#define ABOUT             56
+#define CHARACTER_MJU     57
+#define VERSION           58
+#define MAX_OPTIONS       59
 
 static char* option[MAX_OPTIONS] = {
     (char*)"BAUDRATE", (char*)"bd",
@@ -120,6 +123,7 @@ static char* option[MAX_OPTIONS] = {
     (char*)"USEC", (char*)"u",
     (char*)"DLC", (char*)"d", (char*)"DATA",
     (char*)"CAN-ID", (char*)"id", (char*)"i", (char*)"COP-ID",
+    (char*)"XTD-ID", (char*)"extended", (char*)"e",
     (char*)"LIST-BITRATES",
     (char*)"LIST-BOARDS", (char*)"list",
     (char*)"TEST-BOARDS", (char*)"test",
@@ -172,6 +176,7 @@ SOptions::SOptions() {
     m_nTxDelay = (uint64_t)0;
     m_nTxCanId = (uint32_t)DEFAULT_CAN_ID;
     m_nTxCanDlc = (uint8_t)DEFAULT_LENGTH;
+    m_fTxXtdId = false;
     m_fListBitrates = false;
     m_fListBoards = false;
     m_fTestBoards = false;
@@ -207,6 +212,7 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
     int optCycle = 0;
     int optDlc = 0;
     int optId = 0;
+    int optXtd = 0;
     int optListBitrates = 0;
     int optListBoards = 0;
     int optTestBoards = 0;
@@ -736,6 +742,20 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
             }
             m_nTxCanId = (uint32_t)intarg;
             break;
+        /* option '--extended' (-e) */
+        case EXT_STR:
+        case EXT_CHR:
+        case XTD_ID:
+            if ((optXtd++)) {
+                fprintf(err, "%s: duplicated option /EXTENDED\n", m_szBasename);
+                return 1;
+            }
+            if ((optarg = getOptionParameter()) != NULL) {
+                fprintf(err, "%s: illegal argument for option /EXTENDED\n", m_szBasename);
+                return 1;
+            }
+            m_fTxXtdId = true;
+            break;
         /* option '--list-bitrates[=(2.0|FDF[+BRS])]' */
         case LISTBITRATES_STR:
             if ((optListBitrates++)) {
@@ -946,6 +966,7 @@ void SOptions::ShowUsage(FILE* stream, bool args) {
     fprintf(stream, "  /Usec:<usec>                        cycle time in microseconds (default=0)\n");
     fprintf(stream, "  /Dlc:<length>                       send messages of given length (default=8)\n");
     fprintf(stream, "  /can-Id:<can-id>                    use given identifier (default=100h)\n");
+    fprintf(stream, "  /EXTended                           use extended identifier (29-bit)\n");
     fprintf(stream, "  /Number:<number>                    set first up-counting number (default=0)\n");
 #if (CAN_FD_SUPPORTED != 0)
     fprintf(stream, "  /Mode:(2.0|FDf[+BRS])               CAN operation mode: CAN 2.0 or CAN FD mode\n");

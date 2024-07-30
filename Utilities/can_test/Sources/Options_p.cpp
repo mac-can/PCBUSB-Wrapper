@@ -88,10 +88,10 @@ SOptions::SOptions() {
     m_nTxDelay = (uint64_t)0;
     m_nTxCanId = (uint32_t)DEFAULT_CAN_ID;
     m_nTxCanDlc = (uint8_t)DEFAULT_LENGTH;
+    m_fTxXtdId = false;
     m_fListBitrates = false;
     m_fListBoards = false;
     m_fTestBoards = false;
-    m_fVerbose = false;
     m_fVerbose = false;
     m_fExit = false;
 }
@@ -121,6 +121,7 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
     int optCycle = 0;
     int optDlc = 0;
     int optId = 0;
+    int optXtd = 0;
     int optListBitrates = 0;
     int optListBoards = 0;
     int optTestBoards = 0;
@@ -156,6 +157,8 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
         {"dlc", required_argument, 0, 'd'},
         {"data", required_argument, 0, 'd'},
         {"id", required_argument, 0, 'i'},
+        {"xtd", no_argument, 0, 'e'},
+        {"extended", no_argument, 0, 'e'},
         {"list-bitrates", optional_argument, 0, 'l'},
 #if (OPTION_CANAPI_LIBRARY != 0)
         {"list-boards", optional_argument, 0, 'L'},
@@ -181,9 +184,9 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
 #endif
     // (2) scan command-line for options
 #if (OPTION_CANAPI_LIBRARY != 0)
-    while ((opt = getopt_long(argc, (char * const *)argv, "b:vp:m:rn:st:f:R:c:u:d:i:lLaTh", long_options, NULL)) != -1) {
+    while ((opt = getopt_long(argc, (char * const *)argv, "b:vp:m:rn:st:f:R:c:u:d:i:elLaTh", long_options, NULL)) != -1) {
 #else
-    while ((opt = getopt_long(argc, (char * const *)argv, "b:vm:rn:st:f:R:c:u:d:i:lLaTj:h", long_options, NULL)) != -1) {
+    while ((opt = getopt_long(argc, (char * const *)argv, "b:vm:rn:st:f:R:c:u:d:i:elLaTj:h", long_options, NULL)) != -1) {
 #endif
         switch (opt) {
         /* option '--baudrate=<baudrate>' (-b) */
@@ -626,6 +629,18 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
             }
             m_nTxCanId = (uint32_t)intarg;
             break;
+        /* option '--extended' (-e) */
+        case 'e':
+            if (optXtd++) {
+                fprintf(err, "%s: duplicated option `--extended' (%c)\n", m_szBasename, opt);
+                return 1;
+            }
+            if (optarg != NULL) {
+                fprintf(err, "%s: illegal argument for option `--extended' (%c)\n", m_szBasename, opt);
+                return 1;
+            }
+            m_fTxXtdId = true;
+            break;
         /* option '--list-bitrates[=(2.0|FDF[+BRS])]' */
         case 'l':
             if (optListBitrates++) {
@@ -844,6 +859,7 @@ void SOptions::ShowUsage(FILE* stream, bool args) {
     fprintf(stream, " -u, --usec=<cycle>                   cycle time in microseconds (default=0)\n");
     fprintf(stream, " -d, --dlc=<length>                   send messages of given length (default=8)\n");
     fprintf(stream, " -i, --id=<can-id>                    use given identifier (default=100h)\n");
+    fprintf(stream, " -e, --extended                       use extended identifier (29-bit)\n");
     fprintf(stream, " -n, --number=<number>                set first up-counting number (default=0)\n");
 #if (OPTION_CANAPI_LIBRARY != 0)
     fprintf(stream, " -p, --path=<pathname>                search path for JSON configuration files\n");

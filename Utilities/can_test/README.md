@@ -1,4 +1,4 @@
-__CAN Tester for PEAK-System PCAN-USB Interfaces, Version 0.2.9__ \
+__CAN Tester for PEAK-System PCAN-USB Interfaces, Version 0.3__ \
 Copyright &copy; 2005-2010,2012-2024 by Uwe Vogt, UV Software, Berlin
 
 ```
@@ -24,6 +24,7 @@ Options for transmitter test:
  -u, --usec=<cycle>                   cycle time in microseconds (default=0)
  -d, --dlc=<length>                   send messages of given length (default=8)
  -i, --id=<can-id>                    use given identifier (default=100h)
+ -e, --extended                       use extended identifier (29-bit)
  -n, --number=<number>                set first up-counting number (default=0)
  -m, --mode=(2.0|FDF[+BRS])           CAN operation mode: CAN 2.0 or CAN FD mode
      --shared                         shared CAN controller access (if supported)
