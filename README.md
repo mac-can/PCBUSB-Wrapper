@@ -140,7 +140,7 @@ Type `can_test --help` to display all program options.
 - Apple clang version 13.0.0 (clang-1300.0.29.30)
 - Xcode Version 13.2.1 (13C100)
 
-#### Debian "bookworm" (12.5)
+#### Debian "bookworm" (12.6)
 
 - Debian 6.1.99-1 (2024-07-15) x86_64 GNU/Linux
 - gcc (Debian 12.2.0-14) 12.2.0
