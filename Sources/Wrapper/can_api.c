@@ -1390,9 +1390,26 @@ static TPCANStatus pcan_reset_filter(int handle)
 
     assert(IS_HANDLE_VALID(handle));    // just to make sure
 
+#if defined(__linux__)
+    UINT64 value = 0x0ull;              // PCAN filter value
+
+    // note: it seems that the hardware filter is not resetted by 'PCAN_MESSAGE_FILTER' := 'PCAN_FILTER_OPEN'
+    switch (can[handle].filter.mode) {
+        case FILTER_STD:                // 11-bit identifier
+            value = (FILTER_RESET_VALUE ^ FILTER_STD_XOR_MASK);   // SJA100 has inverted masks bits!
+            (void)CAN_SetValue(can[handle].board, PCAN_ACCEPTANCE_FILTER_11BIT, (void*)&value, sizeof(value));
+            break;
+        case FILTER_XTD:                // 29-bit identifier
+            value = (FILTER_RESET_VALUE ^ FILTER_XTD_XOR_MASK);   // SJA100 has inverted masks bits!
+            (void)CAN_SetValue(can[handle].board, PCAN_ACCEPTANCE_FILTER_29BIT, (void*)&value, sizeof(value));
+            break;
+        default:                        // no filtering
+            break;
+    }
+#endif
     // reset the filter value to device
     if ((sts = CAN_SetValue(can[handle].board, (BYTE)PCAN_MESSAGE_FILTER,
-        (void*)&filter, (DWORD)sizeof(uint8_t))) == PCAN_ERROR_OK) {
+                           (void*)&filter, (DWORD)sizeof(uint8_t))) == PCAN_ERROR_OK) {
         can[handle].filter.mode = FILTER_OFF;
     }
     return sts;

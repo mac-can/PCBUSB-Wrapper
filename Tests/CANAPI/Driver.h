@@ -104,6 +104,9 @@ typedef CPeakCAN  CCanDriver;
 #ifdef __linux__
 #define TC04_15_ISSUE_PCBUSB_WARNING_LEVEL WORKAROUND_ENABLED  // 2023-09-13: no warning level from device (Linux)
 #define TC09_9_ISSUE_PCBUSB_WARNING_LEVEL  WORKAROUND_ENABLED  // 2023-09-13: no warning level from device (Linux)
+#define TC23_X_ISSUE_PCBUSB_FILTER_CODE  WORKAROUND_ENABLED  // 2024-07-31: code is bit-wise ANDed with mask (Linux)
+#define TC25_X_ISSUE_PCBUSB_FILTER_CODE  WORKAROUND_ENABLED  // 2024-07-31: code is bit-wise ANDed with mask (Linux)
+#define TC27_X_ISSUE_PCBUSB_FILTER_CODE  WORKAROUND_ENABLED  // 2024-07-31: code is bit-wise ANDed with mask (Linux)
 #endif
 //#define TC0x_y_ISSUE_  WORKAROUND_ENABLED
 #endif
