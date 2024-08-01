@@ -82,7 +82,7 @@ int main(int argc, const char* argv[]) {
     CCanDevice::SLibraryInfo library = { (-1), "", "" };
 #endif
     CANAPI_Return_t retVal = CANERR_FATAL;
-    char property[CANPROP_MAX_BUFFER_SIZE] = "";
+    char property[CANPROP_MAX_BUFFER_SIZE + 1] = "";
     char* string = NULL;
 
     /* device parameter */
@@ -299,6 +299,33 @@ int main(int argc, const char* argv[]) {
         fprintf(stderr, "+++ error: CAN Controller could not be started (%i)\n", retVal);
         goto teardown;
     }
+    /* - start trace session (if enabled) */
+#if (CAN_TRACE_SUPPORTED != 0)
+    if (opts.m_eTraceMode != SOptions::eTraceOff) {
+        /* -- set trace format */
+        switch (opts.m_eTraceMode) {
+            case SOptions::eTraceVendor:
+                property[0] = CANPARA_TRACE_TYPE_VENDOR;
+                break;
+            case SOptions::eTraceLogger:
+                property[0] = CANPARA_TRACE_TYPE_LOGGER;
+                break;
+            case SOptions::eTraceBinary:
+            default:
+                property[0] = CANPARA_TRACE_TYPE_BINARY;
+                break;
+        }
+        (void)canDevice.SetProperty(CANPROP_SET_TRACE_TYPE, (void*)&property[0], sizeof(uint8_t));
+        /* -- set trace active */
+        property[0] = CANPARA_TRACE_ON;
+        retVal = canDevice.SetProperty(CANPROP_SET_TRACE_ACTIVE, (void*)&property[0], sizeof(uint8_t));
+        if (retVal != CCanApi::NoError) {
+            fprintf(stdout, "FAILED!\n");
+            fprintf(stderr, "+++ error: trace session could not be started (%i)\n", retVal);
+            goto teardown;
+        }
+    }
+#endif
     fprintf(stdout, "OK!\n");
     /* - do your job well: */
     switch (opts.m_TestMode) {
@@ -316,6 +343,20 @@ int main(int argc, const char* argv[]) {
         (void)canDevice.ReceiverTest(opts.m_fCheckNumber, opts.m_nStartNumber, opts.m_fStopOnError);
         break;
     }
+    /* - stop trace session (if enabled) */
+#if (CAN_TRACE_SUPPORTED != 0)
+    if (opts.m_eTraceMode != SOptions::eTraceOff) {
+        /* -- get trace file name */
+        retVal = canDevice.GetProperty(CANPROP_GET_TRACE_FILE, (void*)property, CANPROP_MAX_BUFFER_SIZE);
+        if (retVal == CCanApi::NoError) {
+            property[CANPROP_MAX_BUFFER_SIZE] = '\0';
+            fprintf(stdout, "Trace-file=%s\n", property);
+        }
+        /* -- set trace inactive */
+        property[0] = CANPARA_TRACE_OFF;
+        (void)canDevice.SetProperty(CANPROP_SET_TRACE_ACTIVE, (void*)&property[0], sizeof(uint8_t));
+    }
+#endif
     /* - show interface information */
     if ((string = canDevice.GetHardwareVersion()) != NULL)
         fprintf(stdout, "Hardware: %s\n", string);
@@ -617,7 +658,7 @@ bool CCanDevice::WriteJsonFile(const char* filename) {
             "      \"id\": %i,\n"
             "      \"name\": \"%s%i\",\n"
             "      \"alias\": \"%s%i\"\n",
-            CANDEV_SERIAL, 
+            CANDEV_SERIAL,
 #if defined(_WIN32) || defined(_WIN64)
             TESTER_TTYNAME, i + 1,
 #else
