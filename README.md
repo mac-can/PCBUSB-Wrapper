@@ -136,7 +136,7 @@ Type `can_test --help` to display all program options.
 
 #### macOS Monterey
 
-- macOS Monterey (12.7.5) on a MacBook Pro (2019)
+- macOS Monterey (12.7.6) on a MacBook Pro (2019)
 - Apple clang version 13.0.0 (clang-1300.0.29.30)
 - Xcode Version 13.2.1 (13C100)
 
