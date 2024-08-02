@@ -11,10 +11,10 @@ from time import sleep
 #
 def sigterm(signo, frame):
     print()
-#    print('>>> can.kill()')
-#    result = can.kill()
-#    if result < 0:
-#        print('+++ error: can.kill returned {}'.format(result))
+    print('>>> can.kill()')
+    result = can.kill()
+    if result < 0:
+        print('+++ error: can.kill returned {}'.format(result))
     print('>>> can.exit()')
     result = can.exit()
     if result < 0:

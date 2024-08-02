@@ -10,10 +10,10 @@ import sys
 #
 def sigterm(signo, frame):
     print()
-#    print('>>> can.kill()')
-#    result = can.kill()
-#    if result < 0:
-#        print('+++ error: can.kill returned {}'.format(result))
+    print('>>> can.kill()')
+    result = can.kill()
+    if result < 0:
+        print('+++ error: can.kill returned {}'.format(result))
     print('>>> can.exit()')
     result = can.exit()
     if result < 0:
@@ -68,6 +68,20 @@ if res < CANERR_NOERROR:
     print('+++ error: can.status returned {}'.format(res))
 else:
     print('>>> can.status() >>> 0x{:02X}'.format(status.byte))
+
+# set acceptance filter
+code = CANACC_CODE_11BIT
+mask = CANACC_MASK_11BIT
+print('>>> can.filter11bit(0x{:03X}, 0x{:03X})'.format(code, mask))
+res, code, mask = can.filter11bit(code=code, mask=mask)
+if res < CANERR_NOERROR:
+    print('+++ error: can.filter11bit returned {}'.format(res))
+code = CANACC_CODE_29BIT
+mask = CANACC_MASK_29BIT
+print('>>> can.filter29bit(0x{:08X}, 0x{:08X})'.format(code, mask))
+res, code, mask = can.filter29bit(code=code, mask=mask)
+if res < CANERR_NOERROR:
+    print('+++ error: can.filter29bit returned {}'.format(res))
 
 # start the CAN controller
 if int(bitRate.index) > 0:   # FIXME: Expected type 'int', got 'c_int32[int]' instead
