@@ -13,6 +13,10 @@ Options for receiver test (default test mode):
      --error-frames                   allow reception of error frames
      --no-remote-frames               suppress remote frames (RTR frames)
      --no-extended-frames             suppress extended frames (29-bit identifier)
+     --code=<id>                      acceptance code for 11-bit IDs (default=0x000)
+     --mask=<id>                      acceptance mask for 11-bit IDs (default=0x000)
+     --xtd-code=<id>                  acceptance code for 29-bit IDs (default=0x00000000)
+     --xtd-mask=<id>                  acceptance mask for 29-bit IDs (default=0x00000000)
  -b, --baudrate=<baudrate>            CAN bit-timing in kbps (default=250), or
      --bitrate=<bit-rate>             CAN bit-rate settings (as key/value list)
  -v, --verbose                        show detailed bit-rate settings

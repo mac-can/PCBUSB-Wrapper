@@ -135,7 +135,7 @@ ifeq ($(current_OS),Linux)  # linux - libuvcanpcb.so
 
 LIBRARY = libuvcanpcb
 
-SONAME  = $(LIBRARY).so
+SONAME  = $(LIBRARY).so.1
 TARGET  = $(SONAME).$(VERSION)
 STATIC  = $(LIBRARY).a
 
@@ -225,8 +225,8 @@ ifeq ($(current_OS),Darwin)
 	$(RM) $(INSTALL)/$(LIBRARY).dylib ; $(LN) $(INSTALL)/$(TARGET) $(INSTALL)/$(LIBRARY).dylib
 endif
 ifeq ($(current_OS),Linux)
-	$(RM) $(INSTALL)/$(SONAME) ; ln -s $(INSTALL)/$(TARGET) $(INSTALL)/$(SONAME)
-	$(RM) $(INSTALL)/$(LIBRARY).so ; ln -s $(INSTALL)/$(SONAME) $(INSTALL)/$(LIBRARY).so
+	$(RM) $(INSTALL)/$(SONAME) ; $(LN) $(INSTALL)/$(TARGET) $(INSTALL)/$(SONAME)
+	$(RM) $(INSTALL)/$(LIBRARY).so ; $(LN) $(INSTALL)/$(SONAME) $(INSTALL)/$(LIBRARY).so
 endif
 
 
