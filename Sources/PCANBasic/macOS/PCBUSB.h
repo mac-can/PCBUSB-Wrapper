@@ -6,7 +6,7 @@
  *
  *  copyright :  (C) 2012-2024 by UV Software, Berlin
  *
- *  compiler  :  Apple clang version 15.0.0 (clang-1500.3.9.4)
+ *  compiler  :  Apple LLVM / Clang
  *
  *  export    :  TPCANStatus CAN_Initialize(TPCANHandle Channel, TPCANBaudrate Btr0Btr1, TPCANType HwType, DWORD IOPort, WORD Interrupt);
  *               TPCANStatus CAN_Uninitialize(TPCANHandle Channel);

@@ -4,19 +4,62 @@
 //  Wrapper for libPCBUSB
 //
 //  Created by Uwe Vogt on 18.08.13.
-//  Copyright (c) 2013-2024 UV Software. All rights reserved.
+//  Copyright (c) 2013-2025 UV Software. All rights reserved.
 //
-//  This software is freeware without any warranty or support!
+//  This file is dual-licensed under the BSD 2-Clause "Simplified" License
+//  and under the GNU General Public License v2.0 (or any later version). You can
+//  choose between one of them if you use this file.
+//
+//  (1) BSD 2-Clause "Simplified" License
+//
+//  Redistribution and use in source and binary forms, with or without
+//  modification, are permitted provided that the following conditions are met:
+//  1. Redistributions of source code must retain the above copyright notice, this
+//     list of conditions and the following disclaimer.
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//  This file IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+//  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+//  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+//  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+//  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+//  DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+//  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+//  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+//  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+//  OF this file, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+//  (2) GNU General Public License v2.0 or later
+//
+//  This file is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
+//
+//  This file is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License along
+//  with this file; if not, see <https://www.gnu.org/licenses/>.
+//
+//  Note:  The macOS library libPCBUSB is not part of this work.
+//         It can be downloaded from <https://www.mac-can.com/>.
+//
+//  The library libPCBUSB is freeware without any warranty or support!
 //
 //  NO WARRANTIES: You expressly acknowledge and agree that use of the
-//  SOFTWARE PRODUCT is at your sole risk. The SOFTWARE PRODUCT is provided
+//  library libPCBUSB is at your sole risk. The library libPCBUSB is provided
 //  "AS IS" and without warranty of any kind. UV Software hereby EXPRESSLY
 //  DISCLAIMS ALL WARRANTIES OR CONDITIONS, EITHER EXPRESS OR IMPLIED,
 //  INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OR CONDITIONS OF
 //  MERCHANTABILITY, NON INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE.
 //  You are solely responsible for determining the appropriateness of using
-//  this SOFTWARE PRODUCT and assume all risks associated with the use of
-//  this SOFTWARE PRODUCT, including but not limited to the risks of program
+//  this library libPCBUSB and assume all risks associated with the use of
+//  this library libPCBUSB, including but not limited to the risks of program
 //  errors, damage to or loss of data, programs or equipment, and
 //  unavailability or interruption of operations.
 //
@@ -27,8 +70,8 @@
 //  OR ANY OTHER PECUNIARY LOSS) ARISING OUT OF OR RELATING TO THIS LICENSE,
 //  EVEN IF UV Software HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 //  In no event shall UV Software's total liability to you for all damages
-//  exceed the amount paid for this license to the SOFTWARE PRODUCT. The
-//  entire risk arising out of use or performance of the SOFTWARE PRODUCT
+//  exceed the amount paid for this license to the library libPCBUSB. The
+//  entire risk arising out of use or performance of the library libPCBUSB
 //  remains with you.
 //
 #if defined(__APPLE__)
