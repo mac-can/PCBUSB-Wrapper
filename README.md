@@ -122,33 +122,30 @@ Originally developed for electronic environmental tests on an embedded Linux sys
 Type `can_test --help` to display all program options.
 
 ### Target Platforms
-
-- macOS 12.0 and later (Intel x64 and Apple silicon)
+- macOS 13.0 and later (Intel x64 and Apple silicon)
 - Debian GNU/Linux 12 (Linux Kernel 6.x)
 
 ### Development Environments
 
-#### macOS Sonoma
+#### macOS Sequoia
+- macOS Sequoia (15.2) on a Mac mini (M1, 2020)
+- Apple clang version 16.0.0 (clang-1600.0.26.6)
 
-- macOS Sonoma (14.5) on a Mac mini (M1, 2020)
-- Apple clang version 15.0.0 (clang-1500.3.9.4)
-- Xcode Version 15.4 (15F31d)
+#### macOS Ventura
+- macOS Ventura (13.7.2) on a MacBook Pro (2019)
+- Apple clang version 14.0.3 (clang-1403.0.22.14.1)
 
-#### macOS Monterey
-
-- macOS Monterey (12.7.6) on a MacBook Pro (2019)
-- Apple clang version 13.0.0 (clang-1300.0.29.30)
-- Xcode Version 13.2.1 (13C100)
-
-#### Debian "bookworm" (12.6)
-
-- Debian 6.1.99-1 (2024-07-15) x86_64 GNU/Linux
+#### Debian 12.9 ("bookworm")
+- Debian 6.1.123-1 (2024-11-22) x86_64 GNU/Linux
 - gcc (Debian 12.2.0-14) 12.2.0
-- PCAN Driver and Library for Linux v8.18
 
-### Required PCBUSB Library
+### Required Library
 
+#### macOS
 - `libPCBUSB.x.y.dylib` - Version 0.13 or later _(Latest is Greatest!)_
+
+#### Linux
+- `libpcanbasic.so` - Version 8.19 PCAN Driver and Library for Linux
 
 ## Known Bugs and Caveats
 
