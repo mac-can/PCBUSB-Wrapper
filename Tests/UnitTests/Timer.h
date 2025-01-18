@@ -1,4 +1,4 @@
-//  SPDX-License-Identifier: BSD-2-Clause OR GPL-3.0-or-later
+//  SPDX-License-Identifier: BSD-2-Clause OR GPL-2.0-or-later
 //
 //  Software for Industrial Communication, Motion Control and Automation
 //
