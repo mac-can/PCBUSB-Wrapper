@@ -1,6 +1,6 @@
 ### macOS&reg; Wrapper Library for PCAN Interfaces from PEAK-System
 
-_Copyright&copy; 2005-2010, 2012-2024 Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
+_Copyright&copy; 2005-2010, 2012-2025 Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
 
 ![macOS Build](https://github.com/mac-can/PCBUSB-Wrapper/actions/workflows/macos-build.yml/badge.svg)
 
@@ -179,7 +179,7 @@ A generic documentation of the CAN API V3 application programming interface can 
 ### Dual-License
 
 Except where otherwise noted, this work is dual-licensed under the terms of the BSD 2-Clause "Simplified" License
-and under the terms of the GNU General Public License v3.0 (or any later version).
+and under the terms of the GNU General Public License v2.0 (or any later version).
 You can choose between one of them if you use these portions of this work in whole or in part.
 
 ### Trademarks
