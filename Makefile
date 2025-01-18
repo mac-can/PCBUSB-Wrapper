@@ -33,7 +33,7 @@
 #	OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #	OF PCBUSB-Wrapper, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-#	(2) GNU General Public License v3.0 or later
+#	(2) GNU General Public License v2.0 or later
 #
 #	PCBUSB-Wrapper is free software; you can redistribute it and/or modify
 #	it under the terms of the GNU General Public License as published by
