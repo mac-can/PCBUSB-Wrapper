@@ -1,21 +1,22 @@
+#	SPDX-License-Identifier: GPL-2.0-or-later
 #
-#	CAN Tester for PEAK-System PCAN Interfaces (CAN API V3)
+#	CAN Utilities for PEAK-System PCAN Interfaces (CAN API V3)
 #
-#	Copyright (c) 2008-2010  Uwe Vogt, UV Software, Friedrichshafen
+#	Copyright (c) 2005-2010  Uwe Vogt, UV Software, Friedrichshafen
 #	Copyright (c) 2012-2024  Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 #
-#	This program is free software: you can redistribute it and/or modify
+#	These utilities are free software; you can redistribute it and/or modify
 #	it under the terms of the GNU General Public License as published by
-#	the Free Software Foundation, either version 3 of the License, or
+#	the Free Software Foundation; either version 2 of the License, or
 #	(at your option) any later version.
 #
-#	This program is distributed in the hope that it will be useful,
+#	These utilities are distributed in the hope that it will be useful,
 #	but WITHOUT ANY WARRANTY; without even the implied warranty of
 #	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #	GNU General Public License for more details.
 #
-#	You should have received a copy of the GNU General Public License
-#	along with this program   If not, see <https://www.gnu.org/licenses/>.
+#	You should have received a copy of the GNU General Public License along
+#	with these utilities; if not, see <https://www.gnu.org/licenses/>.
 #
 current_OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown OS')
 current_OS := $(patsubst CYGWIN%,Cygwin,$(current_OS))
