@@ -58,7 +58,7 @@
 #else
 #define VERSION_MAJOR    0
 #define VERSION_MINOR    4
-#define VERSION_PATCH    99
+#define VERSION_PATCH    0
 #endif
 #define VERSION_BUILD    BUILD_NO
 #if (VERSION_PATCH == 0)
