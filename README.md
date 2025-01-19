@@ -94,7 +94,7 @@ uv-pc013mac:PeakCAN eris$ make all
 uv-pc013mac:PeakCAN eris$ sudo make install
 uv-pc013mac:PeakCAN eris$
 ```
-_(The version number of the libraries can be adapted by editing the `Makefile`s in the subfolders and changing the variable `VERSION` accordingly.  Don´t forget to set the version number also in the header file `Version.h`.)_
+_(The version number of the libraries can be adapted by editing the `Makefile`s in the corresponding subfolders and changing the variable `VERSION` accordingly.  Don´t forget to set the version number also in the header file `Version.h`.)_
 
 #### libPeakCAN
 
