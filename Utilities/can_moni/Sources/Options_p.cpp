@@ -48,6 +48,7 @@
 
 #define DEFAULT_OP_MODE   CANMODE_DEFAULT
 #define DEFAULT_BAUDRATE  CANBTR_INDEX_250K
+#define DEFAULT_IPC_PORT  29536u
 
 static const char* c_szApplication = CAN_MONI_APPLICATION;
 static const char* c_szCopyright = CAN_MONI_COPYRIGHT;
@@ -83,6 +84,12 @@ SOptions::SOptions() {
 #if (CAN_TRACE_SUPPORTED != 0)
     m_eTraceMode = SOptions::eTraceOff;
 #endif
+#if (CAN_SERVER_SUPPORTED != 0)
+    m_IpcServer.m_fListen = false;
+    m_IpcServer.m_u16Port = DEFAULT_IPC_PORT;
+    m_IpcServer.m_eFormat = SOptions::eMtuCanApiV3;
+    m_IpcServer.m_u8LogLevel = 0U;
+#endif
     m_fListBitrates = false;
     m_fListBoards = false;
     m_fTestBoards = false;
@@ -116,6 +123,10 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
     int optExclude = 0;
 #if (CAN_TRACE_SUPPORTED != 0)
     int optTraceMode = 0;
+#endif
+#if (CAN_SERVER_SUPPORTED != 0)
+    int optGateway = 0;
+    int optLogging = 0;
 #endif
     int optListBitrates = 0;
     int optListBoards = 0;
@@ -166,6 +177,8 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
         {"exclude", required_argument, 0, 'x'},
         {"script", required_argument, 0, 's'},
         {"trace", required_argument, 0, 'y'},
+        {"gateway", required_argument, 0, 'g'},
+        {"logging", required_argument, 0, 'o'},
         {"list-bitrates", optional_argument, 0, 'l'},
 #if (OPTION_CANAPI_LIBRARY != 0)
         {"list-boards", optional_argument, 0, 'L'},
@@ -191,9 +204,9 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
 #endif
     // (2) scan command-line for options
 #if (OPTION_CANAPI_LIBRARY != 0)
-    while ((opt = getopt_long(argc, (char * const *)argv, "b:vp:z:m:t:i:d:a:w:x:s:y:lLTh", long_options, NULL)) != -1) {
+    while ((opt = getopt_long(argc, (char * const *)argv, "b:vp:z:m:t:i:d:a:w:x:s:y:g:o:lLTh", long_options, NULL)) != -1) {
 #else
-    while ((opt = getopt_long(argc, (char * const *)argv, "b:vz:m:t:i:d:a:w:x:s:y:lLTj:h", long_options, NULL)) != -1) {
+    while ((opt = getopt_long(argc, (char * const *)argv, "b:vz:m:t:i:d:a:w:x:s:y:g:o:lLTj:h", long_options, NULL)) != -1) {
 #endif
         switch (opt) {
         /* option '--baudrate=<baudrate>' (-b) */
@@ -490,6 +503,49 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
                 fprintf(err, "%s: illegal argument for option `--trace'\n", m_szBasename);
                 return 1;
             }
+            break;
+#endif
+#if (CAN_SERVER_SUPPORTED != 0)
+        /* option '--gateway=<port>' (-g) */
+        case 'g':
+            if (optGateway++) {
+                fprintf(err, "%s: duplicated option `--gateway' (%c)\n", m_szBasename, opt);
+                return 1;
+            }
+            if (optarg == NULL) {
+                fprintf(err, "%s: missing argument for option `--gateway' (%c)\n", m_szBasename, opt);
+                return 1;
+            }
+            if (sscanf(optarg, "%" SCNi64, &intarg) != 1) {
+                fprintf(err, "%s: illegal argument for option `--gateway' (%c)\n", m_szBasename, opt);
+                return 1;
+            }
+            if ((intarg < 0) || (intarg > USHRT_MAX)) {
+                fprintf(err, "%s: illegal argument for option `--gateway' (%c)\n", m_szBasename, opt);
+                return 1;
+            }
+            m_IpcServer.m_u16Port = (uint16_t)intarg;
+            m_IpcServer.m_fListen = true;
+            break;
+        /* option '--logging=<level>' (-o) */
+        case 'o':
+            if (optLogging++) {
+                fprintf(err, "%s: duplicated option `--logging' (%c)\n", m_szBasename, opt);
+                return 1;
+            }
+            if (optarg == NULL) {
+                fprintf(err, "%s: missing argument for option `--logging' (%c)\n", m_szBasename, opt);
+                return 1;
+            }
+            if (sscanf(optarg, "%" SCNi64, &intarg) != 1) {
+                fprintf(err, "%s: illegal argument for option `--logging' (%c)\n", m_szBasename, opt);
+                return 1;
+            }
+            if ((intarg < 0) || (intarg > UINT8_MAX)) {
+                fprintf(err, "%s: illegal argument for option `--logging' (%c)\n", m_szBasename, opt);
+                return 1;
+            }
+            m_IpcServer.m_u8LogLevel = (uint8_t)intarg;
             break;
 #endif
         /* option '--time=(ABS|REL|ZERO)' (-t) */
@@ -824,7 +880,15 @@ void SOptions::ShowUsage(FILE* stream, bool args) {
     fprintf(stream, "     --bitrate=<bit-rate>             CAN bit-rate settings (as key/value list)\n");
     fprintf(stream, " -v, --verbose                        show detailed bit-rate settings\n");
 #if (CAN_TRACE_SUPPORTED != 0)
+#if (CAN_TRACE_SUPPORTED == 1)
     fprintf(stream, " -y, --trace=(ON|OFF)                 write a trace file (default=OFF)\n");
+#else
+    fprintf(stream, " -y, --trace=(BIN|CSV|TRC)            write a trace file (default=BIN)\n");
+#endif
+#endif
+#if (CAN_SERVER_SUPPORTED != 0)
+    fprintf(stream, " -g, --gateway=<port>                 start CAN IPC server on port <port>\n");
+    fprintf(stream, "     --logging=<level>                set CAN IPC logging level (default=0)\n");
 #endif
 #if (SERIAL_CAN_SUPPORTED != 0)
     fprintf(stream, " -z, --protocol=(Lawicel|CANable)     select SLCAN protocol (default=Lawicel)\n");

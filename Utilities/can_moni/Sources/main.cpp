@@ -24,6 +24,10 @@
 #if (SERIAL_CAN_SUPPORTED != 0)
 #include "SerialCAN_Defines.h"
 #endif
+#if (CAN_SERVER_SUPPORTED != 0)
+#include "CANIPC_Message.h"
+#include "ipc_server.h"
+#endif
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -78,6 +82,37 @@ static int can_id[MAX_ID];
 static int can_id_xtd = 1;
 
 static CCanDevice canDevice = CCanDevice();  // global due to SignalChannel() in sigterm()
+#if (CAN_SERVER_SUPPORTED != 0)
+// TODO: move this into a class
+typedef can_ipc_message_t CANIPC_Message_t;
+static ipc_server_t ipcServer = NULL;
+static size_t ipcMtuSize = sizeof(CANIPC_Message_t);
+static void TransmitMessage(const void* data, size_t size) {
+    CANIPC_Message_t* ipc_msg = (CANIPC_Message_t*)data;
+    CANAPI_Message_t can_msg = CANAPI_Message_t();
+
+    /* sanity check */
+    if (!data || (size != sizeof(CANIPC_Message_t))) {
+        return;
+    }
+    /* convert the message from network to host byte order */
+    CAN_IPC_MSG_NTOH(*ipc_msg);
+    /* transmit the message on the CAN bus */
+    can_msg.id = ipc_msg->id;
+    can_msg.xtd = (ipc_msg->flags & CANIPC_XTD_MASK) ? 1 : 0;
+    can_msg.rtr = (ipc_msg->flags & CANIPC_RTR_MASK) ? 1 : 0;
+    can_msg.fdf = (ipc_msg->flags & CANIPC_FDF_MASK) ? 1 : 0;
+    can_msg.brs = (ipc_msg->flags & CANIPC_BRS_MASK) ? 1 : 0;
+    can_msg.esi = (ipc_msg->flags & CANIPC_ESI_MASK) ? 1 : 0;
+    can_msg.sts = (ipc_msg->flags & CANIPC_STS_MASK) ? 1 : 0;
+    can_msg.dlc = CCanApi::Len2Dlc(ipc_msg->length);
+    for (int i = 0; (i < CANFD_MAX_LEN) && (i < CANIPC_MAX_LEN); i++) {
+        can_msg.data[i] = ipc_msg->data[i];
+    }
+    /* make it so! */
+    (void)canDevice.WriteMessage(can_msg);
+}
+#endif
 
 int main(int argc, const char* argv[]) {
     CCanDevice::SChannelInfo channel = { (-1), "", "", (-1), "" };
@@ -342,6 +377,21 @@ int main(int argc, const char* argv[]) {
     }
 #endif
     fprintf(stdout, "OK!\n");
+#if (CAN_SERVER_SUPPORTED != 0)
+    /* - start IPC server (if enabled) */
+    if (opts.m_IpcServer.m_fListen) {
+        fprintf(stdout, "IPC Port=%u...", opts.m_IpcServer.m_u16Port);
+        fflush(stdout);
+        ipcServer = ipc_server_start(opts.m_IpcServer.m_u16Port, ipcMtuSize, TransmitMessage, 
+                                     opts.m_IpcServer.m_u8LogLevel);
+        if (ipcServer == NULL) {
+            fprintf(stdout, "FAILED!\n");
+            fprintf(stderr, "+++ error: IPC server could not be started (%i)\n", errno);
+            goto teardown;
+        }
+        fprintf(stdout, "OK!\n");
+    }
+#endif
     /* - reception loop */
     canDevice.ReceptionLoop();
     /* - stop trace session (if enabled) */
@@ -371,6 +421,15 @@ int main(int argc, const char* argv[]) {
 #else
     if ((string = CCanDevice::GetVersion()) != NULL)
         fprintf(stdout, "Software: %s\n", string);
+#endif
+#if (CAN_SERVER_SUPPORTED != 0)
+    /* - stop IPC server (if enabled) */
+    if (ipcServer != NULL) {
+        retVal = ipc_server_stop(ipcServer);
+        if (retVal != 0) {
+            fprintf(stderr, "+++ error: IPC server could not be stopped (%i)\n", errno);
+        }
+    }
 #endif
 teardown:
     /* - teardown the interface*/
@@ -687,7 +746,8 @@ bool CCanDevice::WriteJsonFile(const char* filename) {
 /*  Reception loop: count received CAN messages until Ctrl-C
  */
 uint64_t CCanDevice::ReceptionLoop() {
-    CANAPI_Message_t message;
+    CANAPI_Message_t can_msg;
+    CANIPC_Message_t ipc_msg;
     uint64_t frames = 0U;
 
     char string[CANPROP_MAX_STRING_LENGTH+1];
@@ -695,10 +755,34 @@ uint64_t CCanDevice::ReceptionLoop() {
 
     fprintf(stderr, "\nPress ^C to abort.\n\n");
     while(running) {
-        if (ReadMessage(message) == CCanApi::NoError) {
-            if ((((message.id < MAX_ID) && can_id[message.id]) || ((message.id >= MAX_ID) && can_id_xtd))) {
-                (void)CCanMessage::Format(message, ++frames, string, CANPROP_MAX_STRING_LENGTH);
+        if (ReadMessage(can_msg) == CCanApi::NoError) {
+            if ((((can_msg.id < MAX_ID) && can_id[can_msg.id]) || ((can_msg.id >= MAX_ID) && can_id_xtd))) {
+                /* format CAN message and print it */
+                (void)CCanMessage::Format(can_msg, ++frames, string, CANPROP_MAX_STRING_LENGTH);
                 fprintf(stdout, "%s\n", string);
+                /* send IPC message (if enabled) */
+                if ((ipcServer != NULL) && (ipcMtuSize == sizeof(CANIPC_Message_t))) {
+                    memset(&ipc_msg, 0, sizeof(CANIPC_Message_t));
+                    /* copy CAN message into IPC message */
+                    ipc_msg.id = can_msg.id;
+                    ipc_msg.flags |= CANIPC_XTD_FLAG(can_msg.xtd);
+                    ipc_msg.flags |= CANIPC_RTR_FLAG(can_msg.rtr);
+                    ipc_msg.flags |= CANIPC_FDF_FLAG(can_msg.fdf);
+                    ipc_msg.flags |= CANIPC_BRS_FLAG(can_msg.brs);
+                    ipc_msg.flags |= CANIPC_ESI_FLAG(can_msg.esi);
+                    ipc_msg.flags |= CANIPC_STS_FLAG(can_msg.sts);
+                    ipc_msg.length = CCanApi::Dlc2Len(can_msg.dlc);
+                    for (int i = 0; (i < CANIPC_MAX_LEN) && (i < CANFD_MAX_LEN); i++) {
+                        ipc_msg.data[i] = can_msg.data[i];
+                    }
+                    ipc_msg.timestamp.tv_sec = can_msg.timestamp.tv_sec;
+                    ipc_msg.timestamp.tv_nsec = can_msg.timestamp.tv_nsec;
+                    /* send IPC message (with network byte order) */
+                    CAN_IPC_MSG_HTON(ipc_msg);
+                    if (ipc_server_send(ipcServer, &ipc_msg, ipcMtuSize) != 0) {
+                        fprintf(stderr, "+++ error: IPC server could not send message (%i)\n", errno);
+                    }
+                }
             }
         }
     }

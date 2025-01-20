@@ -36,7 +36,7 @@ DRIVER_DIR = $(PROJ_DIR)/Sources
 CANAPI_DIR = $(PROJ_DIR)/Sources/CANAPI
 
 OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Options.o $(OUTDIR)/Timer.o \
-	$(OUTDIR)/Message.o $(OUTDIR)/can_msg.o
+	$(OUTDIR)/ipc_server.o $(OUTDIR)/Message.o $(OUTDIR)/can_msg.o
 
 DEFINES = -DOPTION_CANAPI_DRIVER=1 \
 	-DOPTION_CANAPI_COMPANIONS=1
@@ -69,6 +69,12 @@ LDFLAGS += -arch arm64 -arch x86_64
 endif
 
 LIBRARIES = -lpthread
+
+CHECKER  = warning,information
+IGNORE   = -i Options_w.cpp -i dosopt.c
+ifeq ($(HUNTER),BUGS)
+CHECKER += --bug-hunting
+endif
 
 CXX = clang++
 CC = clang
@@ -123,15 +129,20 @@ bindir:
 incdir:
 	@mkdir -p $(INCDIR)
 
+check:
+	cppcheck --enable=$(CHECKER) --suppressions-list=$(PROJ_DIR)/suppress.txt \
+	-D__APPLE__ $(DEFINES) $(HEADERS) $(IGNORE) $(MAIN_DIR)
+
 clean:
-	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
+	@-$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
 
 pristine:
-	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
-	$(RM) $(BINDIR)/$(TARGET)
+	@-$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
+	@-$(RM) $(BINDIR)/$(TARGET)
 
 install:
 	@echo "Copying binary file..."
+	@mkdir -p $(INSTALL)
 	$(CP) $(TARGET) $(INSTALL)
 
 
@@ -144,6 +155,9 @@ $(OUTDIR)/Options.o: $(MAIN_DIR)/Options_p.cpp
 $(OUTDIR)/Timer.o: $(MAIN_DIR)/Timer.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
+$(OUTDIR)/ipc_server.o: $(MAIN_DIR)/ipc_server.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+
 $(OUTDIR)/Message.o: $(MAIN_DIR)/Message.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
@@ -153,8 +167,9 @@ $(OUTDIR)/can_msg.o: $(CANAPI_DIR)/can_msg.c
 
 $(TARGET): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
-	$(CP) $(TARGET) $(BINDIR)
 ifeq ($(current_OS),Darwin)
 	@lipo -archs $@
 endif
+	@mkdir -p $(BINDIR)
+	$(CP) $(TARGET) $(BINDIR)
 	@echo "\033[1mTarget '"$@"' successfully build\033[0m"

@@ -72,12 +72,24 @@ struct SOptions {
     } m_StdFilter, m_XtdFilter;
     char* m_szExcludeList;
 #if (CAN_TRACE_SUPPORTED != 0)
-    enum {
+    enum ETraceMode {
         eTraceOff,
         eTraceBinary,
         eTraceLogger,
         eTraceVendor
     } m_eTraceMode;
+#endif
+#if (CAN_SERVER_SUPPORTED != 0)
+        enum EIpcFormat {
+            eMtuCanApiV3,
+            eMtuSocketCan
+        };
+    struct {
+        bool m_fListen;
+        uint16_t m_u16Port;
+        EIpcFormat m_eFormat;
+        uint8_t m_u8LogLevel;
+    } m_IpcServer;
 #endif
     bool m_fListBitrates;
     bool m_fListBoards;
