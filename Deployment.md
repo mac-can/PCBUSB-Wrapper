@@ -1,6 +1,6 @@
 ### macOS® Wrapper Library for PCAN-USB Interfaces from PEAK-System
 
-_Copyright &copy; 2005-2010, 2012-2024 Uwe Vogt, UV Software, Berlin (info@mac-can.com)_ \
+_Copyright &copy; 2005-2010, 2012-2025 Uwe Vogt, UV Software, Berlin (info@mac-can.com)_ \
 _All rights reserved._
 
 # Deployment
@@ -106,7 +106,7 @@ _All rights reserved._
   - Change-log: list all major changes, e.g. from commit comments
   - Assets: drag and drop the artifacts archive (see above)
 3. Click on `Publish release`.
-4. That´s all folks!
+4. That's all folks!
 
 ## Announce the new Release
 
