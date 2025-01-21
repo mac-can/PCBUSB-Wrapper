@@ -53,7 +53,7 @@
  *
  *  @author      $Author: makemake $
  *
- *  @version     $Rev: 843 $
+ *  @version     $Rev: 844 $
  *
  *  @addtogroup  ipc
  *  @{
@@ -368,8 +368,13 @@ static void *listening(void *arg) {
                             /* socket hung up */
                             LOG_INFO(server, "Socket %d hung up\n", i);
                         } else {
-                            /* error occurred */
-                            LOG_ERROR(server, "%s (errno=%d)", strerror(errno), errno);
+                            if (errno == ECONNRESET) {
+                                /* connection reset by peer */
+                                LOG_INFO(server, "Connection reset by peer on socket %d\n", i);
+                            } else {
+                                /* error occurred */
+                                LOG_ERROR(server, "%s (errno=%d)", strerror(errno), errno);
+                            }
                         }
                         /* close the socket and remove from the master set */
                         ENTER_CRITICAL_SECTION(server);
