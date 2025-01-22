@@ -149,7 +149,7 @@ ipc_server_t ipc_server_start(unsigned short port, size_t mtu_size,
             /* errno set */
             return NULL;
         }
-        fprintf(server->log_fp, "+++ IPC Server - Port %d (with MTU=%zu) +++\n", port, mtu_size);
+        fprintf(server->log_fp, "+++ IPC Server at port %d with mtu size %zu +++\n", port, mtu_size);
         server->log_opt = logging;
     }
     /* create the socket file descriptor */
@@ -320,7 +320,7 @@ static void *listening(void *arg) {
     assert(pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL) == 0);
     assert(pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL) == 0);
     /* log the server start */
-    LOG_INFO(server, "Server started on socket %d with MTU size %ld\n", server->sock_fd, server->mtu_size);
+    LOG_INFO(server, "Server started on socket %dn", server->sock_fd);
     /* "The torture never stops" */
     for(;;) {
         /* blocking read (the thread is suspended until data arrives) */

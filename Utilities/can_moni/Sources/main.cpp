@@ -25,7 +25,7 @@
 #include "SerialCAN_Defines.h"
 #endif
 #if (CAN_SERVER_SUPPORTED != 0)
-#include "CANIPC_Message.h"
+#include "ipc_can.h"
 #include "ipc_server.h"
 #endif
 #include <stdio.h>

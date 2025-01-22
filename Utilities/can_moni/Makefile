@@ -34,6 +34,7 @@ MAIN_DIR = ./Sources
 
 DRIVER_DIR = $(PROJ_DIR)/Sources
 CANAPI_DIR = $(PROJ_DIR)/Sources/CANAPI
+CANIPC_DIR = $(PROJ_DIR)/Sources/CANIPC
 
 OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Options.o $(OUTDIR)/Timer.o \
 	$(OUTDIR)/ipc_server.o $(OUTDIR)/Message.o $(OUTDIR)/can_msg.o
@@ -44,7 +45,8 @@ DEFINES = -DOPTION_CANAPI_DRIVER=1 \
 HEADERS = -I$(MAIN_DIR) \
 	-I$(HOME_DIR) \
 	-I$(DRIVER_DIR) \
-	-I$(CANAPI_DIR)
+	-I$(CANAPI_DIR) \
+	-I$(CANIPC_DIR)
 
 
 ifeq ($(current_OS),Darwin)  # macOS - libPeakCAN.dylib
@@ -155,13 +157,13 @@ $(OUTDIR)/Options.o: $(MAIN_DIR)/Options_p.cpp
 $(OUTDIR)/Timer.o: $(MAIN_DIR)/Timer.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
-$(OUTDIR)/ipc_server.o: $(MAIN_DIR)/ipc_server.c
-	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
-
 $(OUTDIR)/Message.o: $(MAIN_DIR)/Message.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 $(OUTDIR)/can_msg.o: $(CANAPI_DIR)/can_msg.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/ipc_server.o: $(CANIPC_DIR)/ipc_server.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 

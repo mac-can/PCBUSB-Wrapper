@@ -51,9 +51,9 @@
  *
  *  @brief       CAN IPC Message (RocketCAN Format)
  *
- *  @author      $Author: makemake $
+ *  @author      $Author$
  *
- *  @version     $Rev: 1418 $
+ *  @version     $Rev$
  *
  *  @addtogroup  ipc
  *  @{
