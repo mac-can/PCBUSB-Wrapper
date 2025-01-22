@@ -1,0 +1,3 @@
+ipc_recv
+ipc_send
+*.o
