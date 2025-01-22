@@ -320,7 +320,7 @@ static void *listening(void *arg) {
     assert(pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL) == 0);
     assert(pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL) == 0);
     /* log the server start */
-    LOG_INFO(server, "Server started on socket %dn", server->sock_fd);
+    LOG_INFO(server, "Server started on socket %d\n", server->sock_fd);
     /* "The torture never stops" */
     for(;;) {
         /* blocking read (the thread is suspended until data arrives) */
