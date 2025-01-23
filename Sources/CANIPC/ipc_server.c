@@ -76,7 +76,7 @@
 #else
 #include <winsock2.h>
 #include <ws2tcpip.h>
-// Need to link with Ws2_32.lib
+/* Need to link with Ws2_32.lib */
 #pragma comment(lib, "ws2_32.lib")
 #endif
 
@@ -99,6 +99,7 @@
 #define LOG_SENT(srv, fmt, ...)     do { if(srv->log_opt >= IPC_LOGGER_DATA) log_info(srv->log_fp, fmt, ##__VA_ARGS__); } while(0)
 #define LOG_DATA(srv, data, size)   do { if(srv->log_opt >= IPC_LOGGER_ALL) log_data(srv->log_fp, data, size); } while(0)
 #define LOG_ERROR(srv, fmt, ...)    do { if(srv->log_fp) fprintf(srv->log_fp, "!!! error: " fmt "\n", ##__VA_ARGS__); } while(0)
+#define LOG_CLOSE(srv)              do { if(srv->log_fp) fclose(srv->log_fp); } while(0)
 
 
 /*  -----------  types  --------------------------------------------------
@@ -130,6 +131,22 @@ static void log_data(FILE *fp, const void *data, size_t size);
 
 /*  -----------  functions  ----------------------------------------------
  */
+
+/*  Start the server on the specified port.
+ *
+ *  List of called functions:
+ *  - malloc() — allocate memory (errno = ENOMEM)
+ *  - socket() — create an endpoint for communication (errno = EACCES, EAFNOSUPPORT, EMFILE, ENFILE, ENOBUFS, ENOMEM, EPROTONOSUPPORT)
+ *  - setsockopt() — set options on sockets (errno = EBADF, EFAULT, EINVAL, ENOPROTOOPT, ENOTSOCK, EOPNOTSUPP)
+ *  - bind() — bind a name to a socket (errno = EACCES, EADDRINUSE, EBADF, EINVAL, ENOTSOCK, EADDRNOTAVAIL, EFAULT)
+ *  - listen() — listen for connections on a socket (errno = EADDRINUSE, EBADF, ENOTSOCK, EOPNOTSUPP)
+ *  - FD_ZERO() — clear a file descriptor set (w/o error handling)
+ *  - FD_SET() — add a file descriptor to a set (w/o error handling)
+ *  - pthread_mutex_init() — initialize a mutex (errno = EAGAIN, ENOMEM)
+ *  - pthread_create() — create a new thread (errno = EAGAIN, EINVAL, EPERM)
+ *  - close() — close a file descriptor (errno = EBADF)
+ *  - free() — deallocate memory (errno = EINVAL)
+ */
 ipc_server_t ipc_server_start(unsigned short port, size_t mtu_size,
                               ipc_server_recv_cbk_t recv_cbk,
                               unsigned char logging) {
@@ -156,6 +173,7 @@ ipc_server_t ipc_server_start(unsigned short port, size_t mtu_size,
     if ((server->sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
         error = errno;
         LOG_ERROR(server, "Socket could not be created (errno=%d)", error);
+        LOG_CLOSE(server);
         free(server);
         errno = error;
         return NULL;
@@ -164,6 +182,7 @@ ipc_server_t ipc_server_start(unsigned short port, size_t mtu_size,
     if (setsockopt(server->sock_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
         error = errno;
         LOG_ERROR(server, "Socket could not be attached to port %d (errno=%d)\n", port, error);
+        LOG_CLOSE(server);
         close(server->sock_fd);
         free(server);
         errno = error;
@@ -177,6 +196,7 @@ ipc_server_t ipc_server_start(unsigned short port, size_t mtu_size,
     if (bind(server->sock_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
         error = errno;
         LOG_ERROR(server, "Socket could not be bound to port %d (errno=%d)", port, error);
+        LOG_CLOSE(server);
         close(server->sock_fd);
         free(server);
         errno = error;
@@ -186,6 +206,7 @@ ipc_server_t ipc_server_start(unsigned short port, size_t mtu_size,
     if (listen(server->sock_fd, BACKLOG) < 0) {
         error = errno;
         LOG_ERROR(server, "Start listening on port %d failed (errno=%d)", port, error);
+        LOG_CLOSE(server);
         close(server->sock_fd);
         free(server);
         errno = error;
@@ -195,6 +216,7 @@ ipc_server_t ipc_server_start(unsigned short port, size_t mtu_size,
     if (pthread_mutex_init(&server->mutex, NULL) != 0) {
         error = errno;
         LOG_ERROR(server, "The mutex could not be created (errno=%d)", error);
+        LOG_CLOSE(server);
         close(server->sock_fd);
         free(server);
         errno = error;
@@ -212,6 +234,7 @@ ipc_server_t ipc_server_start(unsigned short port, size_t mtu_size,
     if (pthread_create(&server->thread, NULL, listening, (void *)server) != 0) {
         error = errno;
         LOG_ERROR(server, "Server could not be started (errno=%d)", error);
+        LOG_CLOSE(server);
         DESTROY_CRITICAL_SECTION(server);
         close(server->sock_fd);
         free(server);
@@ -222,6 +245,15 @@ ipc_server_t ipc_server_start(unsigned short port, size_t mtu_size,
     return (ipc_server_t)server;
 }
 
+/*  Stop the server.
+ *
+ *  List of called functions:
+ *  - pthread_cancel() — send a cancellation request to a thread (errno = EINVAL, ESRCH)
+ *  - pthread_mutex_destroy() — destroy a mutex (errno = EINVAL)
+ *  - close() — close a file descriptor (errno = EBADF)
+ *  - free() — deallocate memory (errno = EINVAL)
+ *  + NULL pointer dereference (errno = ESRCH)
+ */
 int ipc_server_stop(ipc_server_t server) {
     int fildes = server ? ((struct ipc_server_desc *)server)->sock_fd : (-1);
 
@@ -234,6 +266,7 @@ int ipc_server_stop(ipc_server_t server) {
     if (pthread_cancel(((struct ipc_server_desc *)server)->thread) != 0) {
         /* errno set */
         LOG_ERROR(server, "Server could not be stopped (errno=%d)", errno);
+        LOG_CLOSE(server);
         return (-1);
     }
     /* wait for the listening thread to terminate */
@@ -257,6 +290,15 @@ int ipc_server_stop(ipc_server_t server) {
 #endif
 }
 
+/*  Send data to the client.
+ *
+ *  List of called functions:
+ *  - pthread_mutex_lock() — lock a mutex (w/o error handling)
+ *  - pthread_mutex_unlock() — unlock a mutex (w/o error handling)
+ *  - FD_CLR() — clear a file descriptor from a set (w/o error handling)
+ *  - send() — send a message on a socket (errno = ECONNRESET, EPIPE)
+ *  + NULL pointer dereference (errno = ESRCH, EINVAL)
+ */
 int ipc_server_send(ipc_server_t server, const void *data, size_t size) {
     fd_set write_fds;    /* file descriptor list for send() */
     int fdmax = 0;       /* maximum file descriptor number */
@@ -283,7 +325,7 @@ int ipc_server_send(ipc_server_t server, const void *data, size_t size) {
     FD_CLR(((struct ipc_server_desc *)server)->sock_fd, &write_fds);
     /* send data to all clients */
     LOG_DATA(server, data, size);
-    for(i = 0; i <= fdmax; i++) {
+    for (i = 0; i <= fdmax; i++) {
         if (FD_ISSET(i, &write_fds)) {
             if ((nbytes = send(i, data, size, 0)) < 0) {
                 LOG_ERROR(server, "Send failed on socket %d (errno=%d)", i, errno);
@@ -297,6 +339,23 @@ int ipc_server_send(ipc_server_t server, const void *data, size_t size) {
 }
 
 /*  -----------  local functions  ----------------------------------------
+ */
+
+/*  Listening thread.
+ *
+ *  List of called functions:
+ *  - pthread_setcancelstate() — set cancelability state
+ *  - pthread_setcanceltype() — set cancelability type
+ *  - select() — synchronous I/O multiplexing
+ *  - accept() — accept a new connection on a socket
+ *  - recv() — receive a message from a socket
+ *  - close() — close a file descriptor
+ *  - pthread_mutex_lock() — lock a mutex
+ *  - pthread_mutex_unlock() — unlock a mutex
+ *  - FD_ZERO() — clear a file descriptor set
+ *  - FD_SET() — add a file descriptor to a set
+ *  - FD_ISSET() — test a file descriptor in a set
+ *  - FD_CLR() — clear a file descriptor from a set
  */
 static void *listening(void *arg) {
     struct ipc_server_desc *server = (struct ipc_server_desc *)arg;
@@ -322,7 +381,7 @@ static void *listening(void *arg) {
     /* log the server start */
     LOG_INFO(server, "Server started on socket %d\n", server->sock_fd);
     /* "The torture never stops" */
-    for(;;) {
+    for (;;) {
         /* blocking read (the thread is suspended until data arrives) */
         read_fds = server->master;  /* use a copy of the master set */
         if (select(server->fdmax+1, &read_fds, NULL, NULL, NULL) < 0) {
@@ -330,7 +389,7 @@ static void *listening(void *arg) {
             continue;   // FIXME: how to handle this?
         }
         /* loop through the existing connections looking for data to read */
-        for(i = 0; i <= server->fdmax; i++) {
+        for (i = 0; i <= server->fdmax; i++) {
             if (FD_ISSET(i, &read_fds)) {
                 if (i == server->sock_fd) {
                     /* handle new connections */
@@ -382,13 +441,15 @@ static void *listening(void *arg) {
                         FD_CLR(i, &server->master);
                         LEAVE_CRITICAL_SECTION(server);
                     }
-                } // END if (i == listener)
-            } // END if (FD_ISSET(i, &read_fds))
-        } // END for(i = 0; i <= fdmax; i++)
-    } // END for(;;)
+                } /* if (i == listener) */
+            } /* if (FD_ISSET(i, &read_fds)) */
+        } /* for (i = 0; i <= fdmax; i++) */
+    } /* for (;;) */
     return NULL;
 }
 
+/* Get sockaddr, IPv4 or IPv6.
+ */
 static void *get_in_addr(struct sockaddr *sa) {
     if (sa->sa_family == AF_INET) {
         /* return the IPv4 address */
@@ -399,6 +460,8 @@ static void *get_in_addr(struct sockaddr *sa) {
     }
 }
 
+/* Log information.
+ */
 static void log_info(FILE *fp, const char *fmt, ...) {
     va_list args;
     time_t now = time(NULL);
@@ -414,6 +477,8 @@ static void log_info(FILE *fp, const char *fmt, ...) {
     va_end(args);
 }
 
+/* Log data as binary.
+ */
 static void log_data(FILE *fp, const void *data, size_t size) {
     time_t now = time(NULL);
     char *str = ctime(&now);
