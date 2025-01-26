@@ -31,11 +31,11 @@
 #if !defined(_WIN32) && !defined(_WIN64)
 #define CAN_MONI_WARRANTY    "This program comes with ABSOLUTELY NO WARRANTY!\n\n" \
                              "This is free software, and you are welcome to redistribute it\n" \
-                             "under certain conditions; type `--version' for details.";
+                             "under certain conditions; type `" CAN_MONI_PROGRAM " --version' for details.";
 #else
 #define CAN_MONI_WARRANTY    "This program comes with ABSOLUTELY NO WARRANTY!\n\n" \
                              "This is free software, and you are welcome to redistribute it\n" \
-                             "under certain conditions; type '/VERSION' for details.";
+                             "under certain conditions; type '" CAN_MONI_PROGRAM " /VERSION' for details.";
 #endif
 #define CAN_MONI_LICENSE     "This program is free software; you can redistribute it and/or modify\n" \
                              "it under the terms of the GNU General Public License as published by\n" \
@@ -80,15 +80,21 @@ struct SOptions {
     } m_eTraceMode;
 #endif
 #if (CAN_SERVER_SUPPORTED != 0)
-        enum EIpcFormat {
-            eMtuCanApiV3,
-            eMtuSocketCan
-        };
+    enum EIpcSocketType {
+        eIpcTcp = 1,  // SOCK_STREAM (TCP)
+        eIpcUdp = 2,  // SOCK_DGRAM (UDP)
+        eIpcSeq = 5   // SOCK_SEQPACKET (SCTP)
+    };
+    enum EIpcDataFormat {
+        eMtuRocketCan,  // CAN API V3
+        eMtuSocketCan,  // Linux Kernel CAN
+    };
     struct {
         bool m_fListen;
         uint16_t m_u16Port;
-        EIpcFormat m_eFormat;
-        uint8_t m_u8LogLevel;
+        EIpcSocketType m_eSocket;
+        EIpcDataFormat m_eFormat;
+        int m_nLogLevel;
     } m_IpcServer;
 #endif
     bool m_fListBitrates;

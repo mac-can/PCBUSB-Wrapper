@@ -31,7 +31,7 @@ int main() {
           perror("+++ error");
           return errno;
     }
-    if ((fildes = ipc_client_connect(server)) < 0) {
+    if ((fildes = ipc_client_connect(server, IPC_SOCK_TCP)) < 0) {
         perror("+++ error");
         return EXIT_FAILURE;
     }
@@ -47,7 +47,7 @@ int main() {
         msg.data[2] = (uint8_t)((i >> 16) & 0xFF);
         msg.data[3] = (uint8_t)((i >> 24) & 0xFF);
         CAN_IPC_MSG_HTON(msg);
-        if (write(fildes, (const char*)&msg, sizeof(msg)) < 0) {
+        if (ipc_client_send(fildes, (void*)&msg, sizeof(msg)) < 0) {
             perror("+++ error");
             break;
         }

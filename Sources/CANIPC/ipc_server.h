@@ -71,8 +71,19 @@
 /*  -----------  defines  ------------------------------------------------
  */
 
-/** @name  Logging options.
- *  @brief Logging options for the IPC server.
+/** @name    Socket types.
+ *  @brief   Socket types for the IPC connection.
+ *  @{ */
+#define IPC_SOCK_TCP  1  /**< stream socket (for TCP) */
+#define IPC_SOCK_UDP  2  /**< datagram socket (for UDP) */
+#define IPC_SOCK_RAW  3  /**< raw-protocol interface (for IP) */
+#define IPC_SOCK_SEQ  5  /**< sequenced packet stream (for SCTP) */
+/** @} */
+#define IPC_MAX_MTU_SIZE  1500  /**< maximum transmission unit (MTU) size */
+
+
+/** @name    Logging options.
+ *  @brief   Logging options for the IPC server.
  *  @{ */
 #define IPC_LOGGER_NONE  0  /**< no logging */
 #define IPC_LOGGER_INFO  1  /**< log client connection */
@@ -83,16 +94,19 @@
 /*  -----------  types  --------------------------------------------------
  */
 
-/** @brief IPC server descriptor.
+/** @brief   IPC server descriptor.
  */
 typedef struct ipc_server_desc *ipc_server_t;  /* opaque type (requires C99) */
 
-/** @brief IPC server receive callback.
+
+/** @brief   IPC server receive callback.
  *
- *  @param data  Received data.
- *  @param size  Size of the data.
+ *  @param   data  Received data.
+ *  @param   size  Size of the data.
+ * 
+ *  @return  0 on success, or a negative value on error.
  */
-typedef void (*ipc_server_recv_cbk_t)(const void *, size_t);
+typedef int (*ipc_server_recv_cbk_t)(const void *, size_t);
 
 
 /*  -----------  variables  ----------------------------------------------
@@ -107,16 +121,16 @@ extern "C" {
 
 /** @brief   Start the server on the specified port.
  *
- *  @param   port      Port number.
- *  @param   mtu_size  Maximum transmission unit (MTU) size.
- *  @param   recv_cbk  Receive callback.
- *  @param   logging   Logging options.
+ *  @param   port       Port number.
+ *  @param   sock_type  Socket type (SOCK_STREAM, SOCK_DGRAM, SOCK_SEQPACKET).
+ *  @param   mtu_size   Maximum transmission unit (MTU) size.
+ *  @param   recv_cbk   Receive callback.
+ *  @param   logging    Logging options.
  *
  *  @return  IPC server descriptor on success, or NULL on error.
  */
-ipc_server_t ipc_server_start(unsigned short port, size_t mtu_size,
-                              ipc_server_recv_cbk_t recv_cbk,
-                              unsigned char logging);
+ipc_server_t ipc_server_start(unsigned short port, int sock_tyoe, size_t mtu_size,
+                              ipc_server_recv_cbk_t recv_cbk, int logging);
 
 
 /** @brief   Send data to the client.

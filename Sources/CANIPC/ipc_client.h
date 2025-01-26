@@ -73,6 +73,17 @@
 /*  -----------  defines  ------------------------------------------------
  */
 
+/** @name    Socket types.
+ *  @brief   Socket types for the IPC connection.
+ *  @{ */
+#define IPC_SOCK_TCP  1  /**< stream socket (for TCP) */
+#define IPC_SOCK_UDP  2  /**< datagram socket (for UDP) */
+#define IPC_SOCK_RAW  3  /**< raw-protocol interface (for IP) */
+#define IPC_SOCK_SEQ  5  /**< sequenced packet stream (for SCTP) */
+/** @} */
+#define IPC_MAX_MTU_SIZE  1500  /**< maximum transmission unit (MTU) size */
+#define IPC_WAIT_FOREVER  65535U  /**< infinite time-out (blocking operation) */
+
 
 /*  -----------  types  --------------------------------------------------
  */
@@ -90,11 +101,12 @@ extern "C" {
 
 /** @brief   Open a connection to the server.
  *
- *  @param   server  The server address ("<host>:<port>").
+ *  @param   server     The server address ("<host>:<port>").
+ *  @param   sock_type  The socket type (SOCK_STREAM, SOCK_DGRAM, SOCK_SEQPACKET).
  *
  *  @return  The file descriptor of the client socket or -1 on error.
  */
-int ipc_client_connect(const char *server);
+int ipc_client_connect(const char *server, int sock_type);
 
 /** @brief   Close the connection to the server.
  *
@@ -112,7 +124,7 @@ int ipc_client_close(int fildes);
  *
  *  @return  The number of bytes sent or -1 on error.
  */
-ssize_t ipc_client_send(int fildes, const char *buffer, size_t length);
+ssize_t ipc_client_send(int fildes, const void *buffer, size_t length);
 
 /** @brief   Receive data from the server.
  *
@@ -126,7 +138,7 @@ ssize_t ipc_client_send(int fildes, const char *buffer, size_t length);
  *
  *  @return  The number of bytes received or -1 on error.
  */
-int ipc_client_recv(int fildes, char *buffer, size_t length, unsigned short timeout);
+int ipc_client_recv(int fildes, void *buffer, size_t length, unsigned short timeout);
 
 #ifdef __cplusplus
 }

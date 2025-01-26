@@ -29,7 +29,7 @@ int main() {
           perror("+++ error");
           return errno;
     }
-    if ((fildes = ipc_client_connect(server)) < 0) {
+    if ((fildes = ipc_client_connect(server, IPC_SOCK_TCP)) < 0) {
         perror("+++ error");
         return EXIT_FAILURE;
     }
@@ -37,7 +37,7 @@ int main() {
     
     while (running) {
         memset(&msg, 0, sizeof(msg));
-        if (recv(fildes, (void*)&msg, sizeof(msg), 0) < 0) {
+        if (ipc_client_recv(fildes, (void*)&msg, sizeof(msg), IPC_WAIT_FOREVER) < 0) {
             perror("+++ error");
             continue;
         }

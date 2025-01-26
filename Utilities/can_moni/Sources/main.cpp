@@ -87,13 +87,16 @@ static CCanDevice canDevice = CCanDevice();  // global due to SignalChannel() in
 typedef can_ipc_message_t CANIPC_Message_t;
 static ipc_server_t ipcServer = NULL;
 static size_t ipcMtuSize = sizeof(CANIPC_Message_t);
-static void TransmitMessage(const void* data, size_t size) {
+static int TransmitMessage(const void* data, size_t size) {
     CANIPC_Message_t* ipc_msg = (CANIPC_Message_t*)data;
     CANAPI_Message_t can_msg = CANAPI_Message_t();
 
     /* sanity check */
-    if (!data || (size != sizeof(CANIPC_Message_t))) {
-        return;
+    if (!data) {
+        return CCanApi::NullPointer;
+    }
+    if (size != sizeof(CANIPC_Message_t)) {
+        return CCanApi::IllegalParameter;
     }
     /* convert the message from network to host byte order */
     CAN_IPC_MSG_NTOH(*ipc_msg);
@@ -110,7 +113,7 @@ static void TransmitMessage(const void* data, size_t size) {
         can_msg.data[i] = ipc_msg->data[i];
     }
     /* make it so! */
-    (void)canDevice.WriteMessage(can_msg);
+    return (int)canDevice.WriteMessage(can_msg);
 }
 #endif
 
@@ -380,10 +383,10 @@ int main(int argc, const char* argv[]) {
 #if (CAN_SERVER_SUPPORTED != 0)
     /* - start IPC server (if enabled) */
     if (opts.m_IpcServer.m_fListen) {
-        fprintf(stdout, "IPC Port=%u...", opts.m_IpcServer.m_u16Port);
+        fprintf(stdout, "IPC port=%u...", opts.m_IpcServer.m_u16Port);
         fflush(stdout);
-        ipcServer = ipc_server_start(opts.m_IpcServer.m_u16Port, ipcMtuSize, TransmitMessage, 
-                                     opts.m_IpcServer.m_u8LogLevel);
+        ipcServer = ipc_server_start(opts.m_IpcServer.m_u16Port, opts.m_IpcServer.m_eSocket,
+                                     ipcMtuSize, TransmitMessage, opts.m_IpcServer.m_nLogLevel);
         if (ipcServer == NULL) {
             fprintf(stdout, "FAILED!\n");
             fprintf(stderr, "+++ error: IPC server could not be started (%i)\n", errno);

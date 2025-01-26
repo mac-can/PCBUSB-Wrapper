@@ -87,8 +87,9 @@ SOptions::SOptions() {
 #if (CAN_SERVER_SUPPORTED != 0)
     m_IpcServer.m_fListen = false;
     m_IpcServer.m_u16Port = DEFAULT_IPC_PORT;
-    m_IpcServer.m_eFormat = SOptions::eMtuCanApiV3;
-    m_IpcServer.m_u8LogLevel = 0U;
+    m_IpcServer.m_eSocket = SOptions::eIpcTcp;
+    m_IpcServer.m_eFormat = SOptions::eMtuRocketCan;
+    m_IpcServer.m_nLogLevel = 0;
 #endif
     m_fListBitrates = false;
     m_fListBoards = false;
@@ -541,11 +542,11 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
                 fprintf(err, "%s: illegal argument for option `--logging' (%c)\n", m_szBasename, opt);
                 return 1;
             }
-            if ((intarg < 0) || (intarg > UINT8_MAX)) {
+            if ((intarg < 0) || (intarg > INT_MAX)) {
                 fprintf(err, "%s: illegal argument for option `--logging' (%c)\n", m_szBasename, opt);
                 return 1;
             }
-            m_IpcServer.m_u8LogLevel = (uint8_t)intarg;
+            m_IpcServer.m_nLogLevel = (int)intarg;
             break;
 #endif
         /* option '--time=(ABS|REL|ZERO)' (-t) */

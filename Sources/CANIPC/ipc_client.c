@@ -64,6 +64,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include <assert.h>
 #include <errno.h>
 #if !defined(_WIN32) && !defined(_WIN64)
@@ -101,7 +102,7 @@
 
 /*  -----------  functions  ----------------------------------------------
  */
-int ipc_client_connect(const char *server) {
+int ipc_client_connect(const char *server, int sock_type) {
     int fildes = (-1);
     char *host = NULL;
     long port = 0;
@@ -150,7 +151,7 @@ int ipc_client_connect(const char *server) {
         return (-1);
     }
     /* create the socket file descriptor */
-    if ((fildes = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((fildes = socket(AF_INET, sock_type, 0)) < 0) {
         error = errno;
         //fprintf(stderr, "!!! error: socket could not be created\n");
         free(host);
@@ -197,6 +198,74 @@ int ipc_client_close(int fildes) {
 #else
     return closesocket(fildes);
 #endif
+}
+
+ssize_t ipc_client_send(int fildes, const void *buffer, size_t length) {
+    ssize_t n = 0;
+    errno = 0;
+
+    /* check the buffer and its length */
+    if ((buffer == NULL) || (length == 0)) {
+        errno = EINVAL;
+        return (-1);
+    }
+    /* send data to the server */
+#if !defined(_WIN32) && !defined(_WIN64)
+    n = send(fildes, buffer, length, 0);
+#else
+    n = send(fildes, buffer, (int)length, 0);
+#endif
+    /* return the number of bytes sent, or -1 on error */
+    return n;
+}
+
+int ipc_client_recv(int fildes, void *buffer, size_t length, unsigned short timeout) {
+    ssize_t n = 0;
+    fd_set readfds;
+    struct timeval tv;
+    errno = 0;
+
+    /* check the buffer and its length */
+    if ((buffer == NULL) || (length == 0)) {
+        errno = EINVAL;
+        return (-1);
+    }
+    /* add the file descriptor to the set */
+    FD_ZERO(&readfds);
+    FD_SET(fildes, &readfds);
+    /* check the file descriptor for readability */
+    if (timeout != 0) {
+        /* set the timeout */
+        tv.tv_sec = (time_t)(timeout / 1000);
+        tv.tv_usec = (suseconds_t)((timeout % 1000) * 1000);
+        /* wait for the file descriptor to become readable */
+        if (select(fildes + 1, &readfds, NULL, NULL, (timeout != USHRT_MAX) ? &tv : NULL) <= 0) {
+            /* errno set */
+            return (-1);
+        }
+        /* check if there is data to read */
+        if (!FD_ISSET(fildes, &readfds)) {
+            errno = ENODATA;
+            return (-1);
+        }
+    }
+    /* receive data from the server (if any) */
+#if !defined(_WIN32) && !defined(_WIN64)
+    n = recv(fildes, buffer, length, 0);
+#else    
+    n = recv(fildes, buffer, (int)length, 0);
+#endif
+    /* check the number of bytes received */
+    if (n != (ssize_t)length) {
+        if (n >= 0) {
+            errno = (n == 0) ? ENODATA : EBADMSG;
+        } else {
+            /* errno set by recv() */
+        }        
+        return (-1);
+    }
+    /* return the number of bytes received */
+    return n;
 }
 
 /*  -----------  local functions  ----------------------------------------

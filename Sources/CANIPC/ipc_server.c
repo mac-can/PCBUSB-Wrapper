@@ -82,7 +82,9 @@
 
 /*  -----------  options  ------------------------------------------------
  */
-
+#if (IPC_SOCK_TCP != SOCK_STREAM) || (IPC_SOCK_UDP != SOCK_DGRAM) || (IPC_SOCK_RAW != SOCK_RAW) || (IPC_SOCK_SEQ != SOCK_SEQPACKET)
+#error "Socket type mismatch"
+#endif
 
 /*  -----------  defines  ------------------------------------------------
  */
@@ -106,6 +108,7 @@
  */
 struct ipc_server_desc {                /* IPC server descriptor: */
     int sock_fd;                        /* - socket file descriptor */
+    int sock_type;                      /* - socket type */
     size_t mtu_size;                    /* - maximum transmission unit (MTU) size */
     ipc_server_recv_cbk_t recv_cbk;     /* - receive callback */
     pthread_t thread;                   /* - thread for listening */
@@ -147,9 +150,8 @@ static void log_data(FILE *fp, const void *data, size_t size);
  *  - close() — close a file descriptor (errno = EBADF)
  *  - free() — deallocate memory (errno = EINVAL)
  */
-ipc_server_t ipc_server_start(unsigned short port, size_t mtu_size,
-                              ipc_server_recv_cbk_t recv_cbk,
-                              unsigned char logging) {
+ipc_server_t ipc_server_start(unsigned short port, int sock_type, size_t mtu_size,
+                              ipc_server_recv_cbk_t recv_cbk, int logging) {
     struct ipc_server_desc *server = NULL;
     struct sockaddr_in address;
     int opt = 1;
@@ -166,11 +168,13 @@ ipc_server_t ipc_server_start(unsigned short port, size_t mtu_size,
             /* errno set */
             return NULL;
         }
-        fprintf(server->log_fp, "+++ IPC Server at port %d with mtu size %zu +++\n", port, mtu_size);
+        fprintf(server->log_fp, "+++ IPC Server on port %d using %s with mtu size %zu +++\n", port,
+            (sock_type == IPC_SOCK_TCP) ? "TCP" : ((sock_type == IPC_SOCK_UDP) ? "UDP" :
+            ((sock_type == IPC_SOCK_SEQ) ? "SCTP" : "IP (raw socket)")), mtu_size);
         server->log_opt = logging;
     }
     /* create the socket file descriptor */
-    if ((server->sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
+    if ((server->sock_fd = socket(AF_INET, sock_type, 0)) == 0) {
         error = errno;
         LOG_ERROR(server, "Socket could not be created (errno=%d)", error);
         LOG_CLOSE(server);
@@ -225,6 +229,7 @@ ipc_server_t ipc_server_start(unsigned short port, size_t mtu_size,
     /* set MTU size (but at most 1500) and receive callback */
     server->mtu_size = (mtu_size < MTU_SIZE) ? mtu_size : MTU_SIZE;
     server->recv_cbk = recv_cbk;
+    server->sock_type = sock_type;
     /* add the listener to the master set */
     FD_ZERO(&server->master);
     FD_SET(server->sock_fd, &server->master);
@@ -369,7 +374,7 @@ static void *listening(void *arg) {
 
     char buf[MTU_SIZE];  /* buffer for client data */
     ssize_t nbytes = 0;
-    int i;
+    int i, rc = 0;
 
     /* terminate immediately if the server descriptor is invalid */
     if (server == NULL) {
@@ -419,7 +424,9 @@ static void *listening(void *arg) {
                         LOG_DATA(server, buf, nbytes);
                         /* notify the server application */
                         if (server->recv_cbk != NULL) {
-                            server->recv_cbk(buf, nbytes);
+                            if ((rc = server->recv_cbk(buf, nbytes)) < 0) {
+                                LOG_ERROR(server, "Receive callback failed on socket %d (error=%d)", i, rc);
+                            }
                         }
                     } else {
                         /* connection closed by client or an error occurred */

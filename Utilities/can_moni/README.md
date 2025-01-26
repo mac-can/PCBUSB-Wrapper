@@ -23,6 +23,8 @@ Options:
  -b, --baudrate=<baudrate>            CAN bit-timing in kbps (default=250), or
      --bitrate=<bit-rate>             CAN bit-rate settings (as key/value list)
  -v, --verbose                        show detailed bit-rate settings
+ -g, --gateway=<port>                 start CAN IPC server on port <port>
+     --logging=<level>                set CAN IPC logging level (default=0)
      --list-bitrates[=<mode>]         list standard bit-rate settings and exit
  -L, --list-boards                    list all supported CAN interfaces and exit
  -T, --test-boards                    list all available CAN interfaces and exit
