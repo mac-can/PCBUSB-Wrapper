@@ -61,13 +61,8 @@
 #ifndef CANIPC_MESSAGE_H_INCLUDED
 #define CANIPC_MESSAGE_H_INCLUDED
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*  -----------  includes  -----------------------------------------------
  */
-
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -80,7 +75,29 @@ extern "C" {
 
 /*  -----------  defines  ------------------------------------------------
  */
+/** @name  CAN/IPC Frame Format
+ *  @brief CAN message formats on the IPC level
+ * @{ */
+#define CANIPC_ROCKETCAN     0   /**< CAN API V3 message format */
+#define CANIPC_SOCKETCAN     10  /**< SocketCAN CAN CC message format */
+#define CANIPC_SOCKETCAN_FD  11  /**< SocketCAN CAN FD message format */
+#define CANIPC_PCANBASIC     20  /**< PCAN-Basic CAN CC message format */
+#define CANIPC_PCANBASIC_FD  21  /**< PCAN-Basic CAN FD message format */
+/** @} */
 
+/** @name  CAN/IPC Maximum Transmission Unit (MTU)
+ *  @brief Maximum payload size (in [byte]) for the IPC level
+ * @{ */
+#define CANIPC_MTU_ROCKETCAN     sizeof(can_ipc_message_t)  /**< MTU size for RocketCAN */
+// TODO: define MTU sizes for other CAN/IPC formats
+#define CANIPC_MTU_SOCKETCAN     0  /**< MTU size for SocketCAN CAN CC */
+#define CANIPC_MTU_SOCKETCAN_FD  0  /**< MTU size for SocketCAN CAN FD */
+#define CANIPC_MTU_PCANBASIC     0  /**< MTU size for PCAN-Basic CAN CC */
+#define CANIPC_MTU_PCANBASIC_FD  0  /**< MTU size for PCAN-Basic CAN FD */
+/** @} */
+
+/*  - - - - - -  CAN API V3 - RocketCAN  - - - - - - - - - - - - - - - - -
+ */
 /** @name  RocketCAN Identifier
  *  @brief RocketCAN identifier range
  *  @note  Bit 31..29 are reserved for flags
@@ -120,7 +137,6 @@ extern "C" {
 
 /*  -----------  types  --------------------------------------------------
  */
-
 /** @brief       CAN Message (IPC Format):
  */
 typedef struct can_ipc_message_t_ {
@@ -131,6 +147,8 @@ typedef struct can_ipc_message_t_ {
     uint8_t  data[CANIPC_MAX_LEN];      /**< data (to hold CAN FD payload) */
     struct timespec timestamp;          /**< time-stamp { sec, nsec } */
 } can_ipc_message_t __attribute__((aligned(8)));
+
+typedef can_ipc_message_t CANIPC_Message_t;  /**< alias for CAN Message (IPC Format) */
 
 
 /*  - - -  conversion between host and network byte order  - - - - - - - -
@@ -159,9 +177,6 @@ typedef struct can_ipc_message_t_ {
     (msg).timestamp.tv_nsec = ntohl((msg).timestamp.tv_nsec); \
 } while (0)
 
-#ifdef __cplusplus
-}
-#endif
 #endif /* CANIPC_MESSAGE_H_INCLUDED */
 /** @}
  */

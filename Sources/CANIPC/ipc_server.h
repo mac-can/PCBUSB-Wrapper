@@ -51,9 +51,9 @@
  *
  *  @brief       Inter-Process Communication (IPC) server.
  *
- *  @author      $Author: makemake $
+ *  @author      $Author$
  *
- *  @version     $Rev: 843 $
+ *  @version     $Rev$
  *
  *  @defgroup    ipc Inter-Process Communication (IPC)
  *  @{
@@ -61,7 +61,9 @@
 #ifndef IPC_SERVER_H
 #define IPC_SERVER_H
 
-#include <stdio.h>   /* for type 'size_t' */
+/*  -----------  includes  -----------------------------------------------
+ */
+#include "ipc_common.h"  /* common definitions for IPC server and client */
 
 
 /*  -----------  options  ------------------------------------------------
@@ -70,43 +72,20 @@
 
 /*  -----------  defines  ------------------------------------------------
  */
-
-/** @name    Socket types.
- *  @brief   Socket types for the IPC connection.
- *  @{ */
-#define IPC_SOCK_TCP  1  /**< stream socket (for TCP) */
-#define IPC_SOCK_UDP  2  /**< datagram socket (for UDP) */
-#define IPC_SOCK_RAW  3  /**< raw-protocol interface (for IP) */
-#define IPC_SOCK_SEQ  5  /**< sequenced packet stream (for SCTP) */
-/** @} */
-#define IPC_MAX_MTU_SIZE  1500  /**< maximum transmission unit (MTU) size */
-
-
 /** @name    Logging options.
  *  @brief   Logging options for the IPC server.
  *  @{ */
-#define IPC_LOGGER_NONE  0  /**< no logging */
-#define IPC_LOGGER_INFO  1  /**< log client connection */
-#define IPC_LOGGER_DATA  2  /**< log data transfer */
-#define IPC_LOGGER_ALL   3  /**< log all (data as binary) */
+#define IPC_LOGGING_NONE  0  /**< no logging */
+#define IPC_LOGGING_INFO  1  /**< log client connection */
+#define IPC_LOGGING_DATA  2  /**< log data transfer */
+#define IPC_LOGGING_ALL   3  /**< log all (data as binary) */
 /** @} */
 
 /*  -----------  types  --------------------------------------------------
  */
-
 /** @brief   IPC server descriptor.
  */
 typedef struct ipc_server_desc *ipc_server_t;  /* opaque type (requires C99) */
-
-
-/** @brief   IPC server receive callback.
- *
- *  @param   data  Received data.
- *  @param   size  Size of the data.
- * 
- *  @return  0 on success, or a negative value on error.
- */
-typedef int (*ipc_server_recv_cbk_t)(const void *, size_t);
 
 
 /*  -----------  variables  ----------------------------------------------
@@ -130,8 +109,7 @@ extern "C" {
  *  @return  IPC server descriptor on success, or NULL on error.
  */
 ipc_server_t ipc_server_start(unsigned short port, int sock_tyoe, size_t mtu_size,
-                              ipc_server_recv_cbk_t recv_cbk, int logging);
-
+                              ipc_event_cbk_t recv_cbk, int logging);
 
 /** @brief   Send data to the client.
  *
@@ -142,7 +120,6 @@ ipc_server_t ipc_server_start(unsigned short port, int sock_tyoe, size_t mtu_siz
  *  @return  0 on success, or -1 on error.
  */
 int ipc_server_send(ipc_server_t server, const void *data, size_t size);
-
 
 /** @brief   Stop the server.
  *
@@ -155,7 +132,7 @@ int ipc_server_stop(ipc_server_t server);
 #ifdef __cplusplus
 }
 #endif
-#endif  /* IPC_SERVER_H */
+#endif  /* IPC_SERVER_H_INCLUDED */
 
 /*  ----------------------------------------------------------------------
  *  Uwe Vogt,  UV Software,  Chausseestrasse 33 A,  10115 Berlin,  Germany

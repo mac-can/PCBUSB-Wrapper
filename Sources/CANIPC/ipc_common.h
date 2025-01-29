@@ -5,7 +5,7 @@
  *  Copyright (c) 2002-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
  *  All rights reserved.
  *
- *  Module 'ipc_client' - Inter-Process Communication (IPC) client
+ *  Module 'ipc_common' - Inter-Process Communication (IPC)
  *
  *  This module is dual-licensed under the BSD 2-Clause "Simplified" License
  *  and under the GNU General Public License v2.0 (or any later version).
@@ -47,9 +47,9 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this module.  If not, see <https://www.gnu.org/licenses/>.
  */
-/** @file        ipc_client.h
+/** @file        ipc_common.h
  *
- *  @brief       Inter-Process Communication (IPC) client.
+ *  @brief       Inter-Process Communication (IPC) common definitions.
  *
  *  @author      $Author$
  *
@@ -58,12 +58,12 @@
  *  @defgroup    ipc Inter-Process Communication (IPC)
  *  @{
  */
-#ifndef IPC_CLIENT_H_INCLUDED
-#define IPC_CLIENT_H_INCLUDED
+#ifndef IPC_COMMON_H_INCLUDED
+#define IPC_COMMON_H_INCLUDED
 
 /*  -----------  includes  -----------------------------------------------
  */
-#include "ipc_common.h"  /* common definitions for IPC server and client */
+#include <stdio.h>   /* for type 'size_t' */
 
 
 /*  -----------  options  ------------------------------------------------
@@ -72,10 +72,27 @@
 
 /*  -----------  defines  ------------------------------------------------
  */
+/** @name    Socket types.
+ *  @brief   Socket types for the IPC connection.
+ *  @{ */
+#define IPC_SOCK_TCP   1  /**< stream socket (for TCP) */
+#define IPC_SOCK_UDP   2  /**< datagram socket (for UDP) */
+#define IPC_SOCK_SCTP  5  /**< sequenced packet stream (for SCTP) */
+/** @} */
+#define IPC_MAX_MTU_SIZE  1500  /**< maximum transmission unit (MTU) size */
+#define IPC_WAIT_FOREVER  65535U  /**< infinite time-out (blocking operation) */
 
 
 /*  -----------  types  --------------------------------------------------
  */
+/** @brief   IPC event callback function.
+ *
+ *  @param   data  The event data.
+ *  @param   size  Size of the data.
+ * 
+ *  @return  0 on success, or a negative value on error.
+ */
+typedef int (*ipc_event_cbk_t)(const void *, size_t);
 
 
 /*  -----------  variables  ----------------------------------------------
@@ -88,51 +105,10 @@
 extern "C" {
 #endif
 
-/** @brief   Open a connection to the server.
- *
- *  @param   server     The server address ("<host>:<port>").
- *  @param   sock_type  The socket type (SOCK_STREAM, SOCK_DGRAM, SOCK_SEQPACKET).
- *
- *  @return  The file descriptor of the client socket or -1 on error.
- */
-int ipc_client_connect(const char *server, int sock_type);
-
-/** @brief   Close the connection to the server.
- *
- *  @param   fildes  The file descriptor of the client socket.
- *
- *  @return  0 on success, -1 on error.
- */
-int ipc_client_close(int fildes);
-
-/** @brief   Send data to the server.
- *
- *  @param   fildes  The file descriptor of the client socket.
- *  @param   buffer  The data to be sent.
- *  @param   length  The length of the data to be sent.
- *
- *  @return  The number of bytes sent or -1 on error.
- */
-ssize_t ipc_client_send(int fildes, const void *buffer, size_t length);
-
-/** @brief   Receive data from the server.
- *
- *  @param   fildes   The file descriptor of the client socket.
- *  @param   buffer   The buffer to store the received data.
- *  @param   length   The length of the buffer.
- *  @param   timeout  The timeout in milliseconds:
- *                    0 means the function returns immediately,
- *                    65535 means blocking read, and any other
- *                    value means the time to wait im milliseconds
- *
- *  @return  The number of bytes received or -1 on error.
- */
-int ipc_client_recv(int fildes, void *buffer, size_t length, unsigned short timeout);
-
 #ifdef __cplusplus
 }
 #endif
-#endif  /* IPC_CLIENT_H_INCLUDED */
+#endif  /* IPC_COMMON_H_INCLUDED */
 
 /*  ----------------------------------------------------------------------
  *  Uwe Vogt,  UV Software,  Chausseestrasse 33 A,  10115 Berlin,  Germany

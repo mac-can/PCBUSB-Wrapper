@@ -83,7 +83,7 @@ struct SOptions {
     enum EIpcSocketType {
         eIpcTcp = 1,  // SOCK_STREAM (TCP)
         eIpcUdp = 2,  // SOCK_DGRAM (UDP)
-        eIpcSeq = 5   // SOCK_SEQPACKET (SCTP)
+        eIpcSctp = 5  // SOCK_SEQPACKET (SCTP)
     };
     enum EIpcDataFormat {
         eMtuRocketCan,  // CAN API V3

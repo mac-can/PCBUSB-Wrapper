@@ -51,9 +51,9 @@
  *
  *  @brief       Inter-Process Communication (IPC) server.
  *
- *  @author      $Author: makemake $
+ *  @author      $Author$
  *
- *  @version     $Rev: 844 $
+ *  @version     $Rev$
  *
  *  @addtogroup  ipc
  *  @{
@@ -66,6 +66,7 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include <time.h>
 #if !defined(_WIN32) && !defined(_WIN64)
 #include <unistd.h>
 #include <pthread.h>
@@ -82,7 +83,7 @@
 
 /*  -----------  options  ------------------------------------------------
  */
-#if (IPC_SOCK_TCP != SOCK_STREAM) || (IPC_SOCK_UDP != SOCK_DGRAM) || (IPC_SOCK_RAW != SOCK_RAW) || (IPC_SOCK_SEQ != SOCK_SEQPACKET)
+#if (IPC_SOCK_TCP != SOCK_STREAM) || (IPC_SOCK_UDP != SOCK_DGRAM) || (IPC_SOCK_SCTP != SOCK_SEQPACKET)
 #error "Socket type mismatch"
 #endif
 
@@ -96,12 +97,15 @@
 #define DESTROY_CRITICAL_SECTION(srv)   assert(0 == pthread_mutex_destroy(&(srv)->mutex))
 #define DESTROY_SERVER_DESCRIPTOR(srv)  free(srv)
 
-#define LOG_INFO(srv, fmt, ...)     do { if(srv->log_opt >= IPC_LOGGER_INFO) log_info(srv->log_fp, fmt, ##__VA_ARGS__); } while(0)
-#define LOG_RECV(srv, fmt, ...)     do { if(srv->log_opt >= IPC_LOGGER_DATA) log_info(srv->log_fp, fmt, ##__VA_ARGS__); } while(0)
-#define LOG_SENT(srv, fmt, ...)     do { if(srv->log_opt >= IPC_LOGGER_DATA) log_info(srv->log_fp, fmt, ##__VA_ARGS__); } while(0)
-#define LOG_DATA(srv, data, size)   do { if(srv->log_opt >= IPC_LOGGER_ALL) log_data(srv->log_fp, data, size); } while(0)
+#define LOG_INFO(srv, fmt, ...)     do { if(srv->log_opt >= IPC_LOGGING_INFO) log_info(srv->log_fp, fmt, ##__VA_ARGS__); } while(0)
+#define LOG_RECV(srv, fmt, ...)     do { if(srv->log_opt >= IPC_LOGGING_DATA) log_info(srv->log_fp, fmt, ##__VA_ARGS__); } while(0)
+#define LOG_SENT(srv, fmt, ...)     do { if(srv->log_opt >= IPC_LOGGING_DATA) log_info(srv->log_fp, fmt, ##__VA_ARGS__); } while(0)
+#define LOG_DATA(srv, dir, buf, n)  do { if(srv->log_opt >= IPC_LOGGING_ALL) log_data(srv->log_fp, dir, buf, n); } while(0)
 #define LOG_ERROR(srv, fmt, ...)    do { if(srv->log_fp) fprintf(srv->log_fp, "!!! error: " fmt "\n", ##__VA_ARGS__); } while(0)
 #define LOG_CLOSE(srv)              do { if(srv->log_fp) fclose(srv->log_fp); } while(0)
+
+#define LOG_DIR_RECV  0
+#define LOG_DIR_SENT  1
 
 
 /*  -----------  types  --------------------------------------------------
@@ -110,13 +114,14 @@ struct ipc_server_desc {                /* IPC server descriptor: */
     int sock_fd;                        /* - socket file descriptor */
     int sock_type;                      /* - socket type */
     size_t mtu_size;                    /* - maximum transmission unit (MTU) size */
-    ipc_server_recv_cbk_t recv_cbk;     /* - receive callback */
+    ipc_event_cbk_t recv_cbk;           /* - receive callback */
     pthread_t thread;                   /* - thread for listening */
     pthread_mutex_t mutex;              /* - mutex for mutual exclusion */
     fd_set master;                      /* - master file descriptor list */
     int fdmax;                          /* - maximum file descriptor number */
     FILE *log_fp;                       /* - log file */
     unsigned char log_opt;              /* - logging option */
+    clock_t start;                      /* - start time */
 };
 
 /*  -----------  prototypes  ---------------------------------------------
@@ -125,7 +130,7 @@ static void *listening(void *arg);
 static void *get_in_addr(struct sockaddr *sa);
 
 static void log_info(FILE *fp, const char *fmt, ...);
-static void log_data(FILE *fp, const void *data, size_t size);
+static void log_data(FILE *fp, int dir, const void *data, size_t size);
 
 
 /*  -----------  variables  ----------------------------------------------
@@ -151,9 +156,10 @@ static void log_data(FILE *fp, const void *data, size_t size);
  *  - free() — deallocate memory (errno = EINVAL)
  */
 ipc_server_t ipc_server_start(unsigned short port, int sock_type, size_t mtu_size,
-                              ipc_server_recv_cbk_t recv_cbk, int logging) {
+                              ipc_event_cbk_t recv_cbk, int logging) {
     struct ipc_server_desc *server = NULL;
     struct sockaddr_in address;
+    char filename[32];
     int opt = 1;
     int error = errno = 0;
 
@@ -162,16 +168,18 @@ ipc_server_t ipc_server_start(unsigned short port, int sock_type, size_t mtu_siz
         /* errno set */
         return NULL;
     }    
-    /* open the log file for writing */
+    /* open the log file for writing ("ipc_<port>.log") */
     if (logging) {
-        if ((server->log_fp = fopen("ipc_server.log", "w")) == NULL) {
+        snprintf(filename, sizeof(filename), "ipc_%d.log", port);
+        if ((server->log_fp = fopen(filename, "w")) == NULL) {
             /* errno set */
             return NULL;
         }
         fprintf(server->log_fp, "+++ IPC Server on port %d using %s with mtu size %zu +++\n", port,
             (sock_type == IPC_SOCK_TCP) ? "TCP" : ((sock_type == IPC_SOCK_UDP) ? "UDP" :
-            ((sock_type == IPC_SOCK_SEQ) ? "SCTP" : "IP (raw socket)")), mtu_size);
+            ((sock_type == IPC_SOCK_SCTP) ? "SCTP" : "IP (raw socket)")), mtu_size);
         server->log_opt = logging;
+        server->start = clock();
     }
     /* create the socket file descriptor */
     if ((server->sock_fd = socket(AF_INET, sock_type, 0)) == 0) {
@@ -279,7 +287,9 @@ int ipc_server_stop(ipc_server_t server) {
     errno = 0;
     /* close the log file */
     if (server->log_fp != NULL) {
-        server->log_opt = IPC_LOGGER_NONE;
+        fprintf(server->log_fp, "+++ IPC Server terminated: elapsed time %ld ms +++\n",
+            (long)((clock() - server->start) * 1000 / CLOCKS_PER_SEC));
+        server->log_opt = IPC_LOGGING_NONE;
         fclose(server->log_fp);
         server->log_fp = NULL;
     }
@@ -308,7 +318,7 @@ int ipc_server_send(ipc_server_t server, const void *data, size_t size) {
     fd_set write_fds;    /* file descriptor list for send() */
     int fdmax = 0;       /* maximum file descriptor number */
     ssize_t nbytes = 0;  /* number of bytes sent */
-    int i;
+    int i, n = 0;
 
     /* the server must be running */
     if (server == NULL) {
@@ -329,16 +339,17 @@ int ipc_server_send(ipc_server_t server, const void *data, size_t size) {
     /* remove the listener (we don't want to hear our own crap) */
     FD_CLR(((struct ipc_server_desc *)server)->sock_fd, &write_fds);
     /* send data to all clients */
-    LOG_DATA(server, data, size);
+    LOG_DATA(server, LOG_DIR_SENT, data, size);
     for (i = 0; i <= fdmax; i++) {
         if (FD_ISSET(i, &write_fds)) {
             if ((nbytes = send(i, data, size, 0)) < 0) {
                 LOG_ERROR(server, "Send failed on socket %d (errno=%d)", i, errno);
                 continue;   // FIXME: how to handle this?
             }
-            LOG_SENT(server, "Sent %ld bytes to socket %d\n", nbytes, i);
+            n++;
         }
     }
+    LOG_SENT(server, "Sent %ld bytes to %d client(s)\n", nbytes, n);
     errno = 0;
     return 0;
 }
@@ -421,7 +432,7 @@ static void *listening(void *arg) {
                     /* handle data from a client */
                     if ((nbytes = recv(i, buf, server->mtu_size, 0)) > 0) {
                         LOG_RECV(server, "Received %ld bytes from socket %d\n", nbytes, i);
-                        LOG_DATA(server, buf, nbytes);
+                        LOG_DATA(server, LOG_DIR_RECV, buf, nbytes);
                         /* notify the server application */
                         if (server->recv_cbk != NULL) {
                             if ((rc = server->recv_cbk(buf, nbytes)) < 0) {
@@ -478,15 +489,16 @@ static void log_info(FILE *fp, const char *fmt, ...) {
     if (fp == NULL) {
         return;
     }
-    fprintf(fp, "[%s] ", str);
+    fprintf(fp, "[%s %ld] ", str, clock());
     va_start(args, fmt);
     vfprintf(fp, fmt, args);
     va_end(args);
+    fflush(fp);
 }
 
 /* Log data as binary.
  */
-static void log_data(FILE *fp, const void *data, size_t size) {
+static void log_data(FILE *fp, int dir, const void *data, size_t size) {
     time_t now = time(NULL);
     char *str = ctime(&now);
     str[strlen(str)-1] = '\0';
@@ -494,11 +506,12 @@ static void log_data(FILE *fp, const void *data, size_t size) {
     if (fp == NULL) {
         return;
     }
-    fprintf(fp, "[%s] %zu Byte(s):", str, size);
+    fprintf(fp, "[%s %ld] %s %zu byte(s):", str, clock(), (dir == LOG_DIR_RECV) ? "Received" : "Sending", size);
     for (size_t i = 0; i < size; i++) {
         fprintf(fp, " %02X", ((unsigned char *)data)[i]);
     }
     fprintf(fp, "\n");
+    fflush(fp);
 }
 
 
