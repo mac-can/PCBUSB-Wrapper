@@ -101,8 +101,8 @@
 #define LOG_RECV(srv, fmt, ...)     do { if(srv->log_opt >= IPC_LOGGING_DATA) log_info(srv->log_fp, fmt, ##__VA_ARGS__); } while(0)
 #define LOG_SENT(srv, fmt, ...)     do { if(srv->log_opt >= IPC_LOGGING_DATA) log_info(srv->log_fp, fmt, ##__VA_ARGS__); } while(0)
 #define LOG_DATA(srv, dir, buf, n)  do { if(srv->log_opt >= IPC_LOGGING_ALL) log_data(srv->log_fp, dir, buf, n); } while(0)
-#define LOG_ERROR(srv, fmt, ...)    do { if(srv->log_fp) fprintf(srv->log_fp, "!!! error: " fmt "\n", ##__VA_ARGS__); } while(0)
-#define LOG_CLOSE(srv)              do { if(srv->log_fp) fclose(srv->log_fp); } while(0)
+#define LOG_ERROR(srv, fmt, ...)    do { if(srv->log_opt) fprintf(srv->log_fp, "!!! error: " fmt "\n", ##__VA_ARGS__); } while(0)
+#define LOG_CLOSE(srv)              do { if(srv->log_opt) fclose(srv->log_fp); } while(0)
 
 #define LOG_DIR_RECV  0
 #define LOG_DIR_SENT  1
@@ -113,6 +113,8 @@
 struct ipc_server_desc {                /* IPC server descriptor: */
     int sock_fd;                        /* - socket file descriptor */
     int sock_type;                      /* - socket type */
+    int sock_domain;                    /* - socket domain */
+    int sock_protocol;                  /* - socket protocol */
     size_t mtu_size;                    /* - maximum transmission unit (MTU) size */
     ipc_event_cbk_t recv_cbk;           /* - receive callback */
     pthread_t thread;                   /* - thread for listening */
@@ -167,7 +169,17 @@ ipc_server_t ipc_server_start(unsigned short port, int sock_type, size_t mtu_siz
     if ((server = (struct ipc_server_desc *)malloc(sizeof(struct ipc_server_desc))) == NULL) {
         /* errno set */
         return NULL;
-    }    
+    }
+    /* initialize the server descriptor */
+    memset(server, 0, sizeof(struct ipc_server_desc));
+    server->sock_fd = (-1);
+    server->sock_type = sock_type;
+    server->sock_domain = AF_INET;
+    server->sock_protocol = IPPROTO_IP;
+    /* set MTU size (but at most 1500) and receive callback */
+    server->mtu_size = (mtu_size < MTU_SIZE) ? mtu_size : MTU_SIZE;
+    server->recv_cbk = recv_cbk;
+
     /* open the log file for writing ("ipc_<port>.log") */
     if (logging) {
         snprintf(filename, sizeof(filename), "ipc_%d.log", port);
@@ -182,7 +194,7 @@ ipc_server_t ipc_server_start(unsigned short port, int sock_type, size_t mtu_siz
         server->start = clock();
     }
     /* create the socket file descriptor */
-    if ((server->sock_fd = socket(AF_INET, sock_type, 0)) == 0) {
+    if ((server->sock_fd = socket(server->sock_domain, server->sock_type, server->sock_protocol)) < 0) {
         error = errno;
         LOG_ERROR(server, "Socket could not be created (errno=%d)", error);
         LOG_CLOSE(server);
@@ -191,7 +203,7 @@ ipc_server_t ipc_server_start(unsigned short port, int sock_type, size_t mtu_siz
         return NULL;
     }
     /* forcefully attaching socket to the port */
-    if (setsockopt(server->sock_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
+    if (setsockopt(server->sock_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
         error = errno;
         LOG_ERROR(server, "Socket could not be attached to port %d (errno=%d)\n", port, error);
         LOG_CLOSE(server);
@@ -234,10 +246,6 @@ ipc_server_t ipc_server_start(unsigned short port, int sock_type, size_t mtu_siz
         errno = error;
         return NULL;
     }
-    /* set MTU size (but at most 1500) and receive callback */
-    server->mtu_size = (mtu_size < MTU_SIZE) ? mtu_size : MTU_SIZE;
-    server->recv_cbk = recv_cbk;
-    server->sock_type = sock_type;
     /* add the listener to the master set */
     FD_ZERO(&server->master);
     FD_SET(server->sock_fd, &server->master);

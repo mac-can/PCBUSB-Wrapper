@@ -385,6 +385,21 @@ int main(int argc, const char* argv[]) {
     if (opts.m_IpcServer.m_fListen) {
         fprintf(stdout, "IPC port=%u...", opts.m_IpcServer.m_u16Port);
         fflush(stdout);
+        /* -- determine IPC message size (MTU size) */
+        switch (opts.m_IpcServer.m_eFormat) {
+            case SOptions::eMtuRocketCan:  /* CAN API V3 (RocketCAN) */
+                ipcMtuSize = sizeof(CANIPC_Message_t);
+                break;
+            case SOptions::eMtuSocketCan:  /* Linux Kernel CAN (SocketCAN) */
+                if (opts.m_OpMode.byte & CANMODE_FDOE)
+                    ipcMtuSize = IPC_MAX_MTU_SIZE;  // TODO: size of CANFD message
+                else
+                    ipcMtuSize = IPC_MAX_MTU_SIZE;  // TODO: size of CAN message
+            default:
+                ipcMtuSize = IPC_MAX_MTU_SIZE;
+                break;
+        }
+        /* -- let the show begin */
         ipcServer = ipc_server_start(opts.m_IpcServer.m_u16Port, opts.m_IpcServer.m_eSocket,
                                      ipcMtuSize, TransmitMessage, opts.m_IpcServer.m_nLogLevel);
         if (ipcServer == NULL) {

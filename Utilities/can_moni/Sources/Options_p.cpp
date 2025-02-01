@@ -48,8 +48,11 @@
 
 #define DEFAULT_OP_MODE   CANMODE_DEFAULT
 #define DEFAULT_BAUDRATE  CANBTR_INDEX_250K
+#if (CAN_SERVER_SUPPORTED != 0)
 #define DEFAULT_IPC_PORT  29536u
-
+#define DEFAULT_IPC_SOCKET  SOptions::eIpcTcp
+#define DEFAULT_IPC_FORMAT  SOptions::eMtuRocketCan
+#endif
 static const char* c_szApplication = CAN_MONI_APPLICATION;
 static const char* c_szCopyright = CAN_MONI_COPYRIGHT;
 static const char* c_szWarranty = CAN_MONI_WARRANTY;
@@ -87,8 +90,8 @@ SOptions::SOptions() {
 #if (CAN_SERVER_SUPPORTED != 0)
     m_IpcServer.m_fListen = false;
     m_IpcServer.m_u16Port = DEFAULT_IPC_PORT;
-    m_IpcServer.m_eSocket = SOptions::eIpcTcp;
-    m_IpcServer.m_eFormat = SOptions::eMtuRocketCan;
+    m_IpcServer.m_eSocket = DEFAULT_IPC_SOCKET;
+    m_IpcServer.m_eFormat = DEFAULT_IPC_FORMAT;
     m_IpcServer.m_nLogLevel = 0;
 #endif
     m_fListBitrates = false;

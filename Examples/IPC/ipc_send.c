@@ -18,6 +18,7 @@ static void sigterm(int signo);
 static volatile int running = 1;
 
 static const char *server = "localhost:60000";
+static const int protocol = IPC_SOCK_TCP;
 
 int main() {
     int fildes = (-1);
@@ -31,7 +32,7 @@ int main() {
           perror("+++ error");
           return errno;
     }
-    if ((fildes = ipc_client_connect(server, IPC_SOCK_TCP)) < 0) {
+    if ((fildes = ipc_client_connect(server, protocol)) < 0) {
         perror("+++ error");
         return EXIT_FAILURE;
     }
