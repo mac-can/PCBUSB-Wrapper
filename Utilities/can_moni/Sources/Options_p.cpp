@@ -882,9 +882,9 @@ void SOptions::ShowUsage(FILE* stream, bool args) {
     fprintf(stream, " -v, --verbose                        show detailed bit-rate settings\n");
 #if (CAN_TRACE_SUPPORTED != 0)
 #if (CAN_TRACE_SUPPORTED == 1)
-    fprintf(stream, " -y, --trace=(ON|OFF)                 write a trace file (default=OFF)\n");
+    fprintf(stream, "     --trace=(ON|OFF)                 write a trace file (default=OFF)\n");
 #else
-    fprintf(stream, " -y, --trace=(BIN|CSV|TRC)            write a trace file (default=BIN)\n");
+    fprintf(stream, "     --trace=(BIN|CSV|TRC)            write a trace file (default=BIN)\n");
 #endif
 #endif
 #if (CAN_SERVER_SUPPORTED != 0)
@@ -892,7 +892,7 @@ void SOptions::ShowUsage(FILE* stream, bool args) {
     fprintf(stream, "     --logging=<level>                set CAN IPC logging level (default=0)\n");
 #endif
 #if (SERIAL_CAN_SUPPORTED != 0)
-    fprintf(stream, " -z, --protocol=(Lawicel|CANable)     select SLCAN protocol (default=Lawicel)\n");
+    fprintf(stream, "     --protocol=(Lawicel|CANable)     select SLCAN protocol (default=Lawicel)\n");
 #endif
 #if (CAN_FD_SUPPORTED != 0)
     fprintf(stream, "     --list-bitrates[=<mode>]         list standard bit-rate settings and exit\n");
