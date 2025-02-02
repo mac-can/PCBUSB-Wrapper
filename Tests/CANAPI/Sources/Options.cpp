@@ -76,6 +76,10 @@
 #define OPTION_RUN_ALL           "--run_all"
 #define OPTION_RUN_QUICK         "--run_quick"
 #define OPTION_RUN_CALLSEQUENCES "--run_callsequences"
+#if (OPTION_CANIPC_ENABLED != 0)
+#define OPTION_GATEWAY           "--gateway"
+#define OPTION_LOGGING           "--logging"
+#endif
 
 static const bool c_fCanClassic = false;
 static const bool c_f3rdDevice = false;
@@ -83,6 +87,11 @@ static const bool c_fRtrDevice = false;
 static const bool c_fRunQuick = false;
 static const bool c_fCallSequences = false;
 static const bool c_fBitrateConverter = false;
+#if (OPTION_CANIPC_ENABLED != 0)
+static const uint16_t c_nIpcPort = 60000;
+static const CCanServer::EFrameFormat c_eIpcFormat = CCanServer::eRocketCAN;
+static const CCanServer::EIpcProtocol c_eIpcProtocol = CCanServer::eTcp;
+#endif
 #if (OPTION_CANAPI_LIBRARY != 0)
 static const char c_szDefaultSearchPath[] = ".";
 #endif
@@ -122,6 +131,14 @@ COptions::COptions() {
     m_fRtrDevice = c_fRtrDevice;
     m_fRunQuick = c_fRunQuick;
     m_fShowHelp = false;
+#if (OPTION_CANIPC_ENABLED != 0)
+    // server options
+    m_Server.m_fEnable = false;
+    m_Server.m_nPort = c_nIpcPort;
+    m_Server.m_eFormat = c_eIpcFormat;
+    m_Server.m_eProtocol = c_eIpcProtocol;
+    m_Server.m_nLogging = 0;
+#endif
 }
 
 bool COptions::GetChannelInfoByDeviceName(const char *name, CCanApi::SChannelInfo &info) {
@@ -191,7 +208,10 @@ int COptions::ScanOptions(int argc, char* argv[], char* err, size_t len) {
 #endif
     long baudrate = 0;
     long frames = 0;
-
+#if (OPTION_CANIPC_ENABLED != 0)
+    int opt_gateway = 0;
+    int opt_logging = 0;
+#endif
     for (int i = 1; i < argc; i++) {
         // option: --can_help [to be scanned first]
         if (strcmp(argv[i], OPTION_HELP) == 0) {
@@ -664,6 +684,61 @@ int COptions::ScanOptions(int argc, char* argv[], char* err, size_t len) {
             else
                 m_fRunQuick = true;
         }
+#if (OPTION_CANIPC_ENABLED != 0)
+        // option: --gateway=<port>
+        else if (strncmp(argv[i], OPTION_GATEWAY, strlen(OPTION_GATEWAY)) == 0)
+        {
+            if (opt_gateway++) {
+                if (err)
+                    snprintf(err, len, "duplicated option %s", OPTION_GATEWAY);
+                return false;
+            }
+            if (((opt = strchr(argv[i], '=')) != NULL) &&
+                (argv[i][strlen(OPTION_GATEWAY)] == '=')) {
+                if (strlen(++opt) == 0) {
+                    if (err)
+                        snprintf(err, len, "missing argument for option %s", OPTION_GATEWAY);
+                    return false;
+                }
+                if (sscanf(opt, "%hu", &m_Server.m_nPort) != 1) {
+                    snprintf(err, len, "illegal argument in option %s", OPTION_GATEWAY);
+                    return false;
+                }
+                m_Server.m_fEnable = true;
+            }
+            else {
+                if (err)
+                    snprintf(err, len, "missing argument for option %s", OPTION_GATEWAY);
+                return false;
+            }
+        }
+        // option: --logging=<level> (with <level> >= 0)
+        else if (strncmp(argv[i], OPTION_LOGGING, strlen(OPTION_LOGGING)) == 0)
+        {
+            if (opt_logging++) {
+                if (err)
+                    snprintf(err, len, "duplicated option %s", OPTION_LOGGING);
+                return false;
+            }
+            if (((opt = strchr(argv[i], '=')) != NULL) &&
+                (argv[i][strlen(OPTION_LOGGING)] == '=')) {
+                if (strlen(++opt) == 0) {
+                    if (err)
+                        snprintf(err, len, "missing argument for option %s", OPTION_LOGGING);
+                    return false;
+                }
+                if ((sscanf(opt, "%d", &m_Server.m_nLogging) != 1) || (m_Server.m_nLogging < 0)) {
+                    snprintf(err, len, "illegal argument in option %s", OPTION_LOGGING);
+                    return false;
+                }
+            }
+            else {
+                if (err)
+                    snprintf(err, len, "missing argument for option %s", OPTION_LOGGING);
+                return false;
+            }
+        }
+#endif
         // unknown option (note: GoogleTest does not eat option '--help')
         else if (strcmp(argv[i], "--help") != 0) {
             if (err)
@@ -740,6 +815,12 @@ int COptions::ShowHelp() {
         std::cout << "      Disables or enables the execution of test cases with non-default bit-rate settings (default=" << (c_f3rdDevice ? "yes" : "no") << ")." << std::endl;
         std::cout << "  " << OPTION_RTR_DEVICE << "[=(NO|YES)]" << std::endl;
         std::cout << "      Enables or disables the execution of test cases for which a RTR answering device is required (default=" << (c_fRtrDevice ? "yes" : "no") << ")." << std::endl;
+#if (OPTION_CANIPC_ENABLED != 0)
+        std::cout << "  " << OPTION_GATEWAY << "=<port>" << std::endl;
+        std::cout << "      Starts the CAN/IPC server on the specified port." << std::endl;
+        std::cout << "  " << OPTION_LOGGING << "=<level>" << std::endl;
+        std::cout << "      Sets the logging level of the CAN/IPC server (0 = no logging)." << std::endl;
+#endif
         std::cout << "  " << OPTION_RUN_CALLSEQUENCES << "[=(NO|YES)]" << std::endl;
         std::cout << "      Enables or disables the execution of test cases from suite 'CallSequences' (default=" << (c_fCallSequences ? "yes" : "no") << ")." << std::endl;
         std::cout << "  " << OPTION_RUN_ALL << "[=(NO|YES)]" << std::endl;
@@ -755,4 +836,4 @@ int COptions::ShowHelp() {
     return m_fShowHelp;
 }
 
-// $Id: Options.cpp 1411 2025-01-17 18:59:07Z quaoar $  Copyright (c) UV Software, Berlin //
+// $Id: Options.cpp 1424 2025-02-02 17:54:30Z sedna $  Copyright (c) UV Software, Berlin //

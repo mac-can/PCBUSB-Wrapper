@@ -55,7 +55,9 @@
 #endif
 
 #include "Driver.h"
-
+#if (OPTION_CANIPC_ENABLED != 0)
+#include "Server.h"
+#endif
 #define NUM_DUTS  2                     // number of devices under test
 #define DUT1   0                        // device under test #1
 #define DUT2   1                        // device under test #2
@@ -86,6 +88,16 @@ private:
     bool m_fRtrDevice;                  // a device that can answer RTR frames is connected
     bool m_fRunQuick;                   // omit some long lasting test cases
     bool m_fShowHelp;                   // show help and exit
+#if (OPTION_CANIPC_ENABLED != 0)
+    // server options
+    struct SServer {
+        bool m_fEnable;                 // enable IPC server
+        uint16_t m_nPort;               // port number
+        CCanServer::EFrameFormat m_eFormat; // frame format
+        CCanServer::EIpcProtocol m_eProtocol;  // transport protocol
+        int m_nLogging;                 // logging level
+    } m_Server; 
+#endif
 public:
     // constructor / destructor
     COptions();
@@ -138,6 +150,25 @@ public:
     bool IsRtrDevicePresent() {
         return m_fRtrDevice;
     }
+#if (OPTION_CANIPC_ENABLED != 0)
+    bool IsCanServerEnabled() {
+        return m_Server.m_fEnable;
+    }
+    uint16_t GetCanServerPort() {
+        return m_Server.m_nPort;
+    }
+#if (0)
+    CCanServer::EFrameFormat GetCanServerFormat() {
+        return m_Server.m_eFormat;
+    }
+    CCanServer::EIpcProtocol GetCanServerProtocol() {
+        return m_Server.m_eProtocol;
+    }
+#endif
+    int GetCanServerLoggingLevel() {
+        return m_Server.m_nLogging;
+    }
+#endif
     // scan commandline arguments
     int ScanOptions(int argc, char* argv[], char* err = NULL, size_t len = 0);
     int ShowHelp();
@@ -150,4 +181,4 @@ extern COptions g_Options;          // global access to testing options
 
 #endif // OPTIONS_H_INCLUDED
 
-// $Id: Options.h 1411 2025-01-17 18:59:07Z quaoar $  Copyright (c) UV Software, Berlin.
+// $Id: Options.h 1424 2025-02-02 17:54:30Z sedna $  Copyright (c) UV Software, Berlin.
