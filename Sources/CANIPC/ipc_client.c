@@ -80,8 +80,10 @@
 
 /*  -----------  options  ------------------------------------------------
  */
+#ifndef __linux__
 #if (IPC_SOCK_TCP != SOCK_STREAM) || (IPC_SOCK_UDP != SOCK_DGRAM) || (IPC_SOCK_SCTP != SOCK_SEQPACKET)
 #error "Socket type mismatch"
+#endif
 #endif
 
 /*  -----------  defines  ------------------------------------------------
