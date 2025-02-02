@@ -395,6 +395,7 @@ int main(int argc, const char* argv[]) {
                     ipcMtuSize = IPC_MAX_MTU_SIZE;  // TODO: size of CANFD message
                 else
                     ipcMtuSize = IPC_MAX_MTU_SIZE;  // TODO: size of CAN message
+                break;
             default:
                 ipcMtuSize = IPC_MAX_MTU_SIZE;
                 break;
