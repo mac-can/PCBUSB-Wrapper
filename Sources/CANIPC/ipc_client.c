@@ -221,7 +221,7 @@ ssize_t ipc_client_send(int fildes, const void *buffer, size_t length) {
     return n;
 }
 
-int ipc_client_recv(int fildes, void *buffer, size_t length, unsigned short timeout) {
+ssize_t ipc_client_recv(int fildes, void *buffer, size_t length, unsigned short timeout) {
     ssize_t n = 0;
     fd_set readfds;
     struct timeval tv;

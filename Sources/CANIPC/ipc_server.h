@@ -58,8 +58,8 @@
  *  @defgroup    ipc Inter-Process Communication (IPC)
  *  @{
  */
-#ifndef IPC_SERVER_H
-#define IPC_SERVER_H
+#ifndef IPC_SERVER_H_INCLUDED
+#define IPC_SERVER_H_INCLUDED
 
 /*  -----------  includes  -----------------------------------------------
  */

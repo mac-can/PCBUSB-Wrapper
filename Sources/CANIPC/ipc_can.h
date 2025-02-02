@@ -49,7 +49,7 @@
  */
 /** @file        ipc_can.h
  *
- *  @brief       CAN IPC Message (RocketCAN Format)
+ *  @brief       CAN/IPC Message Format
  *
  *  @author      $Author$
  *

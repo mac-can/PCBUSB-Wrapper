@@ -39,7 +39,8 @@ int main() {
     while (running) {
         memset(&msg, 0, sizeof(msg));
         if (ipc_client_recv(fildes, (void*)&msg, sizeof(msg), IPC_WAIT_FOREVER) < 0) {
-            perror("+++ error");
+            if (errno != ENODATA)
+                perror("+++ error");
             continue;
         }
         CAN_IPC_MSG_NTOH(msg);

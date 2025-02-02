@@ -127,7 +127,7 @@ ssize_t ipc_client_send(int fildes, const void *buffer, size_t length);
  *
  *  @return  The number of bytes received or -1 on error.
  */
-int ipc_client_recv(int fildes, void *buffer, size_t length, unsigned short timeout);
+ssize_t ipc_client_recv(int fildes, void *buffer, size_t length, unsigned short timeout);
 
 #ifdef __cplusplus
 }
