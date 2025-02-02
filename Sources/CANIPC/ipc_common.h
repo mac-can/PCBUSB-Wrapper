@@ -51,9 +51,9 @@
  *
  *  @brief       Inter-Process Communication (IPC) common definitions.
  *
- *  @author      $Author$
+ *  @author      $Author: sedna $
  *
- *  @version     $Rev$
+ *  @version     $Rev: 1422 $
  *
  *  @defgroup    ipc Inter-Process Communication (IPC)
  *  @{
@@ -109,7 +109,8 @@ extern "C" {
 }
 #endif
 #endif  /* IPC_COMMON_H_INCLUDED */
-
+/** @}
+ */
 /*  ----------------------------------------------------------------------
  *  Uwe Vogt,  UV Software,  Chausseestrasse 33 A,  10115 Berlin,  Germany
  *  Tel.: +49-30-46799872,  Fax: +49-30-46799873,  Mobile: +49-170-3801903

@@ -51,9 +51,9 @@
  *
  *  @brief       Inter-Process Communication (IPC) client.
  *
- *  @author      $Author$
+ *  @author      $Author: sedna $
  *
- *  @version     $Rev$
+ *  @version     $Rev: 1422 $
  *
  *  @defgroup    ipc Inter-Process Communication (IPC)
  *  @{
@@ -95,7 +95,7 @@ extern "C" {
  *
  *  @return  The file descriptor of the client socket or -1 on error.
  */
-int ipc_client_connect(const char *server, int sock_type);
+extern int ipc_client_connect(const char *server, int sock_type);
 
 /** @brief   Close the connection to the server.
  *
@@ -103,7 +103,7 @@ int ipc_client_connect(const char *server, int sock_type);
  *
  *  @return  0 on success, -1 on error.
  */
-int ipc_client_close(int fildes);
+extern int ipc_client_close(int fildes);
 
 /** @brief   Send data to the server.
  *
@@ -113,7 +113,7 @@ int ipc_client_close(int fildes);
  *
  *  @return  The number of bytes sent or -1 on error.
  */
-ssize_t ipc_client_send(int fildes, const void *buffer, size_t length);
+extern ssize_t ipc_client_send(int fildes, const void *buffer, size_t length);
 
 /** @brief   Receive data from the server.
  *
@@ -127,13 +127,14 @@ ssize_t ipc_client_send(int fildes, const void *buffer, size_t length);
  *
  *  @return  The number of bytes received or -1 on error.
  */
-ssize_t ipc_client_recv(int fildes, void *buffer, size_t length, unsigned short timeout);
+extern ssize_t ipc_client_recv(int fildes, void *buffer, size_t length, unsigned short timeout);
 
 #ifdef __cplusplus
 }
 #endif
 #endif  /* IPC_CLIENT_H_INCLUDED */
-
+/** @}
+ */
 /*  ----------------------------------------------------------------------
  *  Uwe Vogt,  UV Software,  Chausseestrasse 33 A,  10115 Berlin,  Germany
  *  Tel.: +49-30-46799872,  Fax: +49-30-46799873,  Mobile: +49-170-3801903

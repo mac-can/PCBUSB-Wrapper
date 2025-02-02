@@ -51,9 +51,9 @@
  *
  *  @brief       Inter-Process Communication (IPC) server.
  *
- *  @author      $Author$
+ *  @author      $Author: sedna $
  *
- *  @version     $Rev$
+ *  @version     $Rev: 1422 $
  *
  *  @addtogroup  ipc
  *  @{
