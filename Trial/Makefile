@@ -64,9 +64,7 @@ LIBRARIES = -lpthread
 
 CHECKER  = warning,information
 IGNORE   = -i can_msg.c -i can_dev.c -i vanilla.c
-ifeq ($(HUNTER),BUGS)
-CHECKER += --bug-hunting
-endif
+LEVEL    = exhaustive  # normal or exhaustive
 
 ifeq ($(XCTEST),FULL)
 TESTING =
@@ -124,7 +122,7 @@ outdir:
 	@mkdir -p $(OUTDIR)
 
 check:
-	cppcheck --enable=$(CHECKER) --suppressions-list=$(HOME_DIR)/suppress.txt \
+	cppcheck --enable=$(CHECKER) --check-level=$(LEVEL) --suppressions-list=$(HOME_DIR)/suppress.txt \
 	-D__APPLE__ $(DEFINES) $(HEADERS) $(IGNORE) $(SOURCE_DIR)
 
 clean:
