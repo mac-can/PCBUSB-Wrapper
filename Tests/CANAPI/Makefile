@@ -183,12 +183,13 @@ outdir:
 	@mkdir -p $(OUTDIR)
 
 clean:
-	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
+	@-$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
 
 pristine:
-	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
+	@-$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
 
 install:
+	@mkdir -p $(INSTALL)
 	$(CP) $(TARGET) $(INSTALL)
 
 

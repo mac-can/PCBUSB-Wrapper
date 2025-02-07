@@ -69,6 +69,10 @@ endif
 
 LIBRARIES = -lpthread
 
+CHECKER  = warning,information
+IGNORE   = -i Options_w.cpp -i dosopt.c
+LEVEL    = exhaustive  # normal or exhaustive
+
 CXX = clang++
 CC = clang
 LD = clang++
@@ -122,15 +126,20 @@ bindir:
 incdir:
 	@mkdir -p $(INCDIR)
 
+check:
+	cppcheck --enable=$(CHECKER) --check-level=$(LEVEL) --suppressions-list=$(PROJ_DIR)/suppress.txt \
+	-D__APPLE__ $(DEFINES) $(HEADERS) $(IGNORE) $(MAIN_DIR)
+
 clean:
-	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
+	@-$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
 
 pristine:
-	$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
-	$(RM) $(BINDIR)/$(TARGET)
+	@-$(RM) $(TARGET) $(OUTDIR)/*.o $(OUTDIR)/*.d
+	@-$(RM) $(BINDIR)/$(TARGET)
 
 install:
 	@echo "Copying binary file..."
+	@mkdir -p $(INSTALL)
 	$(CP) $(TARGET) $(INSTALL)
 
 
@@ -146,8 +155,9 @@ $(OUTDIR)/Timer.o: $(MAIN_DIR)/Timer.cpp
 
 $(TARGET): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
-	$(CP) $(TARGET) $(BINDIR)
 ifeq ($(current_OS),Darwin)
 	@lipo -archs $@
 endif
+	@mkdir -p $(BINDIR)
+	$(CP) $(TARGET) $(BINDIR)
 	@echo "\033[1mTarget '"$@"' successfully build\033[0m"

@@ -34,3 +34,7 @@ pristine:
 install:
 #	$(MAKE) -C can_test $@
 #	$(MAKE) -C can_moni $@
+
+check:
+	$(MAKE) -C can_test $@
+	$(MAKE) -C can_moni $@
