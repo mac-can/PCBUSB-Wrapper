@@ -128,11 +128,11 @@ Type `can_test --help` to display all program options.
 ### Development Environments
 
 #### macOS Sequoia
-- macOS Sequoia (15.2) on a Mac mini (M1, 2020)
+- macOS Sequoia (15.3) on a Mac mini (M4 Pro, 2024)
 - Apple clang version 16.0.0 (clang-1600.0.26.6)
 
 #### macOS Ventura
-- macOS Ventura (13.7.2) on a MacBook Pro (2019)
+- macOS Ventura (13.7.3) on a MacBook Pro (2019)
 - Apple clang version 14.0.3 (clang-1403.0.22.14.1)
 
 #### Debian 12.9 ("bookworm")
