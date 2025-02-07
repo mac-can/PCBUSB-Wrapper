@@ -38,3 +38,6 @@ $(TARGET2):	$(SOURCE2)
 
 clean:
 	@-$(RM) *.o *~ $(TARGET1) $(TARGET2)
+
+pristine:
+	@-$(RM) *.o *~ $(TARGET1) $(TARGET2)

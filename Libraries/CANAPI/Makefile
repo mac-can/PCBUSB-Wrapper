@@ -93,6 +93,8 @@ INSTALL_NAME = $(TARGET)
 CURRENT_VERSION = $(MAJOR).$(MINOR).$(PATCH)
 COMPATIBILITY_VERSION = $(MAJOR).$(MINOR).0
 
+DEPLOYMENT_TARGET = 13.0
+
 INSTALL = /usr/local/lib
 
 OBJECTS += $(OUTDIR)/PCBUSB.o
@@ -114,6 +116,7 @@ LDFLAGS += -nostartfiles -dynamiclib -fvisibility=hidden \
 	-Wl,-install_name,@rpath/$(INSTALL_NAME) \
 	-Wl,-current_version,$(CURRENT_VERSION) \
 	-Wl,-compatibility_version,$(COMPATIBILITY_VERSION) \
+	-mmacos-version-min=$(DEPLOYMENT_TARGET) \
 	-rpath $(INSTALL)
 
 LTFLAGS += -static
@@ -207,21 +210,22 @@ incdir:
 	@cp $(CANAPI_DIR)/can_btr.h $(INCDIR)
 
 clean:
-	$(RM) $(TARGET) $(STATIC) $(OUTDIR)/*.o $(OUTDIR)/*.d
+	@-$(RM) $(TARGET) $(STATIC) $(OUTDIR)/*.o $(OUTDIR)/*.d
 
 pristine:
 ifeq ($(current_OS),Darwin)
-	$(RM) *.dylib *.a $(OUTDIR)/*.o $(OUTDIR)/*.d
-	$(RM) $(BINDIR)/*.dylib $(BINDIR)/*.a
+	@-$(RM) *.dylib *.a $(OUTDIR)/*.o $(OUTDIR)/*.d
+	@-$(RM) $(BINDIR)/*.dylib $(BINDIR)/*.a
 endif
 ifeq ($(current_OS),Linux)
-	$(RM) *.so.* *.a $(OUTDIR)/*.o $(OUTDIR)/*.d
-	$(RM) $(BINDIR)/*.so.* $(BINDIR)/*.a
+	@-$(RM) *.so.* *.a $(OUTDIR)/*.o $(OUTDIR)/*.d
+	@-$(RM) $(BINDIR)/*.so.* $(BINDIR)/*.a
 endif
-	$(RM) $(INCDIR)/*.h
+	@-$(RM) $(INCDIR)/*.h
 
 install:
 	@echo "Copying library file..."
+	@mkdir -p $(INSTALL)
 	$(RM) $(INSTALL)/$(TARGET); $(CP) $(TARGET) $(INSTALL)
 ifeq ($(current_OS),Darwin)
 	$(RM) $(INSTALL)/$(LIBRARY).dylib ; $(LN) $(INSTALL)/$(TARGET) $(INSTALL)/$(LIBRARY).dylib
@@ -246,18 +250,22 @@ $(OUTDIR)/can_btr.o: $(CANAPI_DIR)/can_btr.c
 $(STATIC): $(OBJECTS)
 ifeq ($(current_OS),Darwin)
 	$(LT) $(LTFLAGS) -o $@ $(OBJECTS)
+	@echo "macOS "$(DEPLOYMENT_TARGET)
 	@lipo -archs $@
 endif
 ifeq ($(current_OS),Linux)
 	$(AR) $(ARFLAGS) $@ $(OBJECTS)
 endif
+	@mkdir -p $(BINDIR)
 	$(CP) $@ $(BINDIR)
 	@echo "\033[1mTarget '"$@"' successfully build\033[0m"
 
 $(TARGET): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIBRARIES)
 ifeq ($(current_OS),Darwin)
+	@echo "macOS "$(DEPLOYMENT_TARGET)
 	@lipo -archs $@
 endif
+	@mkdir -p $(BINDIR)
 	$(CP) $@ $(BINDIR)
 	@echo "\033[1mTarget '"$@"' successfully build\033[0m"
