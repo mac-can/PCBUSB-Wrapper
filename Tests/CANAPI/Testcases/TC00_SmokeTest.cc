@@ -268,7 +268,7 @@ TEST_F(SmokeTest, DefaultScenario) {
     dut2.ShowDeviceInformation("[   DUT2   ]");
     dut1.ShowOperationMode("[   MODE   ]");
     dut1.ShowBitrateSettings("[   BAUD   ]");
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
     g_CanServer.ShowServerPort("[   PORT   ]");
 #endif
     // @- probe if DUT1 is present and not occupied
@@ -362,4 +362,4 @@ TEST_F(SmokeTest, DefaultScenario) {
     // @end.
 }
 
-//  $Id: TC00_SmokeTest.cc 1456 2025-02-19 21:22:16Z sedna $  Copyright (c) UV Software, Berlin.
+//  $Id: TC00_SmokeTest.cc 1424 2025-02-02 17:54:30Z sedna $  Copyright (c) UV Software, Berlin.

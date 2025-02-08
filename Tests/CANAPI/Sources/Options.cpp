@@ -77,7 +77,7 @@
 #define OPTION_RUN_QUICK         "--run_quick"
 #define OPTION_RUN_CALLSEQUENCES "--run_callsequences"
 #define OPTION_INTERACTIVE_START "--interactive_start"
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
 #define OPTION_GATEWAY           "--gateway"
 #define OPTION_LOGGING           "--logging"
 #endif
@@ -89,8 +89,10 @@ static const bool c_fRunQuick = false;
 static const bool c_fCallSequences = false;
 static const bool c_fBitrateConverter = false;
 static const bool c_fStartInteractive = false;
-#if (OPTION_CANTCP_ENABLED != 0)
-static const char c_szService[] = "60000";
+#if (OPTION_CANIPC_ENABLED != 0)
+static const uint16_t c_nIpcPort = 60000;
+static const CCanServer::EFrameFormat c_eIpcFormat = CCanServer::eRocketCAN;
+static const CCanServer::EIpcProtocol c_eIpcProtocol = CCanServer::eTcp;
 #endif
 #if (OPTION_CANAPI_LIBRARY != 0)
 static const char c_szDefaultSearchPath[] = ".";
@@ -132,10 +134,12 @@ COptions::COptions() {
     m_fRtrDevice = c_fRtrDevice;
     m_fRunQuick = c_fRunQuick;
     m_fShowHelp = false;
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
     // server options
     m_Server.m_fEnable = false;
-    m_Server.m_szService = (char*)c_szService;
+    m_Server.m_nPort = c_nIpcPort;
+    m_Server.m_eFormat = c_eIpcFormat;
+    m_Server.m_eProtocol = c_eIpcProtocol;
     m_Server.m_nLogging = 0;
 #endif
 }
@@ -199,7 +203,7 @@ int COptions::ScanOptions(int argc, char* argv[], char* err, size_t len) {
     int rtr_device = 0;
     int run_callsequences = 0;
     int run_quick = 0;
-    #if (OPTION_CANTCP_ENABLED != 0)
+    #if (OPTION_CANIPC_ENABLED != 0)
     int opt_gateway = 0;
     int opt_logging = 0;
 #endif
@@ -684,7 +688,7 @@ int COptions::ScanOptions(int argc, char* argv[], char* err, size_t len) {
             else
                 m_fRunQuick = true;
         }
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
         // option: --gateway=<port>
         else if (strncmp(argv[i], OPTION_GATEWAY, strlen(OPTION_GATEWAY)) == 0)
         {
@@ -700,7 +704,10 @@ int COptions::ScanOptions(int argc, char* argv[], char* err, size_t len) {
                         snprintf(err, len, "missing argument for option %s", OPTION_GATEWAY);
                     return false;
                 }
-                m_Server.m_szService = opt;
+                if (sscanf(opt, "%hu", &m_Server.m_nPort) != 1) {
+                    snprintf(err, len, "illegal argument in option %s", OPTION_GATEWAY);
+                    return false;
+                }
                 m_Server.m_fEnable = true;
             }
             else {
@@ -836,11 +843,11 @@ int COptions::ShowHelp() {
         std::cout << "      Disables or enables the execution of test cases with non-default bit-rate settings (default=" << (c_f3rdDevice ? "yes" : "no") << ")." << std::endl;
         std::cout << "  " << OPTION_RTR_DEVICE << "[=(NO|YES)]" << std::endl;
         std::cout << "      Enables or disables the execution of test cases for which a RTR answering device is required (default=" << (c_fRtrDevice ? "yes" : "no") << ")." << std::endl;
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
         std::cout << "  " << OPTION_GATEWAY << "=<port>" << std::endl;
-        std::cout << "      Starts the RocketCAN server on the specified port." << std::endl;
+        std::cout << "      Starts the CAN/IPC server on the specified port." << std::endl;
         std::cout << "  " << OPTION_LOGGING << "=<level>" << std::endl;
-        std::cout << "      Sets the logging level of the RocketCAN server (0 = no logging)." << std::endl;
+        std::cout << "      Sets the logging level of the CAN/IPC server (0 = no logging)." << std::endl;
 #endif
         std::cout << "  " << OPTION_RUN_CALLSEQUENCES << "[=(NO|YES)]" << std::endl;
         std::cout << "      Enables or disables the execution of test cases from suite 'CallSequences' (default=" << (c_fCallSequences ? "yes" : "no") << ")." << std::endl;
@@ -854,7 +861,7 @@ int COptions::ShowHelp() {
         std::cout << "Hazard Note:" << std::endl;
         std::cout << "  If you connect your CAN device to a real CAN network when using this program," << std::endl;
         std::cout << "  you might damage your application." << std::endl;
-    #if (OPTION_CANTCP_ENABLED != 0)
+    #if (OPTION_CANIPC_ENABLED != 0)
         std::cout << "  If you open a port for socket communication while using this program, it may" << std::endl;
         std::cout << "  expose your computer to security vulnerabilities, unauthorized access, data" << std::endl;
         std::cout << "  interception, denial of service attacks, and resource exhaustion." << std::endl;
@@ -864,4 +871,4 @@ int COptions::ShowHelp() {
     return m_fShowHelp;
 }
 
-// $Id: Options.cpp 1456 2025-02-19 21:22:16Z sedna $  Copyright (c) UV Software, Berlin //
+// $Id: Options.cpp 1430 2025-02-08 11:43:01Z sedna $  Copyright (c) UV Software, Berlin //

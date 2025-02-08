@@ -56,10 +56,10 @@
 
 #include "Device.h"
 
-#include "CanTcpServer.h"
-#include "CanTcpClient.h"
+#include "CanIpcServer.h"
+#include "CanIpcClient.h"
 
-class CCanServer : public CCanTcpServer {
+class CCanServer : public CCanIpcServer {
 public:
     CCanServer();
     ~CCanServer();
@@ -67,15 +67,15 @@ public:
     bool AttachDevice(CCanDevice *device);
     bool DetachDevice();
 
-    CANAPI_Return_t StartServer(const char *service);
+    CANAPI_Return_t StartServer(uint16_t port/*, EFrameFormat frameFormat = eRocketCAN, EIpcProtocol protocol = eTcp*/);
     CANAPI_Return_t StopServer();
 
     void ShowServerPort(const char* prefix);
 };
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
 // The one and only server object
 extern CCanServer g_CanServer;
 #endif
 #endif // SERVER_H_INCLUDED
 
-// $Id: Server.h 1456 2025-02-19 21:22:16Z sedna $  Copyright (c) UV Software, Berlin.
+// $Id: Server.h 1424 2025-02-02 17:54:30Z sedna $  Copyright (c) UV Software, Berlin.

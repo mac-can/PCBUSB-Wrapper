@@ -49,7 +49,6 @@
 //
 #include "pch.h"
 #include "Server.h"
-#include "crc_j1850.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,15 +62,16 @@
 #endif
 #include <assert.h>
 
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
 CCanServer g_CanServer = CCanServer();  // global access to CAN server
 #endif
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;  // mutex for critical sections
 static CCanDevice *canDevice = NULL;  // to be used in the C callback function
+//static size_t canMtuSize = IPC_MAX_MTU_SIZE;  // maximum transmission unit size
 
 static int EventHandler(const void *data, size_t size, void *param) {
-    CANTCP_Message_t* ipc_msg = (CANTCP_Message_t*)data;
+    CANIPC_Message_t* ipc_msg = (CANIPC_Message_t*)data;
     CANAPI_Message_t can_msg = CANAPI_Message_t();
     int retVal = CCanApi::FatalError;
     (void)param;
@@ -80,27 +80,21 @@ static int EventHandler(const void *data, size_t size, void *param) {
     if (!data) {
         return CCanApi::NullPointer;
     }
-    if (size != sizeof(CANTCP_Message_t)) {
+    if (size != sizeof(CANIPC_Message_t)) {
         return CCanApi::IllegalParameter;
     }
-    if (crc_j1850_calc(data, sizeof(CANTCP_Message_t) - 1U, NULL) != ipc_msg->checksum) {
-        return (int)(-80);  // TODO: define error code
-    }
-    if (ipc_msg->ctrlchar != CANTCP_ETX_CHAR) {
-        return (int)(-81);  // TODO: define error code
-    }
     /* convert the message from network to host byte order */
-    CANTCP_MSG_NTOH(*ipc_msg);
+    CAN_IPC_MSG_NTOH(*ipc_msg);
     /* transmit the message on the CAN bus */
     can_msg.id = ipc_msg->id;
-    can_msg.xtd = (ipc_msg->flags & CANTCP_XTD_MASK) ? 1 : 0;
-    can_msg.rtr = (ipc_msg->flags & CANTCP_RTR_MASK) ? 1 : 0;
-    can_msg.fdf = (ipc_msg->flags & CANTCP_FDF_MASK) ? 1 : 0;
-    can_msg.brs = (ipc_msg->flags & CANTCP_BRS_MASK) ? 1 : 0;
-    can_msg.esi = (ipc_msg->flags & CANTCP_ESI_MASK) ? 1 : 0;
-    can_msg.sts = (ipc_msg->flags & CANTCP_STS_MASK) ? 1 : 0;
+    can_msg.xtd = (ipc_msg->flags & CANIPC_XTD_MASK) ? 1 : 0;
+    can_msg.rtr = (ipc_msg->flags & CANIPC_RTR_MASK) ? 1 : 0;
+    can_msg.fdf = (ipc_msg->flags & CANIPC_FDF_MASK) ? 1 : 0;
+    can_msg.brs = (ipc_msg->flags & CANIPC_BRS_MASK) ? 1 : 0;
+    can_msg.esi = (ipc_msg->flags & CANIPC_ESI_MASK) ? 1 : 0;
+    can_msg.sts = (ipc_msg->flags & CANIPC_STS_MASK) ? 1 : 0;
     can_msg.dlc = CCanApi::Len2Dlc(ipc_msg->length);
-    for (int i = 0; (i < CANFD_MAX_LEN) && (i < CANTCP_MAX_LEN); i++) {
+    for (int i = 0; (i < CANFD_MAX_LEN) && (i < CANIPC_MAX_LEN); i++) {
         can_msg.data[i] = ipc_msg->data[i];
     }
     /* make it so! */
@@ -119,7 +113,7 @@ static int EventHandler(const void *data, size_t size, void *param) {
     return retVal;
 }
 
-CCanServer::CCanServer() : CCanTcpServer() {
+CCanServer::CCanServer() : CCanIpcServer() {
     assert(pthread_mutex_init(&mutex, NULL) == 0);
     canDevice = NULL;
 }
@@ -145,9 +139,9 @@ bool CCanServer::DetachDevice() {
     return true;
 }
 
-CANAPI_Return_t CCanServer::StartServer(const char *service) {
+CANAPI_Return_t CCanServer::StartServer(uint16_t port) {
     if (!SetCallback(EventHandler)) return CCanApi::AlreadyInitialized;
-    return Start(service);
+    return Start(port);
 }
 
 CANAPI_Return_t CCanServer::StopServer() {
@@ -161,9 +155,15 @@ void CCanServer::ShowServerPort(const char* prefix) {
     if (IsRunning()) {
         if (prefix)
             std::cout << prefix << ' ';
-        std::cout << "RocketCAN server listening on port " << GetService();
-        std::cout << " with data size " << GetFrameSize() << " 🚀" << std::endl;
+        std::cout << "CAN/IPC server listening on port " << GetPort() << " using ";
+        switch (GetTransportProtocol()) {
+            case eTcp: std::cout << "TCP"; break;
+            case eUdp: std::cout << "UDP"; break;
+            case eSctp: std::cout << "SCTP"; break;
+            default: std::cout << "IP (raw socket)"; break;
+        }
+        std::cout << " with mtu size " << GetMtuSize() << std::endl;
     }
 }
 
-// $Id: Server.cpp 1456 2025-02-19 21:22:16Z sedna $  Copyright (c) UV Software, Berlin.
+// $Id: Server.cpp 1430 2025-02-08 11:43:01Z sedna $  Copyright (c) UV Software, Berlin.

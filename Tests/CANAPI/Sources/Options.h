@@ -55,7 +55,7 @@
 #endif
 
 #include "Driver.h"
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
 #include "Server.h"
 #endif
 #define NUM_DUTS  2                     // number of devices under test
@@ -89,11 +89,13 @@ private:
     bool m_fRtrDevice;                  // a device that can answer RTR frames is connected
     bool m_fRunQuick;                   // omit some long lasting test cases
     bool m_fShowHelp;                   // show help and exit
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
     // server options
     struct SServer {
-        bool m_fEnable;                 // enable RocketCAN server
-        char *m_szService;              // service name or port number
+        bool m_fEnable;                 // enable IPC server
+        uint16_t m_nPort;               // port number
+        CCanServer::EFrameFormat m_eFormat; // frame format
+        CCanServer::EIpcProtocol m_eProtocol;  // transport protocol
         int m_nLogging;                 // logging level
     } m_Server; 
 #endif
@@ -152,12 +154,12 @@ public:
     bool StartInteractive() {
         return m_fStartInteractive;
     }
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
     bool IsCanServerEnabled() {
         return m_Server.m_fEnable;
     }
-    const char *GetCanServerService() {
-        return (const char*)m_Server.m_szService;
+    uint16_t GetCanServerPort() {
+        return m_Server.m_nPort;
     }
 #if (0)
     CCanServer::EFrameFormat GetCanServerFormat() {
@@ -183,4 +185,4 @@ extern COptions g_Options;          // global access to testing options
 
 #endif // OPTIONS_H_INCLUDED
 
-// $Id: Options.h 1456 2025-02-19 21:22:16Z sedna $  Copyright (c) UV Software, Berlin.
+// $Id: Options.h 1430 2025-02-08 11:43:01Z sedna $  Copyright (c) UV Software, Berlin.

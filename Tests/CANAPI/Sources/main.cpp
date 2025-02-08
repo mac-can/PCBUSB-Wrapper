@@ -79,11 +79,11 @@ GTEST_API_ int main(int argc, char **argv) {
     else if (g_Options.ShowHelp()) {
         return 0;
     }
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
     // --- start CAN server ---
     if (g_Options.IsCanServerEnabled()) {
         g_CanServer.SetLoggingLevel(g_Options.GetCanServerLoggingLevel());
-        if (g_CanServer.StartServer(g_Options.GetCanServerService()) < 0) {
+        if (g_CanServer.StartServer(g_Options.GetCanServerPort()) < 0) {
             std::cerr << "+++ error: failed to start CAN server" << std::endl;
             return 1;
         }
@@ -98,7 +98,7 @@ GTEST_API_ int main(int argc, char **argv) {
     }
     // --- test execution starts here --
     int res = RUN_ALL_TESTS();
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
     // --- stop CAN server ---
     if (g_Options.IsCanServerEnabled()) {
         g_CanServer.StopServer();
@@ -108,4 +108,4 @@ GTEST_API_ int main(int argc, char **argv) {
     return res;
 }
 
-// $Id: main.cpp 1456 2025-02-19 21:22:16Z sedna $  Copyright (c) UV Software, Berlin //
+// $Id: main.cpp 1430 2025-02-08 11:43:01Z sedna $  Copyright (c) UV Software, Berlin //

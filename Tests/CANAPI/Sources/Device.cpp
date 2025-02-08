@@ -62,7 +62,7 @@
 #else
 #define MESSAGE(n,i,l,d) do{ }while(0)
 #endif
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
 #define DISCONNECT_CLIENT(client)  do { if(g_CanServer.IsRunning()) (void)client.Disconnect(); } while(0)
 #define CLIENT_READ_TIMEOUT  100U
 #else
@@ -110,7 +110,7 @@ int32_t CCanDevice::SendSomeFrames(CCanDevice &other, int32_t frames) {
         }
         PCBUSB_INIT_DELAY();
     }
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
     if (g_CanServer.IsRunning()) {
         if (!g_CanServer.AttachDevice(this)) {
             if (!initialized)
@@ -120,7 +120,7 @@ int32_t CCanDevice::SendSomeFrames(CCanDevice &other, int32_t frames) {
     }
 #endif
     int32_t result = SendAndReceiveFrames(this, &other, frames);
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
     if (g_CanServer.IsRunning()) {
         (void)g_CanServer.DetachDevice();
     }
@@ -167,7 +167,7 @@ int32_t CCanDevice::ReceiveSomeFrames(CCanDevice &other, int32_t frames) {
         }
         PCBUSB_INIT_DELAY();
     }
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
     if (g_CanServer.IsRunning()) {
         if (!g_CanServer.AttachDevice(&other)) {
             if (!initialized)
@@ -177,7 +177,7 @@ int32_t CCanDevice::ReceiveSomeFrames(CCanDevice &other, int32_t frames) {
     }
 #endif
     int32_t result = SendAndReceiveFrames(&other, this, frames);
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
     if (g_CanServer.IsRunning()) {
         (void)g_CanServer.DetachDevice();
     }
@@ -215,18 +215,18 @@ int32_t CCanDevice::SendAndReceiveFrames(CCanDevice *sender, CCanDevice *receive
     txMessage.sts = 0;
     txMessage.dlc = 0U;
 
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
     CANAPI_Message_t ipMessage = {};
 
-    CCanTcpClient txClient = CCanTcpClient();
-    CCanTcpClient rxClient = CCanTcpClient();
+    CCanIpcClient txClient = CCanIpcClient();
+    CCanIpcClient rxClient = CCanIpcClient();
 
     if (g_CanServer.IsRunning()) {
-        if ((retVal = txClient.Connect(CCanTcpClient::localhost(g_Options.GetCanServerService()))) != CCanApi::NoError) {
+        if ((retVal = txClient.Connect(CCanIpcClient::localhost(g_Options.GetCanServerPort()))) != CCanApi::NoError) {
             //printf("txClient.Connect() failed with %d\n", retVal);
             return (int32_t)retVal;
         }
-        if ((retVal = rxClient.Connect(CCanTcpClient::localhost(g_Options.GetCanServerService()))) != CCanApi::NoError) {
+        if ((retVal = rxClient.Connect(CCanIpcClient::localhost(g_Options.GetCanServerPort()))) != CCanApi::NoError) {
             //printf("rxClient.Connect() failed with %d\n", retVal);
             return (int32_t)retVal;
         }
@@ -245,9 +245,9 @@ int32_t CCanDevice::SendAndReceiveFrames(CCanDevice *sender, CCanDevice *receive
         txMessage.data[6] = (uint8_t)((uint64_t)i >> 48); if ((uint64_t)i > (uint64_t)0x0FFFFFFFFFFFF) txMessage.dlc = 7U;
         txMessage.data[7] = (uint8_t)((uint64_t)i >> 56); if ((uint64_t)i > (uint64_t)0x0FFFFFFFFFFFFFF) txMessage.dlc = 8U;
         // send the message
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
         if (g_CanServer.IsRunning()) {
-            // send via RocketCAN interface
+            // send via CAN/IPC interface
             retVal = txClient.Send(txMessage);
         } else
 #endif
@@ -285,9 +285,9 @@ int32_t CCanDevice::SendAndReceiveFrames(CCanDevice *sender, CCanDevice *receive
                     MESSAGE(n, rxMessage.id, rxMessage.dlc, rxMessage.data);
                     return (int32_t)retVal;
                 }
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
                 if (g_CanServer.IsRunning()) {
-                    // re-send via RocketCAN server
+                    // re-send via CAN/IPC server
                     retVal = g_CanServer.Send(rxMessage);
                     if (retVal != CCanApi::NoError) {
                         DISCONNECT_CLIENT(txClient);
@@ -365,9 +365,9 @@ int32_t CCanDevice::SendAndReceiveFrames(CCanDevice *sender, CCanDevice *receive
                         MESSAGE(n, rxMessage.id, rxMessage.dlc, rxMessage.data);
                         return (int32_t)retVal;
                     }
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
                     if (g_CanServer.IsRunning()) {
-                        // re-send via RocketCAN server
+                        // re-send via CAN/IPC server
                         retVal = g_CanServer.Send(rxMessage);
                         if (retVal != CCanApi::NoError) {
                             DISCONNECT_CLIENT(txClient);
@@ -430,7 +430,7 @@ int32_t CCanDevice::SendAndReceiveFrames(CCanDevice *sender, CCanDevice *receive
             return (int32_t)CANERR_TIMEOUT;
         }
     }
-#if (OPTION_CANTCP_ENABLED != 0)
+#if (OPTION_CANIPC_ENABLED != 0)
     if (g_CanServer.IsRunning()) {
         (void)txClient.Disconnect();
         (void)rxClient.Disconnect();
@@ -734,4 +734,4 @@ void CCanDevice::ShowChannelCapabilities(const char* prefix) {
     std::cout << std::endl;
 }
 
-// $Id: Device.cpp 1456 2025-02-19 21:22:16Z sedna $  Copyright (c) UV Software, Berlin //
+// $Id: Device.cpp 1424 2025-02-02 17:54:30Z sedna $  Copyright (c) UV Software, Berlin //
