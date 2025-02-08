@@ -53,6 +53,9 @@
 #define strncasecmp _strnicmp
 #define strcasecmp _stricmp
 #endif
+#ifndef CANIPC_TX_TIMEOUT
+#define CANIPC_TX_TIMEOUT  100UL
+#endif
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
 class CCanDevice : public CCanDriver {
@@ -78,6 +81,7 @@ static CCanIpcServer ipcServer = CCanIpcServer();
 static int TransmitMessage(const void* data, size_t size, void *param) {
     CANIPC_Message_t* ipc_msg = (CANIPC_Message_t*)data;
     CANAPI_Message_t can_msg = CANAPI_Message_t();
+    CANAPI_Return_t retVal = CANERR_FATAL;
     CCanDevice* canDevice = (CCanDevice*)param;
 
     /* sanity check */
@@ -89,7 +93,7 @@ static int TransmitMessage(const void* data, size_t size, void *param) {
     }
     /* convert the message from network to host byte order */
     CAN_IPC_MSG_NTOH(*ipc_msg);
-    /* transmit the message on the CAN bus */
+    /* map the message to CAN message (CAN API V3) */
     can_msg.id = ipc_msg->id;
     can_msg.xtd = (ipc_msg->flags & CANIPC_XTD_MASK) ? 1 : 0;
     can_msg.rtr = (ipc_msg->flags & CANIPC_RTR_MASK) ? 1 : 0;
@@ -101,8 +105,13 @@ static int TransmitMessage(const void* data, size_t size, void *param) {
     for (int i = 0; i < MAX(CANFD_MAX_LEN, CANIPC_MAX_LEN); i++) {
         can_msg.data[i] = ipc_msg->data[i];
     }
-    /* make it so! */
-    return (int)canDevice->WriteMessage(can_msg);  // TODO: repeat on error w/ timeout
+    /* transmit the message on the CAN bus (retry if busy) */
+    CTimer timer = CTimer(CANIPC_TX_TIMEOUT * CTimer::MSEC);
+    do {
+        retVal = canDevice->WriteMessage(can_msg);
+    } while ((retVal == CANERR_TX_BUSY) && !timer.Timeout());
+    /* return result */
+    return (int)retVal;
 }
 
 int main(int argc, const char* argv[]) {
