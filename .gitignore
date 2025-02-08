@@ -11,6 +11,8 @@ Utilities/can_moni/.objects
 Utilities/can_moni/can_moni
 Utilities/can_test/.objects
 Utilities/can_test/can_test
+Utilities/can_port/.objects
+Utilities/can_port/can_port
 Tests/CANAPI/.objects
 Tests/CANAPI/pcb_testing
 Deployment.pdf
@@ -23,3 +25,8 @@ Debug
 .svn
 null.d
 *.log
+*.dat
+*.trc
+*.csv
+*.pdf
+*.bak
