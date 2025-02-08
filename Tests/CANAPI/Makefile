@@ -66,6 +66,7 @@ GTEST_LIB = $(HOME_DIR)/GoogleTest/Linux/lib
 endif
 CANAPI_INC = $(PROJ_DIR)/Includes
 CANAPI_LIB = $(PROJ_DIR)/Binaries
+CANIPC_DIR = $(PROJ_DIR)/Sources/CANIPC
 
 OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Device.o $(OUTDIR)/Options.o \
 	$(OUTDIR)/TC00_SmokeTest.o $(OUTDIR)/TC01_ProbeChannel.o \
@@ -78,7 +79,10 @@ OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Device.o $(OUTDIR)/Options.o \
 	$(OUTDIR)/TC23_SetFilter11Bit.o $(OUTDIR)/TC25_SetFilter29Bit.o \
 	$(OUTDIR)/TC27_ResetFilter.o \
 	$(OUTDIR)/TCx1_CallSequences.o $(OUTDIR)/TCx2_BitrateConverter.o \
-	$(OUTDIR)/TCxX_Summary.o $(OUTDIR)/Timer.o $(OUTDIR)/Progress.o
+	$(OUTDIR)/TCxX_Summary.o $(OUTDIR)/Timer.o $(OUTDIR)/Progress.o \
+	$(OUTDIR)/anykey.o \
+	$(OUTDIR)/Server.o $(OUTDIR)/CanIpcServer.o $(OUTDIR)/CanIpcClient.o \
+	$(OUTDIR)/ipc_server.o $(OUTDIR)/ipc_client.o
 
 ifeq ($(REGRESSION),ON)  # disable all workarounds
 REGRESSION_TEST = 1
@@ -94,12 +98,15 @@ INSTALL = ~/bin
 
 DEFINES = -DOPTION_REGRESSION_TEST=$(REGRESSION_TEST) \
 	-DOPTION_CAN_2_0_ONLY=0 \
-	-DOPTION_CANAPI_RETVALS=0
+	-DOPTION_CANAPI_RETVALS=0 \
+	-DOPTION_CANIPC_ENABLED=1 \
+	-DOPTION_CANIPC_SOCKETCAN=0
 
 HEADERS = -I$(HOME_DIR) \
 	-I$(MAIN_DIR) \
 	-I$(GTEST_INC) \
-	-I$(CANAPI_INC)
+	-I$(CANAPI_INC) \
+	-I$(CANIPC_DIR)
 
 CFLAGS += -O2 -Wall -Wno-parentheses \
 	-fno-strict-aliasing \
@@ -136,12 +143,15 @@ INSTALL = ~/bin
 
 DEFINES = -DOPTION_REGRESSION_TEST=$(REGRESSION_TEST) \
 	-DOPTION_CAN_2_0_ONLY=0 \
-	-DOPTION_CANAPI_RETVALS=0
+	-DOPTION_CANAPI_RETVALS=0 \
+	-DOPTION_CANIPC_ENABLED=1 \
+	-DOPTION_CANIPC_SOCKETCAN=0
 
 HEADERS = -I$(HOME_DIR) \
 	-I$(MAIN_DIR) \
 	-I$(GTEST_INC) \
-	-I$(CANAPI_INC)
+	-I$(CANAPI_INC) \
+	-I$(CANIPC_DIR)
 
 CFLAGS += -O2 -Wall -Wno-parentheses \
 	-fno-strict-aliasing \
@@ -247,6 +257,9 @@ $(OUTDIR)/TCxX_Summary.o: $(TEST_DIR)/TCxX_Summary.cc
 $(OUTDIR)/main.o: $(MAIN_DIR)/main.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
+$(OUTDIR)/anykey.o: $(MAIN_DIR)/anykey.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+
 $(OUTDIR)/Device.o: $(MAIN_DIR)/Device.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
@@ -264,6 +277,21 @@ $(OUTDIR)/Bitrates.o: $(MAIN_DIR)/Bitrates.cpp
 
 $(OUTDIR)/Properties.o: $(MAIN_DIR)/Properties.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/Server.o: $(MAIN_DIR)/Server.cpp
+	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/CanIpcServer.o: $(CANIPC_DIR)/CanIpcServer.cpp
+	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/CanIpcClient.o: $(CANIPC_DIR)/CanIpcClient.cpp
+	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<	
+
+$(OUTDIR)/ipc_server.o: $(CANIPC_DIR)/ipc_server.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/ipc_client.o: $(CANIPC_DIR)/ipc_client.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 
 $(TARGET): $(OBJECTS)
