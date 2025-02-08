@@ -136,7 +136,7 @@ Type `can_test --help` to display all program options.
 - Apple clang version 14.0.3 (clang-1403.0.22.14.1)
 
 #### Debian 12.9 ("bookworm")
-- Debian 6.1.123-1 (2024-11-22) x86_64 GNU/Linux
+- Debian 6.1.124-1 (2025-01-12) x86_64 GNU/Linux
 - gcc (Debian 12.2.0-14) 12.2.0
 
 ### Required Library
