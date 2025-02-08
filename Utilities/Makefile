@@ -20,36 +20,26 @@
 #
 all:
 	@echo "\033[1mBuilding my beloved CAN Utilities...\033[0m"
-	$(MAKE) -C can_moni $@
-#	$(MAKE) -C can_port $@
-	$(MAKE) -C can_send $@
-#	$(MAKE) -C can_simu $@
 	$(MAKE) -C can_test $@
+	$(MAKE) -C can_moni $@
+	$(MAKE) -C can_port $@
 
 clean:
-	$(MAKE) -C can_moni $@
-#	$(MAKE) -C can_port $@
-	$(MAKE) -C can_send $@
-#	$(MAKE) -C can_simu $@
 	$(MAKE) -C can_test $@
+	$(MAKE) -C can_moni $@
+	$(MAKE) -C can_port $@
 
 pristine:
-	$(MAKE) -C can_moni $@
-#	$(MAKE) -C can_port $@
-	$(MAKE) -C can_send $@
-#	$(MAKE) -C can_simu $@
 	$(MAKE) -C can_test $@
+	$(MAKE) -C can_moni $@
+	$(MAKE) -C can_port $@
 
 install:
+#	$(MAKE) -C can_test $@
 #	$(MAKE) -C can_moni $@
 #	$(MAKE) -C can_port $@
-#	$(MAKE) -C can_send $@
-##	$(MAKE) -C can_simu $@
-#	$(MAKE) -C can_test $@
 
 check:
-	$(MAKE) -C can_moni $@
-#	$(MAKE) -C can_port $@
-	$(MAKE) -C can_send $@
-#	$(MAKE) -C can_simu $@
 	$(MAKE) -C can_test $@
+	$(MAKE) -C can_moni $@
+	$(MAKE) -C can_port $@

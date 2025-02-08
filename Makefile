@@ -56,6 +56,7 @@ all:
 	$(MAKE) -C Libraries/PeakCAN $@
 	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Utilities/can_moni $@
+	$(MAKE) -C Utilities/can_port $@
 	$(MAKE) -C Tests/CANAPI $@
 
 clean:
@@ -64,6 +65,7 @@ clean:
 	$(MAKE) -C Libraries/PeakCAN $@
 	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Utilities/can_moni $@
+	$(MAKE) -C Utilities/can_port $@
 	$(MAKE) -C Tests/CANAPI $@
 
 pristine:
@@ -72,7 +74,10 @@ pristine:
 	$(MAKE) -C Libraries/PeakCAN $@
 	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Utilities/can_moni $@
+	$(MAKE) -C Utilities/can_port $@
 	$(MAKE) -C Tests/CANAPI $@
+	$(MAKE) -C Examples/C++ $@
+	$(MAKE) -C Examples/IPC $@
 
 install:
 #	$(MAKE) -C Trial $@
@@ -80,6 +85,7 @@ install:
 	$(MAKE) -C Libraries/PeakCAN $@
 #	$(MAKE) -C Utilities/can_test $@
 #	$(MAKE) -C Utilities/can_moni $@
+#	$(MAKE) -C Utilities/can_port $@
 #	$(MAKE) -C Tests/CANAPI $@
 
 test:
