@@ -51,9 +51,9 @@
  *
  *  @brief       CAN/IPC Message Format
  *
- *  @author      $Author: sedna $
+ *  @author      $Author: gonggong $
  *
- *  @version     $Rev: 1429 $
+ *  @version     $Rev: 1435 $
  *
  *  @addtogroup  ipc
  *  @{
@@ -164,7 +164,7 @@ typedef can_ipc_message_t CANIPC_Message_t;  /**< alias for CAN Message (IPC For
 
 /*  - - -  conversion between host and network byte order  - - - - - - - -
  */
-#if defined(_WIN32) || defined(_WIN64)
+#if !defined(__APPLE__)
 #define htonll(x) (((uint64_t)htonl((x) & 0xFFFFFFFF) << 32) | htonl((x) >> 32))
 #define ntohll(x) (((uint64_t)ntohl((x) & 0xFFFFFFFF) << 32) | ntohl((x) >> 32))
 #endif

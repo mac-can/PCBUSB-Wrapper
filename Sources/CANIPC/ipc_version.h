@@ -51,17 +51,17 @@
  *
  *  @brief       Inter-Process Communication (IPC).
  *
- *  @author      $Author: sedna $
+ *  @author      $Author: gonggong $
  *
- *  @version     $Rev: 1433 $
+ *  @version     $Rev: 1435 $
  *
  *  @defgroup    ipc Inter-Process Communication (IPC)
  *  @{
  */
 #ifndef IPC_VERSION_H_INCLUDED
 #define IPC_VERSION_H_INCLUDED
-// SVN revision number (update with each commit: V)
-#define CAN_IPC_REV  "$Rev: 1433 $"
+// SVN revision number (update with each commit: VI)
+#define CAN_IPC_REV  "$Rev: 1435 $"
 #endif  /* IPC_VERSION_H_INCLUDED */
 /** @}
  */
