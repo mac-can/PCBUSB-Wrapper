@@ -47,65 +47,35 @@
 //  You should have received a copy of the GNU General Public License along
 //  with CAN API V3; if not, see <https://www.gnu.org/licenses/>.
 //
-#include <cstdio>
-#include <iostream>
-#include "anykey.h"
-#include "pch.h"
+#ifndef SERVER_H_INCLUDED
+#define SERVER_H_INCLUDED
 
-GTEST_API_ int main(int argc, char **argv) {
-    std::cout << "CAN API V3 C++ Testing (";
-#if !defined(_MSC_VER)
-    std::cout << __VERSION__ << ")" << std::endl;
-#else
-#if !defined(_WIN64)
-    std::cout << "MSC " << _MSC_VER << " for x86)" << std::endl;
-#else
-    std::cout << "MSC " << _MSC_VER << " for x64)" << std::endl;
+#if _MSC_VER > 1000
+#pragma once
 #endif
-#endif
-    std::cout << CCanDriver::GetVersion() << std::endl;
-    std::cout << "Copyright (c) 2004-2012 by UV Software, Friedrichshafen" << std::endl;
-    std::cout << "Copyright (c) 2013-2025 by UV Software, Berlin" << std::endl;
-    std::cout << "Build: " << __DATE__ << " " << __TIME__ << " (" << REVISION_NO << ")" << std::endl;
-    // --- initialize GoogleTest framework --
-    printf("Running main() from %s\n", __FILE__);
-    testing::InitGoogleTest(&argc, argv);
-    // --- scan own command-line options ---
-    char szError[256] = "";
-    if (!g_Options.ScanOptions(argc, argv, szError, 256)) {
-        std::cerr << "+++ error: " << szError << std::endl;
-        return 1;
-    }
-    else if (g_Options.ShowHelp()) {
-        return 0;
-    }
-#if (OPTION_CANIPC_ENABLED != 0)
-    // --- start CAN server ---
-    if (g_Options.IsCanServerEnabled()) {
-        g_CanServer.SetLoggingLevel(g_Options.GetCanServerLoggingLevel());
-        if (g_CanServer.StartServer(g_Options.GetCanServerPort()) < 0) {
-            std::cerr << "+++ error: failed to start CAN server" << std::endl;
-            return 1;
-        }
-    }
-#endif
-    // --- interactive start ---
-    if (g_Options.StartInteractive()) {
-        std::cout << "Press any key to start testing...";
-        std::cout << std::flush;
-        (void)getkey();
-        std::cout << std::endl;
-    }
-    // --- test execution starts here --
-    int res = RUN_ALL_TESTS();
-#if (OPTION_CANIPC_ENABLED != 0)
-    // --- stop CAN server ---
-    if (g_Options.IsCanServerEnabled()) {
-        g_CanServer.StopServer();
-    }
-#endif
-    // --- say goodbye ---
-    return res;
-}
 
-// $Id: main.cpp 1430 2025-02-08 11:43:01Z sedna $  Copyright (c) UV Software, Berlin //
+#include "Device.h"
+
+#include "CanIpcServer.h"
+#include "CanIpcClient.h"
+
+class CCanServer : public CCanIpcServer {
+public:
+    CCanServer();
+    ~CCanServer();
+
+    bool AttachDevice(CCanDevice *device);
+    bool DetachDevice();
+
+    CANAPI_Return_t StartServer(uint16_t port/*, EFrameFormat frameFormat = eRocketCAN, EIpcProtocol protocol = eTcp*/);
+    CANAPI_Return_t StopServer();
+
+    void ShowServerPort(const char* prefix);
+};
+#if (OPTION_CANIPC_ENABLED != 0)
+// The one and only server object
+extern CCanServer g_CanServer;
+#endif
+#endif // SERVER_H_INCLUDED
+
+// $Id: Server.h 1424 2025-02-02 17:54:30Z sedna $  Copyright (c) UV Software, Berlin.
