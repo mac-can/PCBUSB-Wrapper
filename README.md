@@ -155,7 +155,7 @@ Type `can_port --help` to display all program options.
 - `libPCBUSB.x.y.dylib` - Version 0.13 or later _(Latest is Greatest!)_
 
 #### Linux
-- `libpcanbasic.so` - Version 8.19 PCAN Driver and Library for Linux
+- `libpcanbasic.so` - PCAN Driver and Library for Linux, Version 8.19
 
 ## Known Bugs and Caveats
 
