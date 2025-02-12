@@ -23,3 +23,8 @@ Debug
 .svn
 null.d
 *.log
+*.dat
+*.trc
+*.csv
+*.pdf
+*.bak
