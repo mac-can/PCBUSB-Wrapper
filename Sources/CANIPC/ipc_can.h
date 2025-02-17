@@ -51,9 +51,9 @@
  *
  *  @brief       CAN/IPC Message Format
  *
- *  @author      $Author: gonggong $
+ *  @author      $Author: sedna $
  *
- *  @version     $Rev: 1435 $
+ *  @version     $Rev: 1451 $
  *
  *  @addtogroup  ipc
  *  @{
@@ -135,6 +135,33 @@
 #define CANIPC_STS_MASK  (uint8_t)0x80  /**< mask: status message */
 /** @} */
 
+/** @name  RocketCAN Status Register
+ *  @brief Status register (CAN API Vx compatible)
+ *  @{ */
+#define CANIPC_STAT_RESET    (uint8_t)0x80  /**< CAN status: controller stopped */
+#define CANIPC_STAT_BOFF     (uint8_t)0x40  /**< CAN status: busoff status */
+#define CANIPC_STAT_EWRN     (uint8_t)0x20  /**< CAN status: error warning level */
+#define CANIPC_STAT_BERR     (uint8_t)0x10  /**< CAN status: bus error (LEC) */
+#define CANIPC_STAT_TX_BUSY  (uint8_t)0x08  /**< CAN status: transmitter busy */
+#define CANIPC_STAT_RX_EMPTY (uint8_t)0x04  /**< CAN status: receiver empty */
+#define CANIPC_STAT_MSG_LST  (uint8_t)0x02  /**< CAN status: message lost */
+#define CANIPC_STAT_QUE_OVR  (uint8_t)0x01  /**< CAN status: event-queue overrun */
+/** @} */
+#define CANIPC_MAX_BUSLOAD  (uint16_t)10000 /**< max. bus load (100%) */
+
+/** @name  RocketCAN Control Character
+ *  @brief Control character (8-bit, ASCII code)
+ *
+ *  @note  ETX = end of text (default value, mandatory for client and server)
+ *  @note  EOT = end of transmission (server will cancel connection, e.g. after the CAN device is lost)
+ *  @note  ETB = end of transmission block (in a sequence of messages, optional for client and server)
+ *  @{ */
+#define CANIPC_ETX_CHAR  0x03  /**< end of text */
+#define CANIPC_EOT_CHAR  0x04  /**< end of transmission */
+#define CANIPC_ETB_CHAR  0x17  /**< end of transmission block */  // TODO: Not used yet!
+#define CANIPC_CTRLCHAR  CANIPC_ETX_CHAR  /**< default control character */
+/** @} */
+
 /*  -----------  types  --------------------------------------------------
  */
 #if defined(_MSC_VER)
@@ -147,9 +174,13 @@ typedef struct can_ipc_message_t_ {
     uint8_t  flags;                     /**< message flags (8-bit, CAN API Vx) */
     uint8_t  length;                    /**< data length (in [byte], not CAN DLC!) */
     uint8_t  status;                    /**< status register (8-bit, CAN API Vx) */
-    uint8_t  busload;                   /**< bus load (255 = 100%, CAN API Vx) */
+    uint8_t  extra;                     /**< unspecific bit-field (8-bit) */  // TODO: Not used yet!
     uint8_t  data[CANIPC_MAX_LEN];      /**< data (to hold CAN FD payload) */
     struct timespec timestamp;          /**< time-stamp { sec, nsec } */
+    uint8_t  reserved[4];               /**< reserved (4-byte) */
+    uint16_t busload;                   /**< bus load (0 .. 10'000 = 0 .. 100%) */
+    uint8_t  ctrlchar;                  /**< control character (ETX or EOT) */
+    uint8_t  checksum;                  /**< J1850 checksum (8-bit) */
 }
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((packed))

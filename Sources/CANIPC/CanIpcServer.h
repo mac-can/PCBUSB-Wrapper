@@ -84,7 +84,6 @@ public:
     enum EIpcProtocol {
         eTcp = IPC_SOCK_TCP,  ///< TCP/IP protocol (SOCK_STREAM)
         eUdp = IPC_SOCK_UDP,  ///< UDP/IP protocol (SOCK_DGRAM)
-        eSctp = IPC_SOCK_SCTP  ///< SCTP/IP protocol (SOCK_SEQPACKET)
     };
     enum EFrameFormat {
         eRocketCAN = CANIPC_ROCKETCAN,  ///< RocketCAN frame format (CAN API V3)
@@ -93,7 +92,7 @@ public:
         eUnknown = -1  ///< unknown frame format
     };
 private:
-    uint16_t m_nPort;  ///< Port number
+    char m_szService[32];  ///< Service name or port number
     EFrameFormat m_eFrameFormat;  ///< CAN frame format
     EIpcProtocol m_ePprotocol;  ///< IPC protocol
     size_t m_nMtuSize;  ///< Maximum Transmission Unit (MTU) size
@@ -149,12 +148,12 @@ public:
         m_nLogging = level;
         return true;
     }
-    /// @brief  Get the port number.
+    /// @brief  Get the service name or port number.
     ///
-    /// @return Port number
+    /// @return Service name or port number
     ///
-    uint16_t GetPort() { return m_nPort; }
-    
+    const char *GetService() { return (const char *)m_szService; }
+
     /// @brief  Get the CAN frame format.
     ///
     /// @return CAN frame format (RocketCAN, SocketCAN, PCAN-Basic)
@@ -181,32 +180,40 @@ public:
 
     /// @brief  Start the IPC server on the specified port and accept incoming connections.
     ///
-    /// @param  port        Port number
+    /// @param  service      Service name or port number
     ///
     /// @return 0 on success, or a negative value on error
     ///
-    CANAPI_Return_t Start(uint16_t port);
+    CANAPI_Return_t Start(const char *service);
+
+    /// @brief  Send data over the network.
+    ///
+    /// @param  data         Data to be sent (in network byte order)
+    /// @param  size         Size of the data (must match the MTU size)
+    ///
+    /// @return 0 on success, or a negative value on error
+    ///
+    CANAPI_Return_t Send(const void *data, size_t size);
 
     /// @brief  Send a CAN message over the network (RocketCAN frame format).
     ///
     /// @note   To use the extra fields in a RocketCAN message, use the raw Send() method.
     ///
     /// @param  message      CAN message (CAN API V3 format)
-    /// @param  inhibitTime  Time to wait for the transmission of the message
+    /// @param  status       CAN status register (as 8-bit value)
+    /// @param  load         CAN bus load (0 .. 10'000 ==> 0 .. 255)
     ///
     /// @return 0 on success, or a negative value on error
     ///
-    CANAPI_Return_t Send(CANAPI_Message_t message, uint16_t inhibitTime = 0U);  // TODO: implement inhibit time!
+    CANAPI_Return_t Send(CANAPI_Message_t message, uint8_t status = 0x00U, uint16_t load = 0U);
 
-    /// @brief  Send data over the network.
+    /// @brief  Send an abort message over the network.
     ///
-    /// @param  data         Data to be sent (in network byte order)
-    /// @param  size         Size of the data (must match the MTU size)
-    /// @param  inhibitTime  Time to wait for the transmission of the message
+    /// @param  status  CAN status register (as 8-bit value)
     ///
     /// @return 0 on success, or a negative value on error
     ///
-    CANAPI_Return_t Send(const void *data, size_t size, uint16_t inhibitTime = 0U);  // TODO: implement inhibit time!
+    CANAPI_Return_t SendAbort(uint8_t status = 0x00U);
 
     /// @brief  Stop the IPC server.
     ///
@@ -245,6 +252,22 @@ public:
         m_ePprotocol = protocol;
         return true;
     }
+public:
+    /// @brief  Convert CAN API V3 message to RocketCAN message.
+    ///
+    /// @param  can  CAN API V3 message (host byte order)
+    /// @param  net  RocketCAN message (network byte order)
+    ///
+    static void CanToNet(const CANAPI_Message_t &can, CANIPC_Message_t &net);
+
+    /// @brief  Convert RocketCAN message to CAN API V3 message.
+    ///
+    /// @param  net  RocketCAN message (network byte order)
+    /// @param  can  CAN API V3 message (host byte order)
+    ///
+    /// @return true if the RocketCAN message is valid, or false otherwise
+    ///
+    static bool NetToCan(const CANIPC_Message_t &net, CANAPI_Message_t &can);
 };
 /// \}
 

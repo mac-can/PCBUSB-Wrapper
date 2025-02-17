@@ -49,6 +49,7 @@
 //
 #include "CanIpcServer.h"
 #include "ipc_server.h"
+#include "RocketCAN.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,11 +61,14 @@
 #endif
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
+#define SERVER_NULL()   do { m_pServer = NULL; } while (0)
+#define SERVICE_NULL()  do { m_szService[0] = '0'; m_szService[1] = '\0'; } while (0)
+
 // TODO: Check retun values with original RocketCAN code
 
 CCanIpcServer::CCanIpcServer(EIpcProtocol protocol) {
-    m_nPort = 0;
-    m_pServer = NULL;
+    SERVER_NULL();
+    SERVICE_NULL();
     m_evCallback = NULL;
     m_pParameter = NULL;
     m_ePprotocol = protocol;
@@ -93,55 +97,71 @@ bool CCanIpcServer::SetFrameFormat(EFrameFormat format) {
     return false;
 }
 
-CANAPI_Return_t CCanIpcServer::Start(uint16_t port) {
+CANAPI_Return_t CCanIpcServer::Start(const char *service) {
     if (m_pServer != NULL) return CANERR_YETINIT;
-    m_pServer = ipc_server_start(port, (int)m_ePprotocol, m_nMtuSize, m_evCallback, m_pParameter, m_nLogging);
-    m_nPort = (m_pServer != NULL) ? port : 0;
-    return (m_pServer != NULL) ? CANERR_NOERROR : (CANERR_SYSTEM - errno);
+    if ((m_pServer = ipc_server_start(service, (int)m_ePprotocol, m_nMtuSize, m_evCallback, m_pParameter, m_nLogging)) != NULL) {
+        strncpy(m_szService, service, sizeof(m_szService) - 1);
+        m_szService[sizeof(m_szService) - 1] = '\0';
+        return CANERR_NOERROR;
+    }
+    SERVICE_NULL();
+    return (CANERR_SYSTEM - errno);
 }
 
 CANAPI_Return_t CCanIpcServer::Stop(void) {
     CANAPI_Return_t retVal = CANERR_FATAL;
     if (m_pServer == NULL) return CANERR_NOTINIT;
     retVal = ipc_server_stop(m_pServer);
-    m_pServer = NULL;
-    m_nPort = 0;
+    SERVICE_NULL();
+    SERVER_NULL();
     return (retVal == 0) ? CANERR_NOERROR : (CANERR_SYSTEM - errno);
 }
 
-CANAPI_Return_t CCanIpcServer::Send(CANAPI_Message_t message, uint16_t inhibitTime) {
-    CANAPI_Return_t retVal = CANERR_FATAL;
-    CANIPC_Message_t data = {};
-    // map the CAN API V3 message to RocketCAN message
-    data.id = message.id;
-    data.flags = CANIPC_XTD_FLAG(message.xtd) |
-                 CANIPC_RTR_FLAG(message.rtr) |
-                 CANIPC_FDF_FLAG(message.fdf) |
-                 CANIPC_BRS_FLAG(message.brs) |
-                 CANIPC_ESI_FLAG(message.esi) |
-                 CANIPC_STS_FLAG(message.sts);
-    data.length = CCanApi::Dlc2Len(message.dlc);
-    memcpy(data.data, message.data, MAX(message.dlc, CANFD_MAX_LEN));
-    data.timestamp.tv_sec = message.timestamp.tv_sec;
-    data.timestamp.tv_nsec = message.timestamp.tv_nsec;
-    data.busload = 0;
-    data.status = 0;
-    // convert RocketCAN message to network byte order
-    CAN_IPC_MSG_HTON(data);
-    // send RocketCAN message over the network
-    if (m_pServer == NULL) return CANERR_NOTINIT;
-    retVal = ipc_server_send(m_pServer, (void*)&data, sizeof(data));
-    // TODO: implement inhibit time
-    (void)inhibitTime;
-    return (retVal == 0) ? CANERR_NOERROR : (CANERR_SYSTEM - errno);
-}
-
-CANAPI_Return_t CCanIpcServer::Send(const void *data, size_t size, uint16_t inhibitTime) {
+CANAPI_Return_t CCanIpcServer::Send(const void *data, size_t size) {
     CANAPI_Return_t retVal = CANERR_FATAL;
     // send data over the network
     if (m_pServer == NULL) return CANERR_NOTINIT;
     retVal = ipc_server_send(m_pServer, data, size);
-    // TODO: implement inhibit time
-    (void)inhibitTime;
     return (retVal == 0) ? CANERR_NOERROR : (CANERR_SYSTEM - errno);
+}
+
+CANAPI_Return_t CCanIpcServer::Send(CANAPI_Message_t message, uint8_t status, uint16_t load) {
+    CANAPI_Return_t retVal = CANERR_FATAL;
+    CANIPC_Message_t packet = {};
+    // map CAN API V3 message to RocketCAN message
+    rock_msg_from_can(&packet, &message);
+    rock_msg_add_status(&packet, status);
+    rock_msg_add_busload(&packet, load);
+    // send RocketCAN message over the network
+    if (m_pServer == NULL) return CANERR_NOTINIT;
+    retVal = ipc_server_send(m_pServer, (void*)&packet, sizeof(packet));
+    return (retVal == 0) ? CANERR_NOERROR : (CANERR_SYSTEM - errno);
+}
+
+CANAPI_Return_t CCanIpcServer::SendAbort(uint8_t status) {
+    CANAPI_Return_t retVal = CANERR_FATAL;
+    CANIPC_Message_t packet = {};
+    // make RocketCANabort message
+    rock_msg_abort(&packet);
+    rock_msg_add_status(&packet, status);
+    // send RocketCANabort message over the network
+    if (m_pServer == NULL) return CANERR_NOTINIT;
+    retVal = ipc_server_send(m_pServer, (void*)&packet, sizeof(packet));
+    return (retVal == 0) ? CANERR_NOERROR : (CANERR_SYSTEM - errno);
+}
+
+void CCanIpcServer::CanToNet(const CANAPI_Message_t &can, CANIPC_Message_t &net) {
+    // map CAN API V3 message to RocketCAN message
+    rock_msg_from_can(&net, &can);
+}
+
+bool CCanIpcServer::NetToCan(const CANIPC_Message_t &net, CANAPI_Message_t &can) {
+    // check RocketCAN message for validity
+    if (!rock_msg_is_valid(&net)) {
+        return false;
+    }
+    // map RocketCAN message to CAN API V3 message
+    can_ipc_message_t tmp = net;
+    rock_msg_to_can(&can, &tmp);
+    return true;
 }

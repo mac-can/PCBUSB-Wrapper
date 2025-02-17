@@ -53,9 +53,9 @@
  *
  *  @author      $Author: sedna $
  *
- *  @version     $Rev: 1429 $
+ *  @version     $Rev: 1447 $
  *
- *  @defgroup    ipc Inter-Process Communication (IPC)
+ *  @addtogroup  ipc
  *  @{
  */
 #ifndef IPC_SERVER_H_INCLUDED
@@ -100,7 +100,7 @@ extern "C" {
 
 /** @brief   Start the server on the specified port.
  *
- *  @param   port       Port number.
+ *  @param   service    Service name or port number.
  *  @param   sock_type  Socket type (SOCK_STREAM, SOCK_DGRAM, SOCK_SEQPACKET).
  *  @param   mtu_size   Maximum transmission unit (MTU) size.
  *  @param   recv_cbk   Receive callback function.
@@ -109,7 +109,7 @@ extern "C" {
  *
  *  @return  IPC server descriptor on success, or NULL on error.
  */
-extern ipc_server_t ipc_server_start(unsigned short port, int sock_tyoe, size_t mtu_size,
+extern ipc_server_t ipc_server_start(const char *service, int sock_tyoe, size_t mtu_size,
                                      ipc_event_cbk_t recv_cbk, void *recv_ref, int logging);
 
 /** @brief   Stop the server.

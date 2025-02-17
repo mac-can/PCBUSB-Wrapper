@@ -47,21 +47,21 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this module.  If not, see <https://www.gnu.org/licenses/>.
  */
-/** @file        ipc_common.h
+/** @file        ipc_version.h
  *
  *  @brief       Inter-Process Communication (IPC).
  *
- *  @author      $Author: gonggong $
+ *  @author      $Author: sedna $
  *
- *  @version     $Rev: 1435 $
+ *  @version     $Rev: 1451 $
  *
- *  @defgroup    ipc Inter-Process Communication (IPC)
+ *  @addtogroup  ipc
  *  @{
  */
 #ifndef IPC_VERSION_H_INCLUDED
 #define IPC_VERSION_H_INCLUDED
-// SVN revision number (update with each commit: VI)
-#define CAN_IPC_REV  "$Rev: 1435 $"
+// SVN revision number (update with each commit: X)
+#define IPC_SVN_REV  "$Rev: 1451 $"
 #endif  /* IPC_VERSION_H_INCLUDED */
 /** @}
  */

@@ -49,11 +49,13 @@
 //
 #include "CanIpcClient.h"
 #include "ipc_client.h"
+#include "RocketCAN.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <time.h>
 
 #ifndef CANERR_SYSTEM
 #define CANERR_SYSTEM  (-10000)
@@ -105,52 +107,35 @@ CANAPI_Return_t CCanIpcClient::Disconnect(void) {
 }
 
 CANAPI_Return_t CCanIpcClient::Receive(CANAPI_Message_t &message, uint16_t timeout) {
-    CANIPC_Message_t data = {};
+    CANIPC_Message_t packet = {};
     // receive RocketCAN message from network
-    ssize_t nbyte = ipc_client_recv(m_nSocket, (void*)&data, sizeof(data), timeout);
+    ssize_t nbyte = ipc_client_recv(m_nSocket, (void*)&packet, sizeof(packet), timeout);
     if (nbyte < 0) {
         return (errno == ENODATA) ? CANERR_RX_EMPTY : (CANERR_SYSTEM - errno);
-    } else if (nbyte != (ssize_t)sizeof(data)) {
+    } else if (nbyte != (ssize_t)sizeof(packet)) {
         return (CANERR_SYSTEM - EPROTO);
     }
-    // convert RocketCAN message to host byte order
-    CAN_IPC_MSG_NTOH(data);
+    // check RocketCAN message for validity
+    if (!rock_msg_is_valid(&packet) && !rock_msg_is_abort(&packet)) {
+        return (CANERR_SYSTEM - EPROTO);
+    }
     // map RocketCAN message to CAN API V3 message
-    message.id = data.id;
-    message.xtd = (data.flags &CANIPC_XTD_MASK) ? 1 : 0;
-    message.rtr = (data.flags &CANIPC_RTR_MASK) ? 1 : 0;
-    message.fdf = (data.flags &CANIPC_FDF_MASK) ? 1 : 0;
-    message.brs = (data.flags &CANIPC_BRS_MASK) ? 1 : 0;
-    message.esi = (data.flags &CANIPC_ESI_MASK) ? 1 : 0;
-    message.sts = (data.flags &CANIPC_STS_MASK) ? 1 : 0;
-    message.dlc = CCanApi::Len2Dlc(data.length);
-    memcpy(message.data, data.data, MAX(data.length, CANIPC_MAX_LEN));
-    message.timestamp.tv_sec = data.timestamp.tv_sec;
-    message.timestamp.tv_nsec = data.timestamp.tv_nsec;
-    // return all alright
+    rock_msg_to_can(&message, &packet);
+    // all all alright
     return CANERR_NOERROR;
 }
 
 CANAPI_Return_t CCanIpcClient::Send(CANAPI_Message_t message, uint16_t inhibitTime) {
-    CANIPC_Message_t data = {};
+    CANIPC_Message_t packet = {};
+    // no timestamp on CAN TX messages, take current time instead
+    (void)clock_gettime(CLOCK_REALTIME, &message.timestamp);
     // map CAN API V3 message to RocketCAN message
-    data.id = message.id;
-    data.flags |= CANIPC_XTD_FLAG(message.xtd);
-    data.flags |= CANIPC_RTR_FLAG(message.rtr);
-    data.flags |= CANIPC_FDF_FLAG(message.fdf);
-    data.flags |= CANIPC_BRS_FLAG(message.brs);
-    data.flags |= CANIPC_ESI_FLAG(message.esi);
-    data.length = CCanApi::Dlc2Len(message.dlc);
-    memcpy(data.data, message.data, MAX(data.length, CANIPC_MAX_LEN));
-    data.timestamp.tv_sec = message.timestamp.tv_sec;
-    data.timestamp.tv_nsec = message.timestamp.tv_nsec;
-    // convert RocketCAN message to network byte order
-    CAN_IPC_MSG_HTON(data);
-    // send RocketCAN message
-    ssize_t nbyte = ipc_client_send(m_nSocket, (const void*)&data, sizeof(data));
+    rock_msg_from_can(&packet, &message);
+    // send RocketCAN message over the network
+    ssize_t nbyte = ipc_client_send(m_nSocket, (const void*)&packet, sizeof(packet));
     if (nbyte < 0) {
         return (CANERR_SYSTEM - errno);
-    } else if (nbyte != (ssize_t)sizeof(data)) {
+    } else if (nbyte != (ssize_t)sizeof(packet)) {
         return (CANERR_SYSTEM - EPROTO);
     }
     // TODO: implement inhibit time

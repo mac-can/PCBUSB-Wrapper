@@ -53,7 +53,7 @@
  *
  *  @author      $Author: sedna $
  *
- *  @version     $Rev: 1433 $
+ *  @version     $Rev: 1447 $
  *
  *  @addtogroup  ipc
  *  @{
@@ -69,8 +69,12 @@
 #include <errno.h>
 #if !defined(_WIN32) && !defined(_WIN64)
 #include <unistd.h>
-#include <arpa/inet.h>
+#include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 #else
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -104,12 +108,9 @@
  */
 int ipc_client_connect(const char *server, int sock_type) {
     int fildes = (-1);
-    char *host = NULL;
-    long port = 0;
-    char *colon = NULL;
-    char *endptr = NULL;
-    struct sockaddr_in address;
-    int error, result = 0;
+    char *host = NULL, *port = NULL;
+    struct addrinfo hints, *ai, *p;
+    int error;
     errno = 0;
 #if (1)
     // only stream sockets are supported yet!
@@ -118,13 +119,15 @@ int ipc_client_connect(const char *server, int sock_type) {
         return (-1);
     }
 #else
-    // TODO: implement UDP, SCTP and raw socket
-    // TODO: map the following attributes to corresponding values:
-    //       - sock_type: SOCK_DGRAM, SOCK_SEQPACKET, SOCK_RAW
-    //       - sock_domain: AF_INET, AF_INET6, AF_UNIX, AF_PACKET
-    //       - sock_protocol: IPPROTO_IP, IPPROTO_TCP, IPPROTO_UDP, IPPROTO_SCTP
-    // TODO: what's about Nagle's algorithm, and other stuff like this?
+    // TODO: implement UDP (socket type SOCK_DGRAM)
 #endif
+    /* Obtain address(es) matching host/port. */
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;      // alow IPv4 or IPv6
+    hints.ai_socktype = SOCK_STREAM;  // stream socket (TCP)
+    hints.ai_flags = 0;               // no flags (client)
+    hints.ai_protocol = IPPROTO_IP;   // any protocol
+
     /* check the server address */
     if ((server == NULL) || (strlen(server) == 0)) {
         errno = EINVAL;
@@ -136,61 +139,61 @@ int ipc_client_connect(const char *server, int sock_type) {
         return (-1);
     }
     /* get the network address from the server address */
-    if ((colon = strchr(host, ':')) == NULL) {
+    if ((port = strchr(host, ':')) == NULL) {
         error = errno;
         free(host);
         errno = error;
         return (-1);
     }
     /* host is now the network address */
-    *colon = '\0';
-    colon++;
-    /* check for "localhost" and replace it with ipv4 address "127.0.0.1" */
-    if ((strcmp(host, LOCALHOST_STR) == 0) && (strlen(host) == strlen(LOCALHOST_ADDR))) {
-        strcpy(host, LOCALHOST_ADDR);
-        errno = 0;
-    }
-    /* get the port number from the server address */
-    port = strtol(colon, &endptr, 10);
-    if ((*endptr != '\0') || (port <= 0) || (port > (long)UINT16_MAX)) {
-        error = EADDRNOTAVAIL;
-        free(host);
-        errno = error;
-        return (-1);
-    }
-    /* create the socket file descriptor */
-    if ((fildes = socket(AF_INET, SOCK_STREAM, IPPROTO_IP)) < 0) {  // TODO: sock_type and protocol
-        error = errno;
-        free(host);
-        errno = error;
-        return (-1);
-    }
-    address.sin_family = AF_INET;
-    address.sin_port = htons((uint16_t)port);
+    *port++ = '\0';
 
-    /* convert IPv4 and IPv6 addresses from text to binary form */
-    if ((result = inet_pton(AF_INET, host, &address.sin_addr)) <= 0) {
-        if (result == 0) {
-            error = EADDRNOTAVAIL;
-        } else {
+    /* obtain address(es) matching host/port */
+    if (getaddrinfo(host, port, &hints, &ai) != 0) {
+        error = errno ? errno : EADDRNOTAVAIL;
+        free(host);
+        errno = error;
+        return (-1);
+    }
+    /* loop through all the results and connect to the first we can */
+    for (p = ai; p != NULL; p = p->ai_next) {
+        if ((fildes = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) < 0) {
             error = errno;
+            fildes = (-1);
+            continue;
         }
-        close(fildes);
-        free(host);
-        errno = error;
-        return (-1);
+        if (connect(fildes, p->ai_addr, p->ai_addrlen) < 0) {
+            error = errno;
+            close(fildes);
+            fildes = (-1);
+            continue;
+        }
+        /* Yeah, successfull connect to the server! */
+        break;
     }
-    /* free the host string (not needed anymore) */
+    /* get rid of garbage */
+    freeaddrinfo(ai);
     free(host);
-    errno = 0;
+    host = NULL;
+    port = NULL;
 
-    /* connect to the server */
-    if (connect(fildes, (struct sockaddr *)&address, sizeof(address)) < 0) {
-        error = errno;
-        close(fildes);
-        errno = error;
+    /* check if connected to the server */
+    if (p == NULL) {
         return (-1);
     }
+    /* disable Nagle's algorithm for TCP connections */
+#if (OPTION_CANIPC_TCPDELAY == 0) 
+    if (sock_type == SOCK_STREAM) {
+        int opt = 1;
+        if (setsockopt(fildes, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt)) < 0) {
+            error = errno;
+            close(fildes);
+            fildes = (-1);
+            errno = error;
+            return (-1);
+        }
+    }
+#endif
     /* return the socket file descriptor */
     return fildes;
 }
@@ -275,7 +278,8 @@ ssize_t ipc_client_recv(int fildes, void *buffer, size_t length, unsigned short 
 /*  -----------  local functions  ----------------------------------------
  */
 
-
+/** @}
+ */
 /*  ----------------------------------------------------------------------
  *  Uwe Vogt,  UV Software,  Chausseestrasse 33 A,  10115 Berlin,  Germany
  *  Tel.: +49-30-46799872,  Fax: +49-30-46799873,  Mobile: +49-170-3801903

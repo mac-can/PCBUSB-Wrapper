@@ -82,7 +82,6 @@ public:
     enum EIpcProtocol {
         eTcp = IPC_SOCK_TCP,  ///< TCP/IP protocol (SOCK_STREAM)
         eUdp = IPC_SOCK_UDP,  ///< UDP/IP protocol (SOCK_DGRAM)
-        eSctp = IPC_SOCK_SCTP  ///< SCTP/IP protocol (SOCK_SEQPACKET)
     };
     enum EFrameFormat {
         eRocketCAN = CANIPC_ROCKETCAN,  ///< RocketCAN frame format (CAN API V3)
@@ -196,9 +195,12 @@ public:
     ///
     /// \return Local host address with port number
     ///
-    static const char *localhost(uint16_t port) {
-        static char server[32];
-        snprintf(server, sizeof(server), IPC_ADDR_LOCALHOST ":%u", port);
+    static const char *localhost(const char *port) {
+        static char server[100];
+        if (port)
+            snprintf(server, sizeof(server), IPC_IPv4_LOCALHOST ":%s", port);
+        else
+            snprintf(server, sizeof(server), IPC_IPv4_LOCALHOST ":0");
         return (const char *)server;
     }
 public:

@@ -51,9 +51,12 @@
  *
  *  @brief       Inter-Process Communication (IPC) common definitions.
  *
+ *  @remark      SCTP (Stream Control Transmission Protocol) is not natively
+ *               supported on macOS and Windows.
+ *
  *  @author      $Author: sedna $
  *
- *  @version     $Rev: 1429 $
+ *  @version     $Rev: 1447 $
  *
  *  @defgroup    ipc Inter-Process Communication (IPC)
  *  @{
@@ -72,6 +75,26 @@ typedef SSIZE_T ssize_t;
 /*  -----------  options  ------------------------------------------------
  */
 
+/** @name  Compiler Switches
+ *  @brief Options for conditional compilation.
+ *  @{ */
+/** @note  Set define OPTION_CANIPC_TCPDELAY to a non-zero value to compile
+ *         without socket option TCP_NODELAY. (e.g. in the build environment).
+ *         The socket option TCP_NODELAY disables the Nagle algorithm, which
+ *         is used to reduce the number of small packets sent over the network.
+ *         *) Option TCP_NODELAY is set by default for use with RocketCAN.
+ */
+/** @note  Set define OPTION_CANIPC_BACKLOG to a suitalbe value to set the
+ *         maximun number of pending connections in the listening queue (e.g.
+ *         in the build environment). The default value is 5.
+ *         *) This value is a common default in many network applications and
+ *         operating systems, as it provides a reasonable balance between allowing
+ *         multiple simultaneous connection attempts and limiting resource usage.
+ */
+#ifndef OPTION_DISABLED
+#define OPTION_DISABLED  0  /**< if a define is not defined, it is automatically set to 0 */
+#endif
+/** @} */
 
 /*  -----------  defines  ------------------------------------------------
  */
@@ -80,11 +103,14 @@ typedef SSIZE_T ssize_t;
  *  @{ */
 #define IPC_SOCK_TCP   1  /**< stream socket (for TCP) */
 #define IPC_SOCK_UDP   2  /**< datagram socket (for UDP) */
-#define IPC_SOCK_SCTP  5  /**< sequenced packet stream (for SCTP) */
 /** @} */
-#define IPC_MAX_MTU_SIZE  1500  /**< maximum transmission unit (MTU) size */
+#define IPC_ETH_MTU_SIZE  1500  /**< maximum transmission unit (MTU) size */
+#define IPC_TCP_MSS_SIZE  1460  /**< maximum segment size (MSS) for TCP */
+#define IPC_UDP_MSS_SIZE  1472  /**< maximum segment size (MSS) for UDP */
+#define IPC_MAX_BUF_SIZE  IPC_ETH_MTU_SIZE  /**< maximum data buffer size */
 #define IPC_WAIT_FOREVER  65535U  /**< infinite time-out (blocking operation) */
-#define IPC_ADDR_LOCALHOST  "127.0.0.1"  /**< local host address (IPv4) */
+#define IPC_IPv4_LOCALHOST  "127.0.0.1"  /**< local host address (IPv4) */
+#define IPC_IPv6_LOCALHOST  "::1"  /**< local host address (IPv6) */
 
 
 /*  -----------  types  --------------------------------------------------
