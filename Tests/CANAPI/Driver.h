@@ -99,7 +99,7 @@ typedef CPeakCAN  CCanDriver;
 #define BITRATE_10K(x)   PEAKCAN_BR_10K(x)
 #define BITRATE_5K(x)    PEAKCAN_BR_5K(x)
 
-//  (§6) define macros for workarounds (e.g. TC01_3_ISSUE)
+//  (§6) define macros for workarounds in CAN 2.0 operation mode (e.g. TC01_3_ISSUE)
 #if (OPTION_REGRESSION_TEST == 0)
 #define TC04_3_ISSUE_PCBUSB_BUFFERED_MSGS  WORKAROUND_ENABLED  // 2024-04-29: buffered messages from device (PCAN-USB [Pro] FD)
 #define TC04_8_ISSUE_PCBUSB_QUEUE_SIZE  WORKAROUND_ENABLED  // 2023-08-20: last element of receive queue is not accessible (PCAN-USB)
@@ -129,7 +129,7 @@ typedef CPeakCAN  CCanDriver;
 
 
 //  (§9) define macro CAN_FD_SUPPORTED if CAN FD operation mode is supported
-#define CAN_FD_SUPPORTED FEATURE_SUPPORTED
+#define CAN_FD_SUPPORTED  FEATURE_SUPPORTED
 
 #if (CAN_FD_SUPPORTED == FEATURE_SUPPORTED)
 //  (§10) define macros for CAN FD bit-rate settings

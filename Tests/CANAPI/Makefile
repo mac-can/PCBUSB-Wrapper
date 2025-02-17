@@ -82,7 +82,8 @@ OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Device.o $(OUTDIR)/Options.o \
 	$(OUTDIR)/TCxX_Summary.o $(OUTDIR)/Timer.o $(OUTDIR)/Progress.o \
 	$(OUTDIR)/anykey.o \
 	$(OUTDIR)/Server.o $(OUTDIR)/CanIpcServer.o $(OUTDIR)/CanIpcClient.o \
-	$(OUTDIR)/ipc_server.o $(OUTDIR)/ipc_client.o
+	$(OUTDIR)/RocketCAN.o $(OUTDIR)/ipc_server.o $(OUTDIR)/ipc_client.o \
+	$(OUTDIR)/crc_j1850.o
 
 ifeq ($(REGRESSION),ON)  # disable all workarounds
 REGRESSION_TEST = 1
@@ -281,6 +282,9 @@ $(OUTDIR)/Properties.o: $(MAIN_DIR)/Properties.cpp
 $(OUTDIR)/Server.o: $(MAIN_DIR)/Server.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
+$(OUTDIR)/RocketCAN.o: $(CANIPC_DIR)/RocketCAN.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+
 $(OUTDIR)/CanIpcServer.o: $(CANIPC_DIR)/CanIpcServer.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
@@ -291,6 +295,9 @@ $(OUTDIR)/ipc_server.o: $(CANIPC_DIR)/ipc_server.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 $(OUTDIR)/ipc_client.o: $(CANIPC_DIR)/ipc_client.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/crc_j1850.o: $(CANIPC_DIR)/crc_j1850.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 

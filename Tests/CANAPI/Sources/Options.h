@@ -93,7 +93,7 @@ private:
     // server options
     struct SServer {
         bool m_fEnable;                 // enable IPC server
-        uint16_t m_nPort;               // port number
+        char *m_szService;              // service name or port number
         CCanServer::EFrameFormat m_eFormat; // frame format
         CCanServer::EIpcProtocol m_eProtocol;  // transport protocol
         int m_nLogging;                 // logging level
@@ -158,8 +158,8 @@ public:
     bool IsCanServerEnabled() {
         return m_Server.m_fEnable;
     }
-    uint16_t GetCanServerPort() {
-        return m_Server.m_nPort;
+    const char *GetCanServerService() {
+        return (const char*)m_Server.m_szService;
     }
 #if (0)
     CCanServer::EFrameFormat GetCanServerFormat() {
@@ -185,4 +185,4 @@ extern COptions g_Options;          // global access to testing options
 
 #endif // OPTIONS_H_INCLUDED
 
-// $Id: Options.h 1430 2025-02-08 11:43:01Z sedna $  Copyright (c) UV Software, Berlin.
+// $Id: Options.h 1448 2025-02-17 18:50:51Z sedna $  Copyright (c) UV Software, Berlin.

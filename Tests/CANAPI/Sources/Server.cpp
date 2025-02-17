@@ -49,6 +49,7 @@
 //
 #include "pch.h"
 #include "Server.h"
+#include "crc_j1850.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -82,6 +83,12 @@ static int EventHandler(const void *data, size_t size, void *param) {
     }
     if (size != sizeof(CANIPC_Message_t)) {
         return CCanApi::IllegalParameter;
+    }
+    if (crc_j1850_calc(data, sizeof(CANIPC_Message_t) - 1U, NULL) != ipc_msg->checksum) {
+        return (int)(-80);  // TODO: define error code
+    }
+    if (ipc_msg->ctrlchar != CANIPC_ETX_CHAR) {
+        return (int)(-81);  // TODO: define error code
     }
     /* convert the message from network to host byte order */
     CAN_IPC_MSG_NTOH(*ipc_msg);
@@ -139,9 +146,9 @@ bool CCanServer::DetachDevice() {
     return true;
 }
 
-CANAPI_Return_t CCanServer::StartServer(uint16_t port) {
+CANAPI_Return_t CCanServer::StartServer(const char *service) {
     if (!SetCallback(EventHandler)) return CCanApi::AlreadyInitialized;
-    return Start(port);
+    return Start(service);
 }
 
 CANAPI_Return_t CCanServer::StopServer() {
@@ -155,15 +162,14 @@ void CCanServer::ShowServerPort(const char* prefix) {
     if (IsRunning()) {
         if (prefix)
             std::cout << prefix << ' ';
-        std::cout << "CAN/IPC server listening on port " << GetPort() << " using ";
+        std::cout << "CAN/IPC server listening on port " << GetService() << " using ";
         switch (GetTransportProtocol()) {
             case eTcp: std::cout << "TCP"; break;
             case eUdp: std::cout << "UDP"; break;
-            case eSctp: std::cout << "SCTP"; break;
-            default: std::cout << "IP (raw socket)"; break;
+            default: std::cout << "???"; break;
         }
         std::cout << " with mtu size " << GetMtuSize() << std::endl;
     }
 }
 
-// $Id: Server.cpp 1430 2025-02-08 11:43:01Z sedna $  Copyright (c) UV Software, Berlin.
+// $Id: Server.cpp 1448 2025-02-17 18:50:51Z sedna $  Copyright (c) UV Software, Berlin.
