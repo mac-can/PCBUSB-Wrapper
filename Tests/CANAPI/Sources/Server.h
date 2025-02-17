@@ -67,7 +67,7 @@ public:
     bool AttachDevice(CCanDevice *device);
     bool DetachDevice();
 
-    CANAPI_Return_t StartServer(uint16_t port/*, EFrameFormat frameFormat = eRocketCAN, EIpcProtocol protocol = eTcp*/);
+    CANAPI_Return_t StartServer(const char *service);
     CANAPI_Return_t StopServer();
 
     void ShowServerPort(const char* prefix);
@@ -78,4 +78,4 @@ extern CCanServer g_CanServer;
 #endif
 #endif // SERVER_H_INCLUDED
 
-// $Id: Server.h 1424 2025-02-02 17:54:30Z sedna $  Copyright (c) UV Software, Berlin.
+// $Id: Server.h 1448 2025-02-17 18:50:51Z sedna $  Copyright (c) UV Software, Berlin.

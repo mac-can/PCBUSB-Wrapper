@@ -83,7 +83,7 @@ GTEST_API_ int main(int argc, char **argv) {
     // --- start CAN server ---
     if (g_Options.IsCanServerEnabled()) {
         g_CanServer.SetLoggingLevel(g_Options.GetCanServerLoggingLevel());
-        if (g_CanServer.StartServer(g_Options.GetCanServerPort()) < 0) {
+        if (g_CanServer.StartServer(g_Options.GetCanServerService()) < 0) {
             std::cerr << "+++ error: failed to start CAN server" << std::endl;
             return 1;
         }
@@ -108,4 +108,4 @@ GTEST_API_ int main(int argc, char **argv) {
     return res;
 }
 
-// $Id: main.cpp 1430 2025-02-08 11:43:01Z sedna $  Copyright (c) UV Software, Berlin //
+// $Id: main.cpp 1448 2025-02-17 18:50:51Z sedna $  Copyright (c) UV Software, Berlin //

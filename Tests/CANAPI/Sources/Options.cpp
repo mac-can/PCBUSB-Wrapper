@@ -90,7 +90,7 @@ static const bool c_fCallSequences = false;
 static const bool c_fBitrateConverter = false;
 static const bool c_fStartInteractive = false;
 #if (OPTION_CANIPC_ENABLED != 0)
-static const uint16_t c_nIpcPort = 60000;
+static const char c_szIpcService[] = "60000";
 static const CCanServer::EFrameFormat c_eIpcFormat = CCanServer::eRocketCAN;
 static const CCanServer::EIpcProtocol c_eIpcProtocol = CCanServer::eTcp;
 #endif
@@ -137,9 +137,9 @@ COptions::COptions() {
 #if (OPTION_CANIPC_ENABLED != 0)
     // server options
     m_Server.m_fEnable = false;
-    m_Server.m_nPort = c_nIpcPort;
     m_Server.m_eFormat = c_eIpcFormat;
     m_Server.m_eProtocol = c_eIpcProtocol;
+    m_Server.m_szService = (char*)c_szIpcService;
     m_Server.m_nLogging = 0;
 #endif
 }
@@ -704,10 +704,7 @@ int COptions::ScanOptions(int argc, char* argv[], char* err, size_t len) {
                         snprintf(err, len, "missing argument for option %s", OPTION_GATEWAY);
                     return false;
                 }
-                if (sscanf(opt, "%hu", &m_Server.m_nPort) != 1) {
-                    snprintf(err, len, "illegal argument in option %s", OPTION_GATEWAY);
-                    return false;
-                }
+                m_Server.m_szService = opt;
                 m_Server.m_fEnable = true;
             }
             else {
@@ -871,4 +868,4 @@ int COptions::ShowHelp() {
     return m_fShowHelp;
 }
 
-// $Id: Options.cpp 1430 2025-02-08 11:43:01Z sedna $  Copyright (c) UV Software, Berlin //
+// $Id: Options.cpp 1448 2025-02-17 18:50:51Z sedna $  Copyright (c) UV Software, Berlin //

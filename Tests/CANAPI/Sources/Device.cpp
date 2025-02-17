@@ -222,11 +222,11 @@ int32_t CCanDevice::SendAndReceiveFrames(CCanDevice *sender, CCanDevice *receive
     CCanIpcClient rxClient = CCanIpcClient();
 
     if (g_CanServer.IsRunning()) {
-        if ((retVal = txClient.Connect(CCanIpcClient::localhost(g_Options.GetCanServerPort()))) != CCanApi::NoError) {
+        if ((retVal = txClient.Connect(CCanIpcClient::localhost(g_Options.GetCanServerService()))) != CCanApi::NoError) {
             //printf("txClient.Connect() failed with %d\n", retVal);
             return (int32_t)retVal;
         }
-        if ((retVal = rxClient.Connect(CCanIpcClient::localhost(g_Options.GetCanServerPort()))) != CCanApi::NoError) {
+        if ((retVal = rxClient.Connect(CCanIpcClient::localhost(g_Options.GetCanServerService()))) != CCanApi::NoError) {
             //printf("rxClient.Connect() failed with %d\n", retVal);
             return (int32_t)retVal;
         }
@@ -734,4 +734,4 @@ void CCanDevice::ShowChannelCapabilities(const char* prefix) {
     std::cout << std::endl;
 }
 
-// $Id: Device.cpp 1424 2025-02-02 17:54:30Z sedna $  Copyright (c) UV Software, Berlin //
+// $Id: Device.cpp 1448 2025-02-17 18:50:51Z sedna $  Copyright (c) UV Software, Berlin //
