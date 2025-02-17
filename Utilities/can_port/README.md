@@ -1,4 +1,4 @@
-__CAN-to-Ethernet Server for PEAK-System PCAN Interfaces, Version 0.4__ \
+__CAN-over-Ethernet Server for PEAK-System PCAN Interfaces, Version 0.4__ \
 Copyright &copy; 2008,2012-2025 by Uwe Vogt, UV Software, Berlin
 
 ```
@@ -18,7 +18,7 @@ Options:
  -h, --help                           display this help screen and exit
      --version                        show version information and exit
 Arguments:
-  <port>         CAN-to-Ethernet port on local computer
+  <port>         CAN-over-Ethernet port on local computer
   <interface>    CAN interface board (list all with -L)
   <baudrate>     CAN baud rate index (default=3):
                  0 = 1000 kbps

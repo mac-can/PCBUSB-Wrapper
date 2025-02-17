@@ -1,6 +1,6 @@
 //  SPDX-License-Identifier: GPL-2.0-or-later
 //
-//  CAN-to-Ethernet Server for generic Interfaces (CAN API V3)
+//  CAN-over-Ethernet Server for generic Interfaces (CAN API V3)
 //
 //  Copyright (c) 2008,2012-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 //

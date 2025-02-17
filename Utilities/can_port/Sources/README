@@ -1,11 +1,11 @@
-# CAN-to-Ethernet Server for generic Interfaces (CAN API V3)
+# CAN-over-Ethernet Server for generic Interfaces (CAN API V3)
 
 Copyright &copy; 2008 by Uwe Vogt, UV Software, Friedrichshafen \
 Copyright &copy; 2012-2025 by Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 
 ## Utility program `can_port`
 
-`can_port` is a command line tool designed to open a network socket for CAN-to-Ethernet communication.
+`can_port` is a command line tool designed to open a network socket for CAN-over-Ethernet communication.
 It connects to a CAN device and handles the data exchange between the CAN bus and local or remote clients. 
 
 ## CAN Interface API, Version 3

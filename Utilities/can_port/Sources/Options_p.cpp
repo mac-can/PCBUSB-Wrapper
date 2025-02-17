@@ -1,6 +1,6 @@
 //  SPDX-License-Identifier: GPL-2.0-or-later
 //
-//  CAN-to-Ethernet Server for generic Interfaces (CAN API V3)
+//  CAN-over-Ethernet Server for generic Interfaces (CAN API V3)
 //
 //  Copyright (c) 2008,2012-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 //
@@ -78,7 +78,7 @@ SOptions::SOptions() {
 #if (CAN_TRACE_SUPPORTED != 0)
     m_eTraceMode = SOptions::eTraceOff;
 #endif
-    m_nServerPort = 0;
+    m_szServerPort = NULL;
     m_nLoggingLevel = 0;
     m_eSocketType = eIpcTcp;
     m_eDataFormat = eMtuRocketCan;
@@ -481,22 +481,12 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
         m_szInterface = (char*)argv[optind];
     }
     // - extract <port> from <interface>
-    char* p = strchr(m_szInterface, '@');
-    if (p == NULL) {
+    m_szServerPort = strchr(m_szInterface, '@');
+    if (m_szServerPort == NULL) {
         fprintf(err, "%s: illegal argument for <interface>@<port> (`%s')\n", m_szBasename, m_szInterface);
         return 1;
     }
-    *p++ = '\0';
-    int n;
-    if (sscanf(p, "%" SCNi64 "%n", &intarg, &n) != 1 || p[n] != '\0') {
-        fprintf(err, "%s: illegal argument for <port> (`%s')\n", m_szBasename, p);
-        return 1;
-    }
-    if (intarg < 0 || intarg > UINT16_MAX) {
-        fprintf(err, "%s: illegal argument for <port> (`%s')\n", m_szBasename, p);
-        return 1;
-    }
-    m_nServerPort = (uint16_t)intarg;
+    *m_szServerPort++ = '\0';
     // (4) check for illegal combinations
 #if (CAN_FD_SUPPORTED != 0)
     /* - check bit-timing index (n/a for CAN FD) */
@@ -573,7 +563,7 @@ void SOptions::ShowUsage(FILE* stream, bool args) {
     fprintf(stream, "     --version                        show version information and exit\n");
     if (args) {
         fprintf(stream, "Arguments:\n");
-        fprintf(stream, "  <port>         CAN-to-Ethernet port\n");
+        fprintf(stream, "  <port>         CAN-over-Ethernet port\n");
         fprintf(stream, "  <interface>    CAN interface board (list all with /LIST)\n");
         fprintf(stream, "  <baudrate>     CAN baud rate index (default=3):\n");
         fprintf(stream, "                 0 = 1000 kbps\n");

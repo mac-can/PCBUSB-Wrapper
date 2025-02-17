@@ -1,6 +1,6 @@
 #	SPDX-License-Identifier: GPL-2.0-or-later
 #
-#	CAN-to-Ethernet Server for PEAK-System PCAN Interfaces (CAN API V3)
+#	CAN-over-Ethernet Server for PEAK-System PCAN Interfaces (CAN API V3)
 #
 #	Copyright (c) 2008 by Uwe Vogt, UV Software, Friedrichshafen
 #	Copyright (c) 2012-2025  Uwe Vogt, UV Software, Berlin (info@uv-software.com)
@@ -37,7 +37,8 @@ CANAPI_DIR = $(PROJ_DIR)/Sources/CANAPI
 CANIPC_DIR = $(PROJ_DIR)/Sources/CANIPC
 
 OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Options.o $(OUTDIR)/Timer.o \
-	$(OUTDIR)/CanIpcServer.o $(OUTDIR)/ipc_server.o
+	$(OUTDIR)/CanIpcServer.o $(OUTDIR)/ipc_server.o \
+	$(OUTDIR)/RocketCAN.o $(OUTDIR)/crc_j1850.o
 
 DEFINES = -DOPTION_CANAPI_DRIVER=1 \
 	-DOPTION_CANAPI_COMPANIONS=1
@@ -160,6 +161,12 @@ $(OUTDIR)/CanIpcServer.o: $(CANIPC_DIR)/CanIpcServer.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 $(OUTDIR)/ipc_server.o: $(CANIPC_DIR)/ipc_server.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/RocketCAN.o: $(CANIPC_DIR)/RocketCAN.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/crc_j1850.o: $(CANIPC_DIR)/crc_j1850.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 
