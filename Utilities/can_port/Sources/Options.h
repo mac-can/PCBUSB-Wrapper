@@ -1,6 +1,6 @@
 //  SPDX-License-Identifier: GPL-2.0-or-later
 //
-//  CAN-to-Ethernet Server for generic Interfaces (CAN API V3)
+//  CAN-over-Ethernet Server for generic Interfaces (CAN API V3)
 //
 //  Copyright (c) 2008,2012-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 //
@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#define CAN_PORT_APPLICATION "CAN-to-Ethernet Server for " SERVER_INTERFACE ", Version " VERSION_STRING
+#define CAN_PORT_APPLICATION "CAN-over-Ethernet Server for " SERVER_INTERFACE ", Version " VERSION_STRING
 #define CAN_PORT_COPYRIGHT   "Copyright (c) " SERVER_COPYRIGHT
 #if !defined(_WIN32) && !defined(_WIN64)
 #define CAN_PORT_WARRANTY    "This program comes with ABSOLUTELY NO WARRANTY!\n\n" \
@@ -49,7 +49,7 @@
                              "with this program; if not, see <https://www.gnu.org/licenses/>."
 #define CAN_PORT_PROGRAM     "can_port"
 
-#define CAN_PORT_SECURITY    "This program will open a network socket for CAN-to-Ethernet communication.\n" \
+#define CAN_PORT_SECURITY    "This program will open a network socket for CAN-over-Ethernet communication.\n" \
                              "This may expose your computer to security vulnerabilities, unauthorized\n" \
                              "access, data interception, denial of service attacks, and resource\n" \
                              "exhaustion.\n\n" \
@@ -83,11 +83,10 @@ struct SOptions {
         eTraceVendor
     } m_eTraceMode;
 #endif
-    uint16_t m_nServerPort;
+    char* m_szServerPort;
     enum EIpcSocketType {
         eIpcTcp = 1,  // SOCK_STREAM (TCP)
         eIpcUdp = 2,  // SOCK_DGRAM (UDP)
-        eIpcSctp = 5  // SOCK_SEQPACKET (SCTP)
     } m_eSocketType;
     enum EIpcDataFormat {
         eMtuRocketCan,  // CAN API V3

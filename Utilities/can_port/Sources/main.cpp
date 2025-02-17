@@ -1,6 +1,6 @@
 //  SPDX-License-Identifier: GPL-2.0-or-later
 //
-//  CAN-to-Ethernet Server for generic Interfaces (CAN API V3)
+//  CAN-over-Ethernet Server for generic Interfaces (CAN API V3)
 //
 //  Copyright (c) 2008,2012-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 //
@@ -86,25 +86,21 @@ static int TransmitMessage(const void* data, size_t size, void *param) {
 
     /* sanity check */
     if (!data || !param) {
-        return CCanApi::NullPointer;
+        return (int)CCanApi::NullPointer;
     }
     if (size != sizeof(CANIPC_Message_t)) {
-        return CCanApi::IllegalParameter;
+        return (int)(-89);  // TODO: define error code
     }
-    /* convert the message from network to host byte order */
-    CAN_IPC_MSG_NTOH(*ipc_msg);
-    /* map the message to CAN message (CAN API V3) */
-    can_msg.id = ipc_msg->id;
-    can_msg.xtd = (ipc_msg->flags & CANIPC_XTD_MASK) ? 1 : 0;
-    can_msg.rtr = (ipc_msg->flags & CANIPC_RTR_MASK) ? 1 : 0;
-    can_msg.fdf = (ipc_msg->flags & CANIPC_FDF_MASK) ? 1 : 0;
-    can_msg.brs = (ipc_msg->flags & CANIPC_BRS_MASK) ? 1 : 0;
-    can_msg.esi = (ipc_msg->flags & CANIPC_ESI_MASK) ? 1 : 0;
-    can_msg.sts = (ipc_msg->flags & CANIPC_STS_MASK) ? 1 : 0;
-    can_msg.dlc = CCanApi::Len2Dlc(ipc_msg->length);
-    for (int i = 0; i < MAX(CANFD_MAX_LEN, CANIPC_MAX_LEN); i++) {
-        can_msg.data[i] = ipc_msg->data[i];
+    /* map RocketCAN message to CAN message (CAN API V3) */
+    if (!CCanIpcServer::NetToCan(*ipc_msg, can_msg)) {
+        return (int)(-80);  // TODO: define error code
     }
+    /* the timestamp is ignored on CAN TX frames */
+#if (OPTION_CANIPC_LATENCY != 0)
+    /* calculate latency time between client and server */
+    double latency = CTimer::DiffTime(ipc_msg->timestamp, CTimer::GetTime());
+    fprintf(stderr, "%.4f\n", latency * 1e6);
+#endif
     /* transmit the message on the CAN bus (retry if busy) */
     CTimer timer = CTimer(CANIPC_TX_TIMEOUT * CTimer::MSEC);
     do {
@@ -135,7 +131,7 @@ int main(int argc, const char* argv[]) {
     sioParam.attr.parity = CANSIO_NOPARITY;
     sioParam.attr.stopbits = CANSIO_1STOPBIT;
 #endif
-    /* CAN-to-Ethernet server */
+    /* CAN-over-Ethernet server */
     bool ipcFault = false;
 
     /* signal handler */
@@ -351,13 +347,13 @@ int main(int argc, const char* argv[]) {
         fprintf(stdout, "\n" CAN_PORT_QUESTION);
         fflush(stdout);
         if (getchar() != 'Y') {
-            fprintf(stderr, "+++ error: security risks not accepted\n");
+            fprintf(stderr, "Execution aborted: Security risks were not accepted by the user.\n");
             goto teardown;
         }
     }
     fprintf(stdout, "\n" CAN_PORT_ACCEPTED "\n\n");
-    /* - start CAN-to-Ethernet server */
-    fprintf(stdout, "CAN-to-Ethernet server on port %u...", opts.m_nServerPort);
+    /* - start CAN-over-Ethernet server */
+    fprintf(stdout, "CAN-over-Ethernet server on port %s...", opts.m_szServerPort);
     fflush(stdout);
     /* -- determine IPC message size (MTU size) */
     switch (opts.m_eDataFormat) {
@@ -384,29 +380,29 @@ int main(int argc, const char* argv[]) {
     if (!ipcServer.SetLoggingLevel(opts.m_nLoggingLevel))
         ipcFault = true;
     if (ipcFault) {
-        fprintf(stderr, "+++ error: CAN-to-Ethernet server could not be initialized\n");
+        fprintf(stderr, "+++ error: CAN-over-Ethernet server could not be initialized\n");
         if (errno) perror("+++ cause");
         goto teardown;
     }
     /* -- let the show begin */
-    retVal = ipcServer.Start(opts.m_nServerPort);
+    retVal = ipcServer.Start(opts.m_szServerPort);
     if (retVal != 0) {
         fprintf(stdout, "FAILED!\n");
-        fprintf(stderr, "+++ error: CAN-to-Ethernet server could not be started (%i)\n", retVal);
+        fprintf(stderr, "+++ error: CAN-over-Ethernet server could not be started (%i)\n", retVal);
         if (errno) perror("+++ cause");
         goto teardown;
     }
-    fprintf(stdout, "\b\b\b started.\n");
+    fprintf(stdout, "\b\b\b started. 🚀\n");
     /* - reception loop */
     canDevice.ReceptionLoop();
-    /* - stop CAN-to-Ethernet server */
+    /* - stop CAN-over-Ethernet server */
     retVal = ipcServer.Stop();
     if (retVal != 0) {
-        fprintf(stderr, "+++ error: CAN-to-Ethernet server could not be stopped (%i)\n", retVal);
+        fprintf(stderr, "+++ error: CAN-over-Ethernet server could not be stopped (%i)\n", retVal);
         if (errno) perror("+++ cause");
         goto teardown;
     } else {
-        fprintf(stdout, "CAN-to-Ethernet server on port %u stopped.\n\n", opts.m_nServerPort);
+        fprintf(stdout, "CAN-over-Ethernet server on port %s stopped. 🪦\n\n", opts.m_szServerPort);
     }
     /* - stop trace session (if enabled) */
 #if (CAN_TRACE_SUPPORTED != 0)
@@ -449,46 +445,35 @@ farewell:
     return retVal;
 }
 
-/*  Reception loop: count received CAN messages until Ctrl-C
+/*  Reception loop: count received CAN messages until Ctrl+C
  */
 uint64_t CCanDevice::ReceptionLoop() {
-    CANAPI_Message_t can_msg = CANAPI_Message_t();
-    CANIPC_Message_t ipc_msg = CANIPC_Message_t();
+    CANAPI_Message_t message = CANAPI_Message_t();
+    CANAPI_Return_t retVal = 0;
     uint8_t status = 0U;
     uint16_t load = 0U;
     uint64_t frames = 0U;
 
-    fprintf(stderr, "\nPress Ctrl+C to abort...\n\n");
+    fprintf(stdout, "\nPress ^C to abort or execute `kill -15 <pid>' to exit the program properly.\n\n");
     while(running) {
-        if (ReadMessage(can_msg) == CCanApi::NoError) {
-            memset(&ipc_msg, 0, sizeof(CANIPC_Message_t));
-            /* map CAN message to IPC message */
-            ipc_msg.id = can_msg.id;
-            ipc_msg.flags |= CANIPC_XTD_FLAG(can_msg.xtd);
-            ipc_msg.flags |= CANIPC_RTR_FLAG(can_msg.rtr);
-            ipc_msg.flags |= CANIPC_FDF_FLAG(can_msg.fdf);
-            ipc_msg.flags |= CANIPC_BRS_FLAG(can_msg.brs);
-            ipc_msg.flags |= CANIPC_ESI_FLAG(can_msg.esi);
-            ipc_msg.flags |= CANIPC_STS_FLAG(can_msg.sts);
-            ipc_msg.length = CCanApi::Dlc2Len(can_msg.dlc);
-            for (int i = 0; i < MAX(CANIPC_MAX_LEN, CANFD_MAX_LEN); i++) {
-                ipc_msg.data[i] = can_msg.data[i];
+        if ((retVal = ReadMessage(message)) == CCanApi::NoError) {
+            /* get CAN status register (8-bit) and bus load (0 .. 10'000 = 100%) */
+            if ((GetProperty(CANPROP_GET_STATUS, (void*)&status, sizeof(uint8_t)) != CCanApi::NoError) ||
+                (GetProperty(CANPROP_GET_BUSLOAD, (void*)&load, sizeof(uint16_t)) != CCanApi::NoError)) {
+                /* this should never happen, but we set load to 100% to indicate an error */
+                status = (uint8_t)0x00;
+                load = (uint16_t)(~0);
             }
-            ipc_msg.timestamp.tv_sec = can_msg.timestamp.tv_sec;
-            ipc_msg.timestamp.tv_nsec = can_msg.timestamp.tv_nsec;
-            /* get CAN status register (8-bit) */
-            if (GetProperty(CANPROP_GET_STATUS, (void*)&status, sizeof(uint8_t)) == CCanApi::NoError) {
-                ipc_msg.status = status;
-            }
-            /* get CAN bus load (0 = 0% to 255 = 100%) */
-            if (GetProperty(CANPROP_GET_BUSLOAD, (void*)&load, sizeof(uint16_t)) == CCanApi::NoError) {
-                ipc_msg.busload = (uint8_t)((load * 255U) / 10000U);
-            }
-            /* convert the message from host to network byte order */
-            CAN_IPC_MSG_HTON(ipc_msg);
-            /* transmit the message to CAN-to-Ethernet server */
-            (void)ipcServer.Send((const void*)&ipc_msg, sizeof(CANIPC_Message_t));
+            /* send RocketCAN message to all clients */
+            (void)ipcServer.Send(message, status, load);
             frames++;
+        } 
+        else if ((retVal == CCanApi::ResourceError) || (retVal == CCanApi::FatalError)) {
+            /* send RocketCAN abort message to all clients */
+            (void)ipcServer.SendAbort();
+            /* abort the reception loop */
+            fprintf(stderr, "+++ error: something went terribly wrong (%i)\n", retVal);
+            return (-1);
         }
     }
     fprintf(stdout, "\n");
