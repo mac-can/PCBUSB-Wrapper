@@ -5,7 +5,7 @@
  *  Copyright (c) 2002-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
  *  All rights reserved.
  *
- *  Module 'ipc_client' - Inter-Process Communication (IPC) client
+ *  Module 'crc_j1850' - CRC Calculation according to SAE-J1850 CRC8 Standard
  *
  *  This module is dual-licensed under the BSD 2-Clause "Simplified" License
  *  and under the GNU General Public License v2.0 (or any later version).
@@ -34,36 +34,36 @@
  *
  *  (2) GNU General Public License v2.0 or later
  *
- *  This module is free software: you can redistribute it and/or modify
+ *  This module is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 2 of the License, or
+ *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This module is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
- *  You should have received a copy of the GNU General Public License
- *  along with this module.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this module; if not, see <https://www.gnu.org/licenses/>.
  */
-/** @file        ipc_client.h
+/** @file        crc_j1850.c
  *
- *  @brief       Inter-Process Communication (IPC) client.
+ *  @brief       CRC Calculation according to SAE-J1850 CRC8 Standard.
  *
- *  @author      $Author: sedna $
+ *  @author      $Author$
  *
- *  @version     $Rev: 1447 $
+ *  @version     $Rev$
  *
- *  @addtogroup  ipc
+ *  @addtogroup  crc
  *  @{
  */
-#ifndef IPC_CLIENT_H_INCLUDED
-#define IPC_CLIENT_H_INCLUDED
+#ifndef CRC_J1850_H_INCLUDED
+#define CRC_J1850_H_INCLUDED
 
 /*  -----------  includes  -----------------------------------------------
  */
-#include "ipc_common.h"  /* common definitions for IPC server and client */
+#include "crc.h"
 
 
 /*  -----------  options  ------------------------------------------------
@@ -78,61 +78,33 @@
  */
 
 
-/*  -----------  variables  ----------------------------------------------
- */
-
-
-/*  -----------  prototypes  ---------------------------------------------
+/*  -----------  functions  ----------------------------------------------
  */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/** @brief   Open a connection to the server.
+/** @brief  Initialize the CRC8 calculation.
  *
- *  @param   server     The server address ("<host>:<port>").
- *  @param   sock_type  The socket type (SOCK_STREAM, SOCK_DGRAM, SOCK_SEQPACKET).
- *
- *  @return  The file descriptor of the client socket or -1 on error.
+ *  @return  The initial value for the CRC8 calculation.
  */
-extern int ipc_client_connect(const char *server, int sock_type);
+extern crc8_t crc_j1850_init(void); 
 
-/** @brief   Close the connection to the server.
+/** @brief  Calculate the CRC8 value.
  *
- *  @param   fildes  The file descriptor of the client socket.
+ *  @param  data    Pointer to the data to be processed.
+ *  @param  length  Number of bytes to be processed.
+ *  @param  crc     Current CRC8 value (in), updated CRC8 value (out).
+ *                  NULL to start with the initial value.
  *
- *  @return  0 on success, -1 on error.
+ *  @return  The calculated CRC8 value, including the final XOR value.
  */
-extern int ipc_client_close(int fildes);
-
-/** @brief   Send data to the server.
- *
- *  @param   fildes  The file descriptor of the client socket.
- *  @param   buffer  The data to be sent.
- *  @param   length  The length of the data to be sent.
- *
- *  @return  The number of bytes sent or -1 on error.
- */
-extern ssize_t ipc_client_send(int fildes, const void *buffer, size_t length);
-
-/** @brief   Receive data from the server.
- *
- *  @param   fildes   The file descriptor of the client socket.
- *  @param   buffer   The buffer to store the received data.
- *  @param   length   The length of the buffer.
- *  @param   timeout  The timeout in milliseconds:
- *                    0 means the function returns immediately,
- *                    65535 means blocking read, and any other
- *                    value means the time to wait im milliseconds
- *
- *  @return  The number of bytes received or -1 on error.
- */
-extern ssize_t ipc_client_recv(int fildes, void *buffer, size_t length, unsigned short timeout);
+extern crc8_t crc_j1850_calc(const void *data, size_t length, crc8_t *crc);
 
 #ifdef __cplusplus
 }
 #endif
-#endif  /* IPC_CLIENT_H_INCLUDED */
+#endif /* CRC_J1850_H_INCLUDED */
 /** @}
  */
 /*  ----------------------------------------------------------------------

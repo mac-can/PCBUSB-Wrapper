@@ -5,7 +5,7 @@
  *  Copyright (c) 2002-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
  *  All rights reserved.
  *
- *  Module 'ipc_client' - Inter-Process Communication (IPC) client
+ *  Module 'crc' - CRC Calculation (Common Definitions)
  *
  *  This module is dual-licensed under the BSD 2-Clause "Simplified" License
  *  and under the GNU General Public License v2.0 (or any later version).
@@ -34,37 +34,42 @@
  *
  *  (2) GNU General Public License v2.0 or later
  *
- *  This module is free software: you can redistribute it and/or modify
+ *  This module is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 2 of the License, or
+ *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This module is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
- *  You should have received a copy of the GNU General Public License
- *  along with this module.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this module; if not, see <https://www.gnu.org/licenses/>.
  */
-/** @file        ipc_client.h
+/** @file        crc_j1850.c
  *
- *  @brief       Inter-Process Communication (IPC) client.
+ *  @brief       CRC Calculation according to SAE-J1850 CRC8 Standard.
  *
- *  @author      $Author: sedna $
+ *  @author      $Author$
  *
- *  @version     $Rev: 1447 $
+ *  @version     $Rev$
  *
- *  @addtogroup  ipc
+ *  @defgroup    crc CRC Calculation
  *  @{
  */
-#ifndef IPC_CLIENT_H_INCLUDED
-#define IPC_CLIENT_H_INCLUDED
+#ifndef CRC_H_INCLUDED
+#define CRC_H_INCLUDED
 
 /*  -----------  includes  -----------------------------------------------
  */
-#include "ipc_common.h"  /* common definitions for IPC server and client */
-
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+#elif defined(__APPLE__)
+#include <MacTypes.h>
+#else
+#include <stdint.h>
+#endif
 
 /*  -----------  options  ------------------------------------------------
  */
@@ -76,63 +81,26 @@
 
 /*  -----------  types  --------------------------------------------------
  */
-
-
-/*  -----------  variables  ----------------------------------------------
- */
-
-
-/*  -----------  prototypes  ---------------------------------------------
- */
-#ifdef __cplusplus
-extern "C" {
+#if defined(_WIN32) || defined(_WIN64)
+typedef BYTE crc8_t;
+typedef WORD crc16_t;
+typedef DWORD crc32_t;
+#elif defined(__APPLE__)
+typedef UInt8 crc8_t;
+typedef UInt16 crc16_t;
+typedef UInt32 crc32_t;
+#else
+typedef uint8_t crc8_t;
+typedef uint16_t crc16_t;
+typedef uint32_t crc32_t;
 #endif
 
-/** @brief   Open a connection to the server.
- *
- *  @param   server     The server address ("<host>:<port>").
- *  @param   sock_type  The socket type (SOCK_STREAM, SOCK_DGRAM, SOCK_SEQPACKET).
- *
- *  @return  The file descriptor of the client socket or -1 on error.
- */
-extern int ipc_client_connect(const char *server, int sock_type);
+typedef enum crc_mode_tag {
+    CRC_RESET = 0,
+    CRC_UPDATE
+} crc_mode_t;
 
-/** @brief   Close the connection to the server.
- *
- *  @param   fildes  The file descriptor of the client socket.
- *
- *  @return  0 on success, -1 on error.
- */
-extern int ipc_client_close(int fildes);
-
-/** @brief   Send data to the server.
- *
- *  @param   fildes  The file descriptor of the client socket.
- *  @param   buffer  The data to be sent.
- *  @param   length  The length of the data to be sent.
- *
- *  @return  The number of bytes sent or -1 on error.
- */
-extern ssize_t ipc_client_send(int fildes, const void *buffer, size_t length);
-
-/** @brief   Receive data from the server.
- *
- *  @param   fildes   The file descriptor of the client socket.
- *  @param   buffer   The buffer to store the received data.
- *  @param   length   The length of the buffer.
- *  @param   timeout  The timeout in milliseconds:
- *                    0 means the function returns immediately,
- *                    65535 means blocking read, and any other
- *                    value means the time to wait im milliseconds
- *
- *  @return  The number of bytes received or -1 on error.
- */
-extern ssize_t ipc_client_recv(int fildes, void *buffer, size_t length, unsigned short timeout);
-
-#ifdef __cplusplus
-}
-#endif
-#endif  /* IPC_CLIENT_H_INCLUDED */
+#endif  /* CRC_H_INCLUDED */
 /** @}
  */
 /*  ----------------------------------------------------------------------

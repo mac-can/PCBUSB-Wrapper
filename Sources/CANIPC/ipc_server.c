@@ -53,7 +53,7 @@
  *
  *  @author      $Author: sedna $
  *
- *  @version     $Rev: 1433 $
+ *  @version     $Rev: 1447 $
  *
  *  @addtogroup  ipc
  *  @{
@@ -70,10 +70,14 @@
 #if !defined(_WIN32) && !defined(_WIN64)
 #include <unistd.h>
 #include <pthread.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
 #include <sys/select.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #include <sys/time.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 #else
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -87,9 +91,25 @@
 
 /*  -----------  defines  ------------------------------------------------
  */
-#define BACKLOG  10  /* how many pending connections queue will hold */
-#define MTU_SIZE  1500  /* maximum transmission unit (MTU) size */
-
+#if (OPTION_CANIPC_BACKLOG == 0)
+#define BACKLOG  5  /* how many pending connections queue will hold */
+#else
+#define BACKLOG  OPTION_CANIPC_BACKLOG
+#endif
+#if (IPC_ETH_MTU_SIZE != 1500)
+#error Maximum Transmission Unit (MTU) size must be 1500 bytes
+#endif
+#if (IPC_TCP_MSS_SIZE != 1460)
+#error Maximum Segment Size (MSS) for TCP must be 1460 bytes
+#endif
+#if (IPC_UDP_MSS_SIZE != 1472)
+#error Maximum Segment Size (MSS) for UDP must be 1472 bytes
+#endif
+#if (IPC_MAX_BUF_SIZE <= IPC_ETH_MTU_SIZE)
+#define MAX_BUF_SIZE  IPC_ETH_MTU_SIZE
+#else
+#define MAX_BUF_SIZE  IPC_MAX_BUF_SIZE
+#endif
 #define ENTER_CRITICAL_SECTION(srv)     assert(0 == pthread_mutex_lock(&((struct ipc_server_desc*)srv)->mutex))
 #define LEAVE_CRITICAL_SECTION(srv)     assert(0 == pthread_mutex_unlock(&((struct ipc_server_desc*)srv)->mutex))
 
@@ -113,8 +133,8 @@
 struct ipc_server_desc {                /* IPC server descriptor: */
     int sock_fd;                        /* - socket file descriptor */
     int sock_type;                      /* - socket type */
-    int sock_domain;                    /* - socket domain */
-    int sock_protocol;                  /* - socket protocol */
+    int sock_family;                    /* - address family */
+    int sock_protocol;                  /* - protocol to be used */
     size_t mtu_size;                    /* - maximum transmission unit (MTU) size */
     ipc_event_cbk_t recv_cbk;           /* - receive callback */
     void *recv_ref;                     /* - receive reference */
@@ -128,7 +148,7 @@ struct ipc_server_desc {                /* IPC server descriptor: */
     unsigned long sent_pkg;             /* - number of sent packets */
     unsigned long recv_pkg;             /* - number of received packets */
     unsigned long lost_pkg;             /* - number of unprocessed packets */
-    unsigned short sock_port;           /* - socket port (just for logging) */
+    char sock_port[NI_MAXSERV];         /* - socket port (just for logging) */
 };
 
 /*  -----------  prototypes  ---------------------------------------------
@@ -164,12 +184,12 @@ static double time_diff(struct timespec start, struct timespec stop);
  *  - close() — close a file descriptor (errno = EBADF)
  *  - free() — deallocate memory (errno = EINVAL)
  */
-ipc_server_t ipc_server_start(unsigned short port, int sock_type, size_t mtu_size,
+ipc_server_t ipc_server_start(const char *service, int sock_type, size_t mtu_size,
                               ipc_event_cbk_t recv_cbk, void *recv_ref, int logging) {
     struct ipc_server_desc *server = NULL;
-    struct sockaddr_in address;
+    struct addrinfo hints, *ai, *p;
     char filename[32];
-    int opt = 1;
+    int rc, opt;
     int error;
     errno = 0;
 #if (1)
@@ -179,13 +199,13 @@ ipc_server_t ipc_server_start(unsigned short port, int sock_type, size_t mtu_siz
         return NULL;
     }
 #else
-    // TODO: implement UDP, SCTP and raw socket
-    // TODO: map the following attributes to corresponding values:
-    //       - sock_type: SOCK_DGRAM, SOCK_SEQPACKET, SOCK_RAW
-    //       - sock_domain: AF_INET, AF_INET6, AF_UNIX, AF_PACKET
-    //       - sock_protocol: IPPROTO_IP, IPPROTO_TCP, IPPROTO_UDP, IPPROTO_SCTP
-    // TODO: what's about Nagle's algorithm, and other stuff like this?
-#endif
+    // TODO: implement UDP (socket type SOCK_DGRAM)
+    #endif
+    /* sanity ckeck */
+    if ((service == NULL) || (strlen(service) == 0) || (strlen(service) >= NI_MAXSERV)) {
+        errno = EINVAL;
+        return NULL;
+    }
     /* create the server descriptor */
     if ((server = (struct ipc_server_desc *)malloc(sizeof(struct ipc_server_desc))) == NULL) {
         /* errno set */
@@ -193,71 +213,105 @@ ipc_server_t ipc_server_start(unsigned short port, int sock_type, size_t mtu_siz
     }
     /* initialize the server descriptor */
     memset(server, 0, sizeof(struct ipc_server_desc));
+    strncpy(server->sock_port, service, NI_MAXSERV);
     server->sock_fd = (-1);
-    server->sock_port = port;
-    server->sock_type = SOCK_STREAM;
-    server->sock_domain = AF_INET;
-    server->sock_protocol = IPPROTO_IP;
-    /* set MTU size (but at most 1500) and receive callback */
-    server->mtu_size = (mtu_size < MTU_SIZE) ? mtu_size : MTU_SIZE;
+    /* set MTU size (but at most MSS size) and receive callback */
+    server->mtu_size = (mtu_size < IPC_TCP_MSS_SIZE) ? mtu_size : IPC_TCP_MSS_SIZE;  // TODO: think about this!
     server->recv_cbk = recv_cbk;
     server->recv_ref = recv_ref;
     server->sent_pkg = 0;
     server->recv_pkg = 0;
     server->lost_pkg = 0;
+    /* set options to create a socket */
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;      // alow IPv4 or IPv6
+    hints.ai_socktype = SOCK_STREAM;  // stream socket (TCP)
+    hints.ai_flags = AI_PASSIVE;      // use my IP address
+    hints.ai_protocol = IPPROTO_IP;   // any protocol
+    hints.ai_canonname = NULL;
+    hints.ai_addr = NULL;
+    hints.ai_next = NULL;
 
     /* open the log file for writing ("ipc_<port>.log") */
     if (logging) {
-        snprintf(filename, sizeof(filename), "ipc_%d.log", port);
+        snprintf(filename, sizeof(filename), "ipc_%s.log", service);
         if ((server->log_fp = fopen(filename, "w")) == NULL) {
             error = errno;
             FREE_SERVER(server);
             errno = error;
             return NULL;
         }
-        fprintf(server->log_fp, "+++ IPC Server on port %d using %s with mtu size %zu +++\n", port,
-            (sock_type == IPC_SOCK_TCP) ? "TCP" : ((sock_type == IPC_SOCK_UDP) ? "UDP" :
-            ((sock_type == IPC_SOCK_SCTP) ? "SCTP" : "IP (raw socket)")), mtu_size);
+        fprintf(server->log_fp, "+++ IPC Server on port %s using %s with mtu size %zu +++\n", service,
+            (sock_type == IPC_SOCK_TCP) ? "TCP" : ((sock_type == IPC_SOCK_UDP) ? "UDP" : "???"), mtu_size);
         server->log_opt = logging;
         server->start = time_get();
     }
-    /* create the socket file descriptor */
-    if ((server->sock_fd = socket(server->sock_domain, server->sock_type, server->sock_protocol)) < 0) {
-        error = errno;
-        LOG_ERROR(server, "Socket could not be created (errno=%d)", error);
+    /* get the address information for the specified port */
+    if ((rc = getaddrinfo(NULL, server->sock_port, &hints, &ai)) != 0) {
+        error = errno ? errno : EADDRNOTAVAIL;
+        LOG_ERROR(server, "%s\n", gai_strerror(rc));
         LOG_CLOSE(server);
         FREE_SERVER(server);
         errno = error;
         return NULL;
     }
-    /* forcefully attaching socket to the port */
-    if (setsockopt(server->sock_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-        error = errno;
-        LOG_ERROR(server, "Socket could not be attached to port %d (errno=%d)\n", port, error);
-        LOG_CLOSE(server);
-        CLOSE_SOCKET(server);
-        FREE_SERVER(server);
-        errno = error;
-        return NULL;
+    /* loop through all the results and bind to the first we can */
+    for (p = ai; p != NULL; p = p->ai_next) {
+        if ((server->sock_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) < 0) {
+            error = errno;
+            server->sock_fd = (-1);
+            continue;
+        }
+        /* suppress the "address already in use" error message */
+        opt = 1;
+        if (setsockopt(server->sock_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+            error = errno;
+            server->sock_fd = (-1);
+            continue;
+        }
+        if (bind(server->sock_fd, p->ai_addr, p->ai_addrlen) < 0) {
+            error = errno;
+            close(server->sock_fd);
+            server->sock_fd = (-1);
+            continue;
+        }
+        /* Yeah, successfull bind to the socket! */
+        server->sock_type = p->ai_socktype;
+        server->sock_family = p->ai_family;
+        server->sock_protocol = p->ai_protocol;
+        break;
     }
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(port);
+    freeaddrinfo(ai);
 
-    /* bind the socket to the network address and port */
-    if (bind(server->sock_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
+    /* check if binded to the socket */
+    if (p == NULL) {
         error = errno;
-        LOG_ERROR(server, "Socket could not be bound to port %d (errno=%d)", port, error);
+        LOG_ERROR(server, "Bind socket failed (errno=%d)", error);
         LOG_CLOSE(server);
         CLOSE_SOCKET(server);
         FREE_SERVER(server);
         errno = error;
         return NULL;
     }
+    /* disable Nagle's algorithm for TCP connections */
+#if (OPTION_CANIPC_TCPDELAY == 0) 
+    if (server->sock_type == SOCK_STREAM) {
+        opt = 1;
+        if (setsockopt(server->sock_fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt)) < 0) {
+            error = errno;
+            LOG_ERROR(server, "Set TCP_NODELAY failed (errno=%d)", error);
+            LOG_CLOSE(server);
+            CLOSE_SOCKET(server);
+            FREE_SERVER(server);
+            errno = error;
+            return NULL;
+        }
+    }
+#endif
     /* start listening for incoming connections */
     if (listen(server->sock_fd, BACKLOG) < 0) {
         error = errno;
-        LOG_ERROR(server, "Start listening on port %d failed (errno=%d)", port, error);
+        LOG_ERROR(server, "Start listening on port %s failed (errno=%d)", service, error);
         LOG_CLOSE(server);
         CLOSE_SOCKET(server);
         FREE_SERVER(server);
@@ -323,7 +377,8 @@ int ipc_server_stop(ipc_server_t server) {
     errno = 0;
     /* close the log file */
     if (server->log_fp != NULL) {
-        fprintf(server->log_fp, "+++ Connection Summary for IPC Server on port %u +++\n", server->sock_port);
+        fprintf(server->log_fp, "+++ Connection summary for IPC Server on port %s with mtu size %zu +++\n",
+            server->sock_port, server->mtu_size);
         fprintf(server->log_fp, "%11lu packet(s) sent to clients\n", server->sent_pkg);
         fprintf(server->log_fp, "%11lu packet(s) received from clients\n", server->recv_pkg);
         fprintf(server->log_fp, "%11lu packet(s) not processed by the host\n", server->lost_pkg);
@@ -428,7 +483,7 @@ static void *listening(void *arg) {
     struct sockaddr_storage remoteaddr; /* client address */
     socklen_t addrlen;
 
-    char buf[MTU_SIZE];  /* buffer for client data */
+    char buf[MAX_BUF_SIZE];  /* buffer for client data */
     ssize_t nbytes = 0;
     int i, rc = 0;
 
@@ -456,6 +511,17 @@ static void *listening(void *arg) {
                     /* handle new connections */
                     addrlen = sizeof(remoteaddr);
                     if ((newfd = accept(server->sock_fd, (struct sockaddr *)&remoteaddr, &addrlen)) >= 0) {
+                        /* disable Nagle's algorithm for TCP connections */
+#if (OPTION_CANIPC_TCPDELAY == 0)
+                        if (server->sock_type == SOCK_STREAM) {
+                            int opt = 1;
+                            if (setsockopt(newfd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt)) < 0) {
+                                LOG_ERROR(server, "Set TCP_NODELAY failed on socket %d (errno=%d)", newfd, errno);
+                                close(newfd);
+                                continue;   // FIXME: how to handle this?
+                            }
+                        }
+#endif
                         ENTER_CRITICAL_SECTION(server);
                         /* add the new socket to the master set */
                         FD_SET(newfd, &server->master);
@@ -482,7 +548,7 @@ static void *listening(void *arg) {
                         /* notify the server application */
                         if (server->recv_cbk != NULL) {
                             if ((rc = server->recv_cbk(buf, nbytes, server->recv_ref)) < 0) {
-                                LOG_ERROR(server, "Receive callback failed on socket %d (error=%d)", i, rc);
+                                LOG_ERROR(server, "Receive callback failed for socket %d (error=%d)", i, rc);
                                 server->lost_pkg++;
                             }
                         }
@@ -592,6 +658,8 @@ static double time_diff(struct timespec start, struct timespec stop) {
             ((double)start.tv_sec + ((double)start.tv_nsec / 1000000000.f)));
 }
 
+/** @}
+ */
 /*  ----------------------------------------------------------------------
  *  Uwe Vogt,  UV Software,  Chausseestrasse 33 A,  10115 Berlin,  Germany
  *  Tel.: +49-30-46799872,  Fax: +49-30-46799873,  Mobile: +49-170-3801903
