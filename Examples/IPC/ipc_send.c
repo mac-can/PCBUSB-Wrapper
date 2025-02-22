@@ -11,8 +11,8 @@
 #if !defined(_WIN32) && !defined(_WIN64)
 #include <unistd.h>
 #endif
-#include "ipc_can.h"
-#include "ipc_client.h"
+#include "tcp_can.h"
+#include "tcp_client.h"
 #include "crc_j1850.h"
 
 static void sigterm(int signo);
@@ -22,7 +22,7 @@ static const char *server = "localhost:60000";
 
 int main(int argc, char *argv[]) {
     int fildes = (-1);
-    can_ipc_message_t msg;
+    can_tcp_message_t msg;
     struct timespec now;
     uint32_t i, frames = 2048U;
 
@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
           perror("+++ error");
           return errno;
     }
-    if ((fildes = ipc_client_connect(server, IPC_SOCK_TCP)) < 0) {
+    if ((fildes = tcp_client_connect(server)) < 0) {
         perror("+++ error");
         return EXIT_FAILURE;
     }
@@ -53,19 +53,19 @@ int main(int argc, char *argv[]) {
         msg.data[1] = (uint8_t)((i >> 8) & 0xFF);
         msg.data[2] = (uint8_t)((i >> 16) & 0xFF);
         msg.data[3] = (uint8_t)((i >> 24) & 0xFF);
-        msg.ctrlchar = CANIPC_ETX_CHAR;
+        msg.ctrlchar = CANTCP_ETX_CHAR;
         if (clock_gettime(CLOCK_REALTIME, &now) == 0) {
             msg.timestamp.tv_sec = now.tv_sec;
             msg.timestamp.tv_nsec = now.tv_nsec;
         }
-        CAN_IPC_MSG_HTON(msg);
+        CANTCP_MSG_HTON(msg);
         msg.checksum = crc_j1850_calc(&msg, sizeof(msg) - 1U, NULL);
-        if (ipc_client_send(fildes, (const char*)&msg, sizeof(msg)) < 0) {
+        if (tcp_client_send(fildes, (const char*)&msg, sizeof(msg)) < 0) {
             perror("+++ error");
             break;
         }
     }
-    if (ipc_client_close(fildes) < 0) {
+    if (tcp_client_close(fildes) < 0) {
         perror("+++ error");
         return EXIT_FAILURE;
     }

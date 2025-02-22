@@ -9,11 +9,11 @@
 #include <errno.h>
 #include <time.h>
 
-#include "ipc_can.h"
-#include "ipc_client.h"
+#include "tcp_can.h"
+#include "tcp_client.h"
 #include "crc_j1850.h"
 
-//#define CANIPC_LATENCY  !! This does not work with libPCBUSB.dylib!
+//#define CANTCP_LATENCY
 
 static void sigterm(int signo);
 static volatile int running = 1;
@@ -22,13 +22,13 @@ static const char *server = "127.0.0.1:60000";
 
 int main() {
     int fildes = (-1);
-    can_ipc_message_t msg;
+    can_tcp_message_t msg;
     int frames = 0;
     int error = 0;
 
     struct timespec start, stop;
     double elapsed = 0.0;
-#ifdef CANIPC_LATENCY
+#ifdef CANTCP_LATENCY
     struct timespec now;
     double latency = 0.0;
     double sum = 0.0;
@@ -41,7 +41,7 @@ int main() {
           perror("+++ error");
           return errno;
     }
-    if ((fildes = ipc_client_connect(server, IPC_SOCK_TCP)) < 0) {
+    if ((fildes = tcp_client_connect(server)) < 0) {
         perror("+++ error");
         return EXIT_FAILURE;
     }
@@ -50,7 +50,7 @@ int main() {
     printf("Press ^C to abort.\n");
     while (running) {
         memset(&msg, 0, sizeof(msg));
-        if (ipc_client_recv(fildes, (void*)&msg, sizeof(msg), IPC_WAIT_FOREVER) < 0) {
+        if (tcp_client_recv(fildes, (void*)&msg, sizeof(msg), TCP_WAIT_FOREVER) < 0) {
             if (errno != ENODATA)
                 perror("+++ error");
             continue;
@@ -66,16 +66,16 @@ int main() {
         if (!frames) {
             clock_gettime(CLOCK_REALTIME, &start);
         }
-        CAN_IPC_MSG_NTOH(msg);
+        CANTCP_MSG_NTOH(msg);
         printf("))) %i\t", frames++);
         printf("%7li.%04li\t", (long)msg.timestamp.tv_sec, msg.timestamp.tv_nsec / 100000);
         printf("%03X\t", msg.id);
-        if (!(msg.flags & CANIPC_STS_MASK)) {
-            putchar((msg.flags & CANIPC_XTD_MASK) ? 'X' : 'S');
-            putchar((msg.flags & CANIPC_FDF_MASK) ? 'F' : '-');
-            putchar((msg.flags & CANIPC_BRS_MASK) ? 'B' : '-');
-            putchar((msg.flags & CANIPC_ESI_MASK) ? 'E' : '-');
-            putchar((msg.flags & CANIPC_RTR_MASK) ? 'R' : '-');
+        if (!(msg.flags & CANTCP_STS_MASK)) {
+            putchar((msg.flags & CANTCP_XTD_MASK) ? 'X' : 'S');
+            putchar((msg.flags & CANTCP_FDF_MASK) ? 'F' : '-');
+            putchar((msg.flags & CANTCP_BRS_MASK) ? 'B' : '-');
+            putchar((msg.flags & CANTCP_ESI_MASK) ? 'E' : '-');
+            putchar((msg.flags & CANTCP_RTR_MASK) ? 'R' : '-');
         } else {
             printf("Error");
         }
@@ -83,7 +83,7 @@ int main() {
         for (uint8_t i = 0; i < msg.length; i++) {
             printf(" %02X", msg.data[i]);
         }
-#ifdef CANIPC_LATENCY
+#ifdef CANTCP_LATENCY
         if (clock_gettime(CLOCK_REALTIME, &now) == 0) {
             latency = (double)(now.tv_sec - msg.timestamp.tv_sec) + 1e-9 * (now.tv_nsec - msg.timestamp.tv_nsec);
             sum += latency;
@@ -96,7 +96,7 @@ int main() {
         }
         printf("\n");
     }
-    if (ipc_client_close(fildes) < 0) {
+    if (tcp_client_close(fildes) < 0) {
         perror("+++ error");
         return EXIT_FAILURE;
     }
