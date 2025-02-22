@@ -80,6 +80,28 @@ CC = clang
 LD = clang++
 endif
 
+ifeq ($(current_OS),Linux)  # linux - libuvcanpcb.so
+
+OBJECTS  += $(BINDIR)/libpeakcan.a
+
+CFLAGS += -O2 -Wall -Wextra -Wno-parentheses \
+	-fno-strict-aliasing \
+	$(DEFINES) \
+	$(HEADERS)
+
+CXXFLAGS += -O2 -g -Wall -Wextra -pthread \
+	$(DEFINES) \
+	$(HEADERS)
+
+LDFLAGS  +=
+
+LIBRARIES = -lpthread
+
+CXX = g++
+CC = gcc
+LD = g++
+endif
+
 RM = rm -f
 CP = cp -f
 
