@@ -56,10 +56,10 @@
 
 #include "Device.h"
 
-#include "CanIpcServer.h"
-#include "CanIpcClient.h"
+#include "CanTcpServer.h"
+#include "CanTcpClient.h"
 
-class CCanServer : public CCanIpcServer {
+class CCanServer : public CCanTcpServer {
 public:
     CCanServer();
     ~CCanServer();
@@ -72,10 +72,10 @@ public:
 
     void ShowServerPort(const char* prefix);
 };
-#if (OPTION_CANIPC_ENABLED != 0)
+#if (OPTION_CANTCP_ENABLED != 0)
 // The one and only server object
 extern CCanServer g_CanServer;
 #endif
 #endif // SERVER_H_INCLUDED
 
-// $Id: Server.h 1448 2025-02-17 18:50:51Z sedna $  Copyright (c) UV Software, Berlin.
+// $Id: Server.h 1456 2025-02-19 21:22:16Z sedna $  Copyright (c) UV Software, Berlin.

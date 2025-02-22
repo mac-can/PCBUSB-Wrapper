@@ -81,8 +81,8 @@ OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Device.o $(OUTDIR)/Options.o \
 	$(OUTDIR)/TCx1_CallSequences.o $(OUTDIR)/TCx2_BitrateConverter.o \
 	$(OUTDIR)/TCxX_Summary.o $(OUTDIR)/Timer.o $(OUTDIR)/Progress.o \
 	$(OUTDIR)/anykey.o \
-	$(OUTDIR)/Server.o $(OUTDIR)/CanIpcServer.o $(OUTDIR)/CanIpcClient.o \
-	$(OUTDIR)/RocketCAN.o $(OUTDIR)/ipc_server.o $(OUTDIR)/ipc_client.o \
+	$(OUTDIR)/Server.o $(OUTDIR)/CanTcpServer.o $(OUTDIR)/CanTcpClient.o \
+	$(OUTDIR)/RocketCAN.o $(OUTDIR)/tcp_server.o $(OUTDIR)/tcp_client.o \
 	$(OUTDIR)/crc_j1850.o
 
 ifeq ($(REGRESSION),ON)  # disable all workarounds
@@ -100,8 +100,7 @@ INSTALL = ~/bin
 DEFINES = -DOPTION_REGRESSION_TEST=$(REGRESSION_TEST) \
 	-DOPTION_CAN_2_0_ONLY=0 \
 	-DOPTION_CANAPI_RETVALS=0 \
-	-DOPTION_CANIPC_ENABLED=1 \
-	-DOPTION_CANIPC_SOCKETCAN=0
+	-DOPTION_CANTCP_ENABLED=1
 
 HEADERS = -I$(HOME_DIR) \
 	-I$(MAIN_DIR) \
@@ -145,8 +144,7 @@ INSTALL = ~/bin
 DEFINES = -DOPTION_REGRESSION_TEST=$(REGRESSION_TEST) \
 	-DOPTION_CAN_2_0_ONLY=0 \
 	-DOPTION_CANAPI_RETVALS=0 \
-	-DOPTION_CANIPC_ENABLED=1 \
-	-DOPTION_CANIPC_SOCKETCAN=0
+	-DOPTION_CANIPC_ENABLED=1
 
 HEADERS = -I$(HOME_DIR) \
 	-I$(MAIN_DIR) \
@@ -285,16 +283,16 @@ $(OUTDIR)/Server.o: $(MAIN_DIR)/Server.cpp
 $(OUTDIR)/RocketCAN.o: $(CANIPC_DIR)/RocketCAN.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
-$(OUTDIR)/CanIpcServer.o: $(CANIPC_DIR)/CanIpcServer.cpp
+$(OUTDIR)/CanTcpServer.o: $(CANIPC_DIR)/CanTcpServer.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
-$(OUTDIR)/CanIpcClient.o: $(CANIPC_DIR)/CanIpcClient.cpp
+$(OUTDIR)/CanTcpClient.o: $(CANIPC_DIR)/CanTcpClient.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<	
 
-$(OUTDIR)/ipc_server.o: $(CANIPC_DIR)/ipc_server.c
+$(OUTDIR)/tcp_server.o: $(CANIPC_DIR)/tcp_server.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
-$(OUTDIR)/ipc_client.o: $(CANIPC_DIR)/ipc_client.c
+$(OUTDIR)/tcp_client.o: $(CANIPC_DIR)/tcp_client.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 $(OUTDIR)/crc_j1850.o: $(CANIPC_DIR)/crc_j1850.c

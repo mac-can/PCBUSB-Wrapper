@@ -63,16 +63,15 @@
 #endif
 #include <assert.h>
 
-#if (OPTION_CANIPC_ENABLED != 0)
+#if (OPTION_CANTCP_ENABLED != 0)
 CCanServer g_CanServer = CCanServer();  // global access to CAN server
 #endif
 
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;  // mutex for critical sections
 static CCanDevice *canDevice = NULL;  // to be used in the C callback function
-//static size_t canMtuSize = IPC_MAX_MTU_SIZE;  // maximum transmission unit size
 
 static int EventHandler(const void *data, size_t size, void *param) {
-    CANIPC_Message_t* ipc_msg = (CANIPC_Message_t*)data;
+    CANTCP_Message_t* ipc_msg = (CANTCP_Message_t*)data;
     CANAPI_Message_t can_msg = CANAPI_Message_t();
     int retVal = CCanApi::FatalError;
     (void)param;
@@ -81,27 +80,27 @@ static int EventHandler(const void *data, size_t size, void *param) {
     if (!data) {
         return CCanApi::NullPointer;
     }
-    if (size != sizeof(CANIPC_Message_t)) {
+    if (size != sizeof(CANTCP_Message_t)) {
         return CCanApi::IllegalParameter;
     }
-    if (crc_j1850_calc(data, sizeof(CANIPC_Message_t) - 1U, NULL) != ipc_msg->checksum) {
+    if (crc_j1850_calc(data, sizeof(CANTCP_Message_t) - 1U, NULL) != ipc_msg->checksum) {
         return (int)(-80);  // TODO: define error code
     }
-    if (ipc_msg->ctrlchar != CANIPC_ETX_CHAR) {
+    if (ipc_msg->ctrlchar != CANTCP_ETX_CHAR) {
         return (int)(-81);  // TODO: define error code
     }
     /* convert the message from network to host byte order */
-    CAN_IPC_MSG_NTOH(*ipc_msg);
+    CANTCP_MSG_NTOH(*ipc_msg);
     /* transmit the message on the CAN bus */
     can_msg.id = ipc_msg->id;
-    can_msg.xtd = (ipc_msg->flags & CANIPC_XTD_MASK) ? 1 : 0;
-    can_msg.rtr = (ipc_msg->flags & CANIPC_RTR_MASK) ? 1 : 0;
-    can_msg.fdf = (ipc_msg->flags & CANIPC_FDF_MASK) ? 1 : 0;
-    can_msg.brs = (ipc_msg->flags & CANIPC_BRS_MASK) ? 1 : 0;
-    can_msg.esi = (ipc_msg->flags & CANIPC_ESI_MASK) ? 1 : 0;
-    can_msg.sts = (ipc_msg->flags & CANIPC_STS_MASK) ? 1 : 0;
+    can_msg.xtd = (ipc_msg->flags & CANTCP_XTD_MASK) ? 1 : 0;
+    can_msg.rtr = (ipc_msg->flags & CANTCP_RTR_MASK) ? 1 : 0;
+    can_msg.fdf = (ipc_msg->flags & CANTCP_FDF_MASK) ? 1 : 0;
+    can_msg.brs = (ipc_msg->flags & CANTCP_BRS_MASK) ? 1 : 0;
+    can_msg.esi = (ipc_msg->flags & CANTCP_ESI_MASK) ? 1 : 0;
+    can_msg.sts = (ipc_msg->flags & CANTCP_STS_MASK) ? 1 : 0;
     can_msg.dlc = CCanApi::Len2Dlc(ipc_msg->length);
-    for (int i = 0; (i < CANFD_MAX_LEN) && (i < CANIPC_MAX_LEN); i++) {
+    for (int i = 0; (i < CANFD_MAX_LEN) && (i < CANTCP_MAX_LEN); i++) {
         can_msg.data[i] = ipc_msg->data[i];
     }
     /* make it so! */
@@ -120,7 +119,7 @@ static int EventHandler(const void *data, size_t size, void *param) {
     return retVal;
 }
 
-CCanServer::CCanServer() : CCanIpcServer() {
+CCanServer::CCanServer() : CCanTcpServer() {
     assert(pthread_mutex_init(&mutex, NULL) == 0);
     canDevice = NULL;
 }
@@ -162,14 +161,9 @@ void CCanServer::ShowServerPort(const char* prefix) {
     if (IsRunning()) {
         if (prefix)
             std::cout << prefix << ' ';
-        std::cout << "CAN/IPC server listening on port " << GetService() << " using ";
-        switch (GetTransportProtocol()) {
-            case eTcp: std::cout << "TCP"; break;
-            case eUdp: std::cout << "UDP"; break;
-            default: std::cout << "???"; break;
-        }
-        std::cout << " with mtu size " << GetMtuSize() << std::endl;
+        std::cout << "RocketCAN server listening on port " << GetService();
+        std::cout << " with data size " << GetFrameSize() << " 🚀" << std::endl;
     }
 }
 
-// $Id: Server.cpp 1448 2025-02-17 18:50:51Z sedna $  Copyright (c) UV Software, Berlin.
+// $Id: Server.cpp 1456 2025-02-19 21:22:16Z sedna $  Copyright (c) UV Software, Berlin.

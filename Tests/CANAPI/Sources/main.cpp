@@ -79,7 +79,7 @@ GTEST_API_ int main(int argc, char **argv) {
     else if (g_Options.ShowHelp()) {
         return 0;
     }
-#if (OPTION_CANIPC_ENABLED != 0)
+#if (OPTION_CANTCP_ENABLED != 0)
     // --- start CAN server ---
     if (g_Options.IsCanServerEnabled()) {
         g_CanServer.SetLoggingLevel(g_Options.GetCanServerLoggingLevel());
@@ -98,7 +98,7 @@ GTEST_API_ int main(int argc, char **argv) {
     }
     // --- test execution starts here --
     int res = RUN_ALL_TESTS();
-#if (OPTION_CANIPC_ENABLED != 0)
+#if (OPTION_CANTCP_ENABLED != 0)
     // --- stop CAN server ---
     if (g_Options.IsCanServerEnabled()) {
         g_CanServer.StopServer();
@@ -108,4 +108,4 @@ GTEST_API_ int main(int argc, char **argv) {
     return res;
 }
 
-// $Id: main.cpp 1448 2025-02-17 18:50:51Z sedna $  Copyright (c) UV Software, Berlin //
+// $Id: main.cpp 1456 2025-02-19 21:22:16Z sedna $  Copyright (c) UV Software, Berlin //
