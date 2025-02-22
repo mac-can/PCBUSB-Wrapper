@@ -106,6 +106,13 @@ See header file `PeakCAN.h` for a description of all class members.
 ___libUVCANPCB___ is a dynamic library with a CAN API V3 compatible application programming interface for use in __C__ applications.
 See header file `can_api.h` for a description of all API functions.
 
+#### can_send
+
+`can_send` is a command line tool to send CAN messages that are entered at the program prompt.
+The syntax is taken from the Linux SocketCAN utility [can_utils\cansend](https://github.com/linux-can/can-utils/tree/master).
+
+Type `can_send --help` to display all program options.
+
 #### can_moni
 
 `can_moni` is a command line tool to view incoming CAN messages.
@@ -128,11 +135,11 @@ Type `can_test --help` to display all program options.
 ### Development Environments
 
 #### macOS Sequoia
-- macOS Sequoia (15.3) on a Mac mini (M4 Pro, 2024)
+- macOS Sequoia (15.3.1) on a Mac mini (M4 Pro, 2024)
 - Apple clang version 16.0.0 (clang-1600.0.26.6)
 
 #### macOS Ventura
-- macOS Ventura (13.7.3) on a MacBook Pro (2019)
+- macOS Ventura (13.7.4) on a MacBook Pro (2019)
 - Apple clang version 14.0.3 (clang-1403.0.22.14.1)
 
 #### Debian 12.9 ("bookworm")
