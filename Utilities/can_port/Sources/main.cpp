@@ -18,7 +18,7 @@
 //  with this program; if not, see <https://www.gnu.org/licenses/>.
 //
 #include "Driver.h"
-#include "CanIpcServer.h"
+#include "CanTcpServer.h"
 #include "Options.h"
 #include "Timer.h"
 #if (SERIAL_CAN_SUPPORTED != 0)
@@ -53,8 +53,8 @@
 #define strncasecmp _strnicmp
 #define strcasecmp _stricmp
 #endif
-#ifndef CANIPC_TX_TIMEOUT
-#define CANIPC_TX_TIMEOUT  100UL
+#ifndef CAN_TX_TIMEOUT
+#define CAN_TX_TIMEOUT  100UL
 #endif
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
@@ -76,10 +76,10 @@ static void sigterm(int signo);
 static volatile int running = 1;
 
 static CCanDevice canDevice = CCanDevice();  // global due to SignalChannel() in sigterm()
-static CCanIpcServer ipcServer = CCanIpcServer();
+static CCanTcpServer ipcServer = CCanTcpServer();
 
 static int TransmitMessage(const void* data, size_t size, void *param) {
-    CANIPC_Message_t* ipc_msg = (CANIPC_Message_t*)data;
+    CANTCP_Message_t* ipc_msg = (CANTCP_Message_t*)data;
     CANAPI_Message_t can_msg = CANAPI_Message_t();
     CANAPI_Return_t retVal = CANERR_FATAL;
     CCanDevice* canDevice = (CCanDevice*)param;
@@ -88,21 +88,21 @@ static int TransmitMessage(const void* data, size_t size, void *param) {
     if (!data || !param) {
         return (int)CCanApi::NullPointer;
     }
-    if (size != sizeof(CANIPC_Message_t)) {
+    if (size != sizeof(CANTCP_Message_t)) {
         return (int)(-89);  // TODO: define error code
     }
     /* map RocketCAN message to CAN message (CAN API V3) */
-    if (!CCanIpcServer::NetToCan(*ipc_msg, can_msg)) {
+    if (!CCanTcpServer::NetToCan(*ipc_msg, can_msg)) {
         return (int)(-80);  // TODO: define error code
     }
     /* the timestamp is ignored on CAN TX frames */
-#if (OPTION_CANIPC_LATENCY != 0)
+#if (OPTION_CANTCP_LATENCY != 0)
     /* calculate latency time between client and server */
     double latency = CTimer::DiffTime(ipc_msg->timestamp, CTimer::GetTime());
     fprintf(stderr, "%.4f\n", latency * 1e6);
 #endif
     /* transmit the message on the CAN bus (retry if busy) */
-    CTimer timer = CTimer(CANIPC_TX_TIMEOUT * CTimer::MSEC);
+    CTimer timer = CTimer(CAN_TX_TIMEOUT * CTimer::MSEC);
     do {
         retVal = canDevice->WriteMessage(can_msg);
     } while ((retVal == CANERR_TX_BUSY) && !timer.Timeout());
@@ -355,25 +355,6 @@ int main(int argc, const char* argv[]) {
     /* - start CAN-over-Ethernet server */
     fprintf(stdout, "CAN-over-Ethernet server on port %s...", opts.m_szServerPort);
     fflush(stdout);
-    /* -- determine IPC message size (MTU size) */
-    switch (opts.m_eDataFormat) {
-        case SOptions::eMtuRocketCan:  /* CAN API V3 (RocketCAN) */
-            if (!ipcServer.SetFrameFormat(CCanIpcServer::eRocketCAN))
-                ipcFault = true;
-            break;
-        case SOptions::eMtuSocketCan:  /* Linux Kernel CAN (SocketCAN) */
-            if (opts.m_OpMode.byte & CANMODE_FDOE) {
-                if (!ipcServer.SetFrameFormat(CCanIpcServer::eSocketCAN_FD))
-                    ipcFault = true;
-            } else {
-                if (!ipcServer.SetFrameFormat(CCanIpcServer::eSocketCAN))
-                    ipcFault = true;
-            }
-            break;
-        default:
-            fprintf(stderr, "+++ error: unknown data format (%i)\n", opts.m_eDataFormat);
-            goto teardown;
-    }
     /* -- set callback function and logging level */
     if (!ipcServer.SetCallback(TransmitMessage, (void*)&canDevice))
         ipcFault = true;

@@ -1,6 +1,6 @@
 //  SPDX-License-Identifier: GPL-2.0-or-later
 //
-//  CAN-to-Ethernet Server for PEAK-System PCAN Interfaces (CAN API V3)
+//  CAN-over-Ethernet Server for PEAK-System PCAN Interfaces (CAN API V3)
 //
 //  Copyright (c) 2008 by Uwe Vogt, UV Software, Friedrichshafen
 //  Copyright (c) 2012-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
@@ -26,8 +26,8 @@
 #if (OPTION_CAN_2_0_ONLY != 0)
 #error Compilation with legacy CAN 2.0 frame format!
 #else
-#define CAN_FD_SUPPORTED   1  // don't touch that dial
-#define CAN_TRACE_SUPPORTED  0  // write trace file (1=PCAN)
+#define CAN_FD_SUPPORTED    1  // don't touch that dial
+#define CAN_TRACE_SUPPORTED 0  // write trace file (1=PCAN)
 #endif
 #if !defined(__APPLE__)
 #define SERVER_INTERFACE  "PEAK-System PCAN Interfaces"
