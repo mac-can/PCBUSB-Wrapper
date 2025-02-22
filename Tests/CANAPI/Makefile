@@ -80,7 +80,10 @@ OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Device.o $(OUTDIR)/Options.o \
 	$(OUTDIR)/TC27_ResetFilter.o \
 	$(OUTDIR)/TCx1_CallSequences.o $(OUTDIR)/TCx2_BitrateConverter.o \
 	$(OUTDIR)/TCxX_Summary.o $(OUTDIR)/Timer.o $(OUTDIR)/Progress.o \
-	$(OUTDIR)/anykey.o
+	$(OUTDIR)/anykey.o \
+	$(OUTDIR)/Server.o $(OUTDIR)/CanTcpServer.o $(OUTDIR)/CanTcpClient.o \
+	$(OUTDIR)/RocketCAN.o $(OUTDIR)/tcp_server.o $(OUTDIR)/tcp_client.o \
+	$(OUTDIR)/crc_j1850.o
 
 ifeq ($(REGRESSION),ON)  # disable all workarounds
 REGRESSION_TEST = 1
@@ -97,7 +100,7 @@ INSTALL = ~/bin
 DEFINES = -DOPTION_REGRESSION_TEST=$(REGRESSION_TEST) \
 	-DOPTION_CAN_2_0_ONLY=0 \
 	-DOPTION_CANAPI_RETVALS=0 \
-	-DOPTION_CANTCP_ENABLED=0
+	-DOPTION_CANTCP_ENABLED=1
 
 HEADERS = -I$(HOME_DIR) \
 	-I$(MAIN_DIR) \
@@ -140,12 +143,14 @@ INSTALL = ~/bin
 
 DEFINES = -DOPTION_REGRESSION_TEST=$(REGRESSION_TEST) \
 	-DOPTION_CAN_2_0_ONLY=0 \
-	-DOPTION_CANAPI_RETVALS=0
+	-DOPTION_CANAPI_RETVALS=0 \
+	-DOPTION_CANIPC_ENABLED=1
 
 HEADERS = -I$(HOME_DIR) \
 	-I$(MAIN_DIR) \
 	-I$(GTEST_INC) \
-	-I$(CANAPI_INC)
+	-I$(CANAPI_INC) \
+	-I$(CANIPC_DIR)
 
 CFLAGS += -O2 -Wall -Wno-parentheses \
 	-fno-strict-aliasing \
@@ -245,9 +250,6 @@ $(OUTDIR)/TCx1_CallSequences.o: $(TEST_DIR)/TCx1_CallSequences.cc
 $(OUTDIR)/TCx2_BitrateConverter.o: $(TEST_DIR)/TCx2_BitrateConverter.cc
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
-$(OUTDIR)/TCx4_TracefileRecorder.o: $(TEST_DIR)/TCx4_TracefileRecorder.cc
-	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
-
 $(OUTDIR)/TCxX_Summary.o: $(TEST_DIR)/TCxX_Summary.cc
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
@@ -274,6 +276,27 @@ $(OUTDIR)/Bitrates.o: $(MAIN_DIR)/Bitrates.cpp
 
 $(OUTDIR)/Properties.o: $(MAIN_DIR)/Properties.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/Server.o: $(MAIN_DIR)/Server.cpp
+	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/RocketCAN.o: $(CANIPC_DIR)/RocketCAN.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/CanTcpServer.o: $(CANIPC_DIR)/CanTcpServer.cpp
+	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/CanTcpClient.o: $(CANIPC_DIR)/CanTcpClient.cpp
+	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<	
+
+$(OUTDIR)/tcp_server.o: $(CANIPC_DIR)/tcp_server.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/tcp_client.o: $(CANIPC_DIR)/tcp_client.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/crc_j1850.o: $(CANIPC_DIR)/crc_j1850.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 
 $(TARGET): $(OBJECTS)

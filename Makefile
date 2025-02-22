@@ -54,32 +54,50 @@ all:
 	$(MAKE) -C Trial $@
 	$(MAKE) -C Libraries/CANAPI $@
 	$(MAKE) -C Libraries/PeakCAN $@
-	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Utilities/can_moni $@
+#	$(MAKE) -C Utilities/can_play $@
+	$(MAKE) -C Utilities/can_port $@
+	$(MAKE) -C Utilities/can_send $@
+#	$(MAKE) -C Utilities/can_simu $@
+	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Tests/CANAPI $@
 
 clean:
 	$(MAKE) -C Trial $@
 	$(MAKE) -C Libraries/CANAPI $@
 	$(MAKE) -C Libraries/PeakCAN $@
-	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Utilities/can_moni $@
+#	$(MAKE) -C Utilities/can_play $@
+	$(MAKE) -C Utilities/can_port $@
+	$(MAKE) -C Utilities/can_send $@
+#	$(MAKE) -C Utilities/can_simu $@
+	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Tests/CANAPI $@
 
 pristine:
 	$(MAKE) -C Trial $@
 	$(MAKE) -C Libraries/CANAPI $@
 	$(MAKE) -C Libraries/PeakCAN $@
-	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Utilities/can_moni $@
+#	$(MAKE) -C Utilities/can_play $@
+	$(MAKE) -C Utilities/can_port $@
+	$(MAKE) -C Utilities/can_send $@
+#	$(MAKE) -C Utilities/can_simu $@
+	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Tests/CANAPI $@
+	$(MAKE) -C Examples/C++ $@
+	$(MAKE) -C Examples/IPC $@
 
 install:
 #	$(MAKE) -C Trial $@
 	$(MAKE) -C Libraries/CANAPI $@
 	$(MAKE) -C Libraries/PeakCAN $@
-#	$(MAKE) -C Utilities/can_test $@
 #	$(MAKE) -C Utilities/can_moni $@
+##	$(MAKE) -C Utilities/can_play $@
+#	$(MAKE) -C Utilities/can_port $@
+#	$(MAKE) -C Utilities/can_send $@
+##	$(MAKE) -C Utilities/can_simu $@
+#	$(MAKE) -C Utilities/can_test $@
 #	$(MAKE) -C Tests/CANAPI $@
 
 test:

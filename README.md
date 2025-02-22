@@ -128,6 +128,16 @@ Originally developed for electronic environmental tests on an embedded Linux sys
 
 Type `can_test --help` to display all program options.
 
+#### can_port
+
+`can_port` is a command line tool designed to open a network socket for CAN-over-Ethernet communication.
+It connects to a CAN device and handles the data exchange between the CAN bus and local or remote clients.
+
+_Be aware that this may expose your computer to security vulnerabilities, unauthorized access, data interception, denial of service attacks, and resource exhaustion.
+Implement appropriate security measures to mitigate these risks._
+
+Type `can_port --help` to display all program options.
+
 ### Target Platforms
 - macOS 13.0 and later (Intel x64 and Apple silicon)
 - Debian GNU/Linux 12 (Linux Kernel 6.x)

@@ -1,8 +1,8 @@
 #	SPDX-License-Identifier: GPL-2.0-or-later
 #
-#	CAN Sender for PEAK-System PCAN Interfaces (CAN API V3)
+#	CAN-over-Ethernet Server for PEAK-System PCAN Interfaces (CAN API V3)
 #
-#	Copyright (c) 2007 by Uwe Vogt, UV Software, Friedrichshafen
+#	Copyright (c) 2008 by Uwe Vogt, UV Software, Friedrichshafen
 #	Copyright (c) 2012-2025  Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 #
 #	This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@ current_OS := $(patsubst MINGW%,MinGW,$(current_OS))
 current_OS := $(patsubst MSYS%,MinGW,$(current_OS))
 
 
-TARGET  = can_send
+TARGET  = can_port
 
 INSTALL = ~/bin
 
@@ -34,9 +34,11 @@ MAIN_DIR = ./Sources
 
 DRIVER_DIR = $(PROJ_DIR)/Sources
 CANAPI_DIR = $(PROJ_DIR)/Sources/CANAPI
+CANIPC_DIR = $(PROJ_DIR)/Sources/CANIPC
 
 OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Options.o $(OUTDIR)/Timer.o \
-	$(OUTDIR)/Message.o $(OUTDIR)/can_msg.o
+	$(OUTDIR)/CanTcpServer.o $(OUTDIR)/tcp_server.o \
+	$(OUTDIR)/RocketCAN.o $(OUTDIR)/crc_j1850.o
 
 DEFINES = -DOPTION_CANAPI_DRIVER=1 \
 	-DOPTION_CANAPI_COMPANIONS=1
@@ -44,7 +46,8 @@ DEFINES = -DOPTION_CANAPI_DRIVER=1 \
 HEADERS = -I$(MAIN_DIR) \
 	-I$(HOME_DIR) \
 	-I$(DRIVER_DIR) \
-	-I$(CANAPI_DIR)
+	-I$(CANAPI_DIR) \
+	-I$(CANIPC_DIR)
 
 
 ifeq ($(current_OS),Darwin)  # macOS - libPeakCAN.dylib
@@ -154,10 +157,16 @@ $(OUTDIR)/Options.o: $(MAIN_DIR)/Options_p.cpp
 $(OUTDIR)/Timer.o: $(MAIN_DIR)/Timer.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
-$(OUTDIR)/Message.o: $(MAIN_DIR)/Message.cpp
+$(OUTDIR)/CanTcpServer.o: $(CANIPC_DIR)/CanTcpServer.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
-$(OUTDIR)/can_msg.o: $(CANAPI_DIR)/can_msg.c
+$(OUTDIR)/tcp_server.o: $(CANIPC_DIR)/tcp_server.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/RocketCAN.o: $(CANIPC_DIR)/RocketCAN.c
+	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
+
+$(OUTDIR)/crc_j1850.o: $(CANIPC_DIR)/crc_j1850.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 

@@ -9,6 +9,10 @@ Libraries/PeakCAN/.objects
 Libraries/PeakCAN/lib*.*
 Utilities/can_moni/.objects
 Utilities/can_moni/can_moni
+Utilities/can_port/.objects
+Utilities/can_port/can_port
+Utilities/can_send/.objects
+Utilities/can_send/can_send
 Utilities/can_test/.objects
 Utilities/can_test/can_test
 Tests/CANAPI/.objects
@@ -19,9 +23,13 @@ Binaries
 Includes
 Debug
 .objects
+.traces
 .vscode
 .svn
+.d
 null.d
+*.json
+*.xml
 *.log
 *.dat
 *.trc
