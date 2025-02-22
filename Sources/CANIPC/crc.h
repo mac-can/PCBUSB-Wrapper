@@ -47,13 +47,13 @@
  *  You should have received a copy of the GNU General Public License along
  *  with this module; if not, see <https://www.gnu.org/licenses/>.
  */
-/** @file        crc_j1850.c
+/** @file        crc.h
  *
- *  @brief       CRC Calculation according to SAE-J1850 CRC8 Standard.
+ *  @brief       Common definitions for CRC calculation.
  *
- *  @author      $Author$
+ *  @author      $Author: sedna $
  *
- *  @version     $Rev$
+ *  @version     $Rev: 846 $
  *
  *  @defgroup    crc CRC Calculation
  *  @{
@@ -94,12 +94,6 @@ typedef uint8_t crc8_t;
 typedef uint16_t crc16_t;
 typedef uint32_t crc32_t;
 #endif
-
-typedef enum crc_mode_tag {
-    CRC_RESET = 0,
-    CRC_UPDATE
-} crc_mode_t;
-
 #endif  /* CRC_H_INCLUDED */
 /** @}
  */

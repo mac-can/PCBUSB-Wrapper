@@ -1,6 +1,6 @@
 //  SPDX-License-Identifier: BSD-2-Clause OR GPL-2.0-or-later
 //
-//  CAN Interface API, Version 3 (RocketCAN Server)
+//  CAN Interface API, Version 3 (CAN-over-Ethernet Server)
 //
 //  Copyright (c) 2008-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 //  All rights reserved.
@@ -8,8 +8,8 @@
 //  This file is part of CAN API V3.
 //
 //  CAN API V3 is dual-licensed under the BSD 2-Clause "Simplified" License
-//  and under the GNU General Public License v2.0 (or any later version).
-//  You can choose between one of them if you use this file.
+//  and under the GNU General Public License v2.0 (or any later version). You can
+//  choose between one of them if you use CAN API V3 in whole or in part.
 //
 //  (1) BSD 2-Clause "Simplified" License
 //
@@ -47,22 +47,16 @@
 //  You should have received a copy of the GNU General Public License along
 //  with CAN API V3; if not, see <https://www.gnu.org/licenses/>.
 //
-#ifndef CAN_IPC_SERVER_H_INCLUDED
-#define CAN_IPC_SERVER_H_INCLUDED
+#ifndef CAN_TCP_SERVER_H_INCLUDED
+#define CAN_TCP_SERVER_H_INCLUDED
 
 #include "CANAPI.h"
-#include "ipc_can.h"
-#include "ipc_common.h"
+#include "tcp_can.h"
+#include "tcp_common.h"
 
 /// \name  Compiler Switches
 /// \brief Options for conditional compilation.
 /// \{
-/// \note  Set define OPTION_CANIPC_SOCKETCAN to a non-zero value to compile
-///        this module with SocketCAN support (e.g. in the build environment).
-///
-/// \note  Set define OPTION_CANIPC_PCANBASIC to a non-zero value to compile
-///        this module with PCAN-Basic support (e.g. in the build environment).
-///
 /// \note  Do not set define OPTION_CAN_2_0_ONLY to a non-zero value to compile
 ///        with CAN 2.0 frame format only. This frame format is not supported!
 ///
@@ -73,63 +67,42 @@
 #error Compilation with legacy CAN 2.0 frame format!
 #endif
 /// @}
+#ifndef NI_MAXSERV
+#define NI_MAXSERV  32  ///< maximum length of a service name or port number
+#endif
+typedef struct tcp_server_desc *tcp_server_t;  ///< forwards declaration
 
-typedef struct ipc_server_desc *ipc_server_t;  ///< forwards declaration
-
-/// \name   CAN IPC Server
-/// \brief  CAN Inter-Process Communication (IPC) Server.
+/// \name   CAN TCP/IP Server
+/// \brief  CAN-over-Ethernet Server with RocketCAN frame format.
 /// \{
-class CCanIpcServer {
+class CCanTcpServer {
 public:
-    enum EIpcProtocol {
-        eTcp = IPC_SOCK_TCP,  ///< TCP/IP protocol (SOCK_STREAM)
-        eUdp = IPC_SOCK_UDP,  ///< UDP/IP protocol (SOCK_DGRAM)
-    };
-    enum EFrameFormat {
-        eRocketCAN = CANIPC_ROCKETCAN,  ///< RocketCAN frame format (CAN API V3)
-        eSocketCAN = CANIPC_SOCKETCAN,  ///< SocketCAN CAN CC frame format
-        eSocketCAN_FD = CANIPC_SOCKETCAN_FD,  ///< SocketCAN CAN FD frame format
-        eUnknown = -1  ///< unknown frame format
-    };
 private:
-    char m_szService[32];  ///< Service name or port number
-    EFrameFormat m_eFrameFormat;  ///< CAN frame format
-    EIpcProtocol m_ePprotocol;  ///< IPC protocol
-    size_t m_nMtuSize;  ///< Maximum Transmission Unit (MTU) size
-    ipc_event_cbk_t m_evCallback;  ///< Event callback function
-    void *m_pParameter;  ///< Event callback parameter
-    ipc_server_t m_pServer;  ///< IPC server descriptor
-    int m_nLogging;  ///< Logging level
+    char m_szService[NI_MAXSERV];  ///< Service name or port number
+    size_t m_nFrameSize;           ///< Frame size (in bytes)
+    tcp_event_cbk_t m_evCallback;  ///< Event callback function
+    void *m_pParameter;            ///< Event callback parameter
+    tcp_server_t m_pServer;        ///< TCP/IP server descriptor
+    int m_nLogging;                ///< Logging level (0 = none)
 public:
     /// @brief  Constructor (default frame format is RocketCAN).
     ///
-    /// @param  protocol     IPC protocol (TCP, UDP, SCTP)
-    ///
-    CCanIpcServer(EIpcProtocol protocol = eTcp);  // TODO: make SCTP the default protocol!
+    CCanTcpServer();
 
     /// @brief  Destructor.
     ///
-    ~CCanIpcServer();
-
-    /// @brief  Set the CAN frame format.
-    ///
-    /// @note   The server must not be running.
-    ///
-    /// @param  format  CAN frame format (RocketCAN, SocketCAN)
-    ///
-    /// @return true if the frame format has been set, or false on error
-    ///
-    bool SetFrameFormat(EFrameFormat format = eRocketCAN);
+    ~CCanTcpServer();
 
     /// @brief  Set the event callback function.
     ///
     /// @note   The server must not be running.
     ///
-    /// @param  callback  Event callback function
+    /// @param  callback   Event callback function
+    /// @param  parameter  Event callback parameter
     ///
     /// @return true if the callback function has been set, or false on error
     ///
-    bool SetCallback(ipc_event_cbk_t callback, void *parameter = NULL) {
+    bool SetCallback(tcp_event_cbk_t callback, void *parameter = NULL) {
         if (m_pServer != NULL) return false;
         m_evCallback = callback;
         m_pParameter = parameter;
@@ -154,33 +127,21 @@ public:
     ///
     const char *GetService() { return (const char *)m_szService; }
 
-    /// @brief  Get the CAN frame format.
+    /// @brief  Get the frame size.
     ///
-    /// @return CAN frame format (RocketCAN, SocketCAN, PCAN-Basic)
+    /// @return Frame size (in bytes)
     ///
-    EFrameFormat GetFrameFormat() { return m_eFrameFormat; }
+    size_t GetFrameSize() { return m_nFrameSize; }
 
-    /// @brief  Get the transport protocol.
+    /// @brief  Check if the TCP/IP server is running.
     ///
-    /// @return Transport protocol (TCP, UDP, SCTP)
-    ///
-    EIpcProtocol GetTransportProtocol() { return m_ePprotocol; }
-
-    /// @brief  Get the MTU size.
-    ///
-    /// @return Maximum Transmission Unit (MTU) size
-    ///
-    size_t GetMtuSize() { return m_nMtuSize; }
-
-    /// @brief  Check if the IPC server is running.
-    ///
-    /// @return true if the IPC server is running, or false otherwise
+    /// @return true if the TCP/IP server is running, or false otherwise
     ///
     bool IsRunning() { return (m_pServer != NULL) ? true : false; }
 
-    /// @brief  Start the IPC server on the specified port and accept incoming connections.
+    /// @brief  Start the TCP/IP server on the specified port and accept incoming connections.
     ///
-    /// @param  service      Service name or port number
+    /// @param  service  Service name or port number
     ///
     /// @return 0 on success, or a negative value on error
     ///
@@ -188,8 +149,8 @@ public:
 
     /// @brief  Send data over the network.
     ///
-    /// @param  data         Data to be sent (in network byte order)
-    /// @param  size         Size of the data (must match the MTU size)
+    /// @param  data  Data to be sent (in network byte order)
+    /// @param  size  Size of the data (must match the frames size)
     ///
     /// @return 0 on success, or a negative value on error
     ///
@@ -199,9 +160,9 @@ public:
     ///
     /// @note   To use the extra fields in a RocketCAN message, use the raw Send() method.
     ///
-    /// @param  message      CAN message (CAN API V3 format)
-    /// @param  status       CAN status register (as 8-bit value)
-    /// @param  load         CAN bus load (0 .. 10'000 ==> 0 .. 255)
+    /// @param  message  CAN message (CAN API V3 format)
+    /// @param  status   CAN status register (as 8-bit value)
+    /// @param  load     CAN bus load (0 .. 10'000 = 0 .. 100%)
     ///
     /// @return 0 on success, or a negative value on error
     ///
@@ -215,41 +176,25 @@ public:
     ///
     CANAPI_Return_t SendAbort(uint8_t status = 0x00U);
 
-    /// @brief  Stop the IPC server.
+    /// @brief  Stop the TCP/IP server.
     ///
     /// @return 0 on success, or a negative value on error
     ///
     CANAPI_Return_t Stop();
 public:
-    /// @brief  Set the MTU size.
+    /// @brief  Set the frame size.
     ///
     /// @warning  This method is intended for testing purposes only!
     ///
     /// @note   The server must not be running.
     ///
-    /// @param  mtuSize  Maximum Transmission Unit (MTU) size
+    /// @param  size  Frame size (in bytes)
     ///
-    /// @return true if the MTU size has been set, or false on error
+    /// @return true if the frame size has been set, or false on error
     ///
-    bool SetMtuSize(size_t mtuSize) {
+    bool SetFrameSize(size_t size) {
         if (m_pServer != NULL) return false;
-        m_eFrameFormat = eUnknown;
-        m_nMtuSize = mtuSize;
-        return true;
-    }
-    /// @brief  Set the transport protocol.
-    ///
-    /// @warning  This method is intended for testing purposes only!
-    ///
-    /// @note   The server must not be running.
-    ///
-    /// @param  protocol  Transport protocol (TCP, UDP, SCTP)
-    ///
-    /// @return true if the transport protocol has been set, or false on error
-    ///
-    bool SetTransportProtocol(EIpcProtocol protocol) {
-        if (m_pServer != NULL) return false;
-        m_ePprotocol = protocol;
+        m_nFrameSize = size;
         return true;
     }
 public:
@@ -258,7 +203,7 @@ public:
     /// @param  can  CAN API V3 message (host byte order)
     /// @param  net  RocketCAN message (network byte order)
     ///
-    static void CanToNet(const CANAPI_Message_t &can, CANIPC_Message_t &net);
+    static void CanToNet(const CANAPI_Message_t &can, CANTCP_Message_t &net);
 
     /// @brief  Convert RocketCAN message to CAN API V3 message.
     ///
@@ -267,8 +212,8 @@ public:
     ///
     /// @return true if the RocketCAN message is valid, or false otherwise
     ///
-    static bool NetToCan(const CANIPC_Message_t &net, CANAPI_Message_t &can);
+    static bool NetToCan(const CANTCP_Message_t &net, CANAPI_Message_t &can);
 };
 /// \}
 
-#endif  // CAN_IPC_SERVER_H_INCLUDED
+#endif  // CAN_TCP_SERVER_H_INCLUDED

@@ -130,7 +130,7 @@ Type `can_test --help` to display all program options.
 
 #### can_port
 
-`can_port` is a command line tool designed to open a network socket for CAN-to-Ethernet communication.
+`can_port` is a command line tool designed to open a network socket for CAN-over-Ethernet communication.
 It connects to a CAN device and handles the data exchange between the CAN bus and local or remote clients.
 
 _Be aware that this may expose your computer to security vulnerabilities, unauthorized access, data interception, denial of service attacks, and resource exhaustion.

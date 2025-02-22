@@ -5,14 +5,14 @@
  *  Copyright (c) 2002-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
  *  All rights reserved.
  *
- *  Module 'ipc_server' - Inter-Process Communication (IPC) server
+ *  Module 'tcp_server' - Stream Socket Server (TCP/IP)
  *
  *  This module is dual-licensed under the BSD 2-Clause "Simplified" License
  *  and under the GNU General Public License v2.0 (or any later version).
  *  You can choose between one of them if you use this module.
  *
  *  (1) BSD 2-Clause "Simplified" License
- * 
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *  1. Redistributions of source code must retain the above copyright notice, this
@@ -47,18 +47,18 @@
  *  You should have received a copy of the GNU General Public License along
  *  with this module; if not, see <https://www.gnu.org/licenses/>.
  */
-/** @file        ipc_server.c
+/** @file        tcp_server.c
  *
- *  @brief       Inter-Process Communication (IPC) server.
+ *  @brief       Stream Socket Server (TCP/IP).
  *
  *  @author      $Author: sedna $
  *
- *  @version     $Rev: 1447 $
+ *  @version     $Rev: 1452 $
  *
- *  @addtogroup  ipc
+ *  @addtogroup  tcp
  *  @{
  */
-#include "ipc_server.h"
+#include "tcp_server.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,7 +67,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <time.h>
-#if !defined(_WIN32) && !defined(_WIN64)
+
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/select.h>
@@ -78,12 +78,7 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#else
-#include <winsock2.h>
-#include <ws2tcpip.h>
-/* Need to link with Ws2_32.lib */
-#pragma comment(lib, "ws2_32.lib")
-#endif
+
 
 /*  -----------  options  ------------------------------------------------
  */
@@ -91,36 +86,27 @@
 
 /*  -----------  defines  ------------------------------------------------
  */
-#if (OPTION_CANIPC_BACKLOG == 0)
+#if (OPTION_TCPIP_BACKLOG == 0)
 #define BACKLOG  5  /* how many pending connections queue will hold */
 #else
-#define BACKLOG  OPTION_CANIPC_BACKLOG
+#define BACKLOG  OPTION_TCPIP_BACKLOG
 #endif
-#if (IPC_ETH_MTU_SIZE != 1500)
-#error Maximum Transmission Unit (MTU) size must be 1500 bytes
-#endif
-#if (IPC_TCP_MSS_SIZE != 1460)
-#error Maximum Segment Size (MSS) for TCP must be 1460 bytes
-#endif
-#if (IPC_UDP_MSS_SIZE != 1472)
-#error Maximum Segment Size (MSS) for UDP must be 1472 bytes
-#endif
-#if (IPC_MAX_BUF_SIZE <= IPC_ETH_MTU_SIZE)
-#define MAX_BUF_SIZE  IPC_ETH_MTU_SIZE
+#if (TCP_BUF_SIZE < TCP_MSS_SIZE)
+#define MAX_BUF_SIZE  TCP_MSS_SIZE
 #else
-#define MAX_BUF_SIZE  IPC_MAX_BUF_SIZE
+#define MAX_BUF_SIZE  TCP_BUF_SIZE
 #endif
-#define ENTER_CRITICAL_SECTION(srv)     assert(0 == pthread_mutex_lock(&((struct ipc_server_desc*)srv)->mutex))
-#define LEAVE_CRITICAL_SECTION(srv)     assert(0 == pthread_mutex_unlock(&((struct ipc_server_desc*)srv)->mutex))
+#define ENTER_CRITICAL_SECTION(srv)     assert(0 == pthread_mutex_lock(&((struct tcp_server_desc*)srv)->mutex))
+#define LEAVE_CRITICAL_SECTION(srv)     assert(0 == pthread_mutex_unlock(&((struct tcp_server_desc*)srv)->mutex))
 
-#define DESTROY_MUTEX(srv)  assert(0 == pthread_mutex_destroy(&((struct ipc_server_desc*)srv)->mutex))
-#define CLOSE_SOCKET(srv)   assert(0 == close(((struct ipc_server_desc*)srv)->sock_fd))
+#define DESTROY_MUTEX(srv)  assert(0 == pthread_mutex_destroy(&((struct tcp_server_desc*)srv)->mutex))
+#define CLOSE_SOCKET(srv)   assert(0 == close(((struct tcp_server_desc*)srv)->sock_fd))
 #define FREE_SERVER(srv)    do { if (srv) { free(srv); srv = NULL; } } while(0)
 
-#define LOG_INFO(srv, fmt, ...)     do { if (srv->log_opt >= IPC_LOGGING_INFO) log_info(srv->log_fp, fmt, ##__VA_ARGS__); } while(0)
-#define LOG_RECV(srv, fmt, ...)     do { if (srv->log_opt >= IPC_LOGGING_DATA) log_info(srv->log_fp, fmt, ##__VA_ARGS__); } while(0)
-#define LOG_SENT(srv, fmt, ...)     do { if (srv->log_opt >= IPC_LOGGING_DATA) log_info(srv->log_fp, fmt, ##__VA_ARGS__); } while(0)
-#define LOG_DATA(srv, dir, buf, n)  do { if (srv->log_opt >= IPC_LOGGING_ALL) log_data(srv->log_fp, dir, buf, n); } while(0)
+#define LOG_INFO(srv, fmt, ...)     do { if (srv->log_opt >= TCP_LOGGING_INFO) log_info(srv->log_fp, fmt, ##__VA_ARGS__); } while(0)
+#define LOG_RECV(srv, fmt, ...)     do { if (srv->log_opt >= TCP_LOGGING_DATA) log_info(srv->log_fp, fmt, ##__VA_ARGS__); } while(0)
+#define LOG_SENT(srv, fmt, ...)     do { if (srv->log_opt >= TCP_LOGGING_DATA) log_info(srv->log_fp, fmt, ##__VA_ARGS__); } while(0)
+#define LOG_DATA(srv, dir, buf, n)  do { if (srv->log_opt >= TCP_LOGGING_ALL) log_data(srv->log_fp, dir, buf, n); } while(0)
 #define LOG_ERROR(srv, fmt, ...)    do { if (srv->log_opt) fprintf(srv->log_fp, "!!! error: " fmt "\n", ##__VA_ARGS__); } while(0)
 #define LOG_CLOSE(srv)              do { if (srv->log_opt) fclose(srv->log_fp); } while(0)
 
@@ -130,13 +116,13 @@
 
 /*  -----------  types  --------------------------------------------------
  */
-struct ipc_server_desc {                /* IPC server descriptor: */
+struct tcp_server_desc {                /* TCP/IP server descriptor: */
     int sock_fd;                        /* - socket file descriptor */
     int sock_type;                      /* - socket type */
     int sock_family;                    /* - address family */
     int sock_protocol;                  /* - protocol to be used */
-    size_t mtu_size;                    /* - maximum transmission unit (MTU) size */
-    ipc_event_cbk_t recv_cbk;           /* - receive callback */
+    size_t data_size;                   /* - data size */
+    tcp_event_cbk_t recv_cbk;           /* - receive callback */
     void *recv_ref;                     /* - receive reference */
     pthread_t thread;                   /* - thread for listening */
     pthread_mutex_t mutex;              /* - mutex for mutual exclusion */
@@ -184,39 +170,31 @@ static double time_diff(struct timespec start, struct timespec stop);
  *  - close() — close a file descriptor (errno = EBADF)
  *  - free() — deallocate memory (errno = EINVAL)
  */
-ipc_server_t ipc_server_start(const char *service, int sock_type, size_t mtu_size,
-                              ipc_event_cbk_t recv_cbk, void *recv_ref, int logging) {
-    struct ipc_server_desc *server = NULL;
+tcp_server_t tcp_server_start(const char *service, size_t data_size,
+                              tcp_event_cbk_t recv_cbk, void *recv_ref, int logging) {
+    struct tcp_server_desc *server = NULL;
     struct addrinfo hints, *ai, *p;
     char filename[32];
     int rc, opt;
     int error;
     errno = 0;
-#if (1)
-    // only stream sockets are supported yet!
-    if (sock_type != IPC_SOCK_TCP) {
-        errno = EINVAL;
-        return NULL;
-    }
-#else
-    // TODO: implement UDP (socket type SOCK_DGRAM)
-    #endif
+
     /* sanity ckeck */
     if ((service == NULL) || (strlen(service) == 0) || (strlen(service) >= NI_MAXSERV)) {
         errno = EINVAL;
         return NULL;
     }
     /* create the server descriptor */
-    if ((server = (struct ipc_server_desc *)malloc(sizeof(struct ipc_server_desc))) == NULL) {
+    if ((server = (struct tcp_server_desc *)malloc(sizeof(struct tcp_server_desc))) == NULL) {
         /* errno set */
         return NULL;
     }
     /* initialize the server descriptor */
-    memset(server, 0, sizeof(struct ipc_server_desc));
+    memset(server, 0, sizeof(struct tcp_server_desc));
     strncpy(server->sock_port, service, NI_MAXSERV);
     server->sock_fd = (-1);
     /* set MTU size (but at most MSS size) and receive callback */
-    server->mtu_size = (mtu_size < IPC_TCP_MSS_SIZE) ? mtu_size : IPC_TCP_MSS_SIZE;  // TODO: think about this!
+    server->data_size = (data_size < TCP_MSS_SIZE) ? data_size : TCP_MSS_SIZE;  // TODO: think about this!
     server->recv_cbk = recv_cbk;
     server->recv_ref = recv_ref;
     server->sent_pkg = 0;
@@ -232,17 +210,16 @@ ipc_server_t ipc_server_start(const char *service, int sock_type, size_t mtu_siz
     hints.ai_addr = NULL;
     hints.ai_next = NULL;
 
-    /* open the log file for writing ("ipc_<port>.log") */
+    /* open the log file for writing ("tcp_<service>.log") */
     if (logging) {
-        snprintf(filename, sizeof(filename), "ipc_%s.log", service);
+        snprintf(filename, sizeof(filename), "tcp_%s.log", service);
         if ((server->log_fp = fopen(filename, "w")) == NULL) {
             error = errno;
             FREE_SERVER(server);
             errno = error;
             return NULL;
         }
-        fprintf(server->log_fp, "+++ IPC Server on port %s using %s with mtu size %zu +++\n", service,
-            (sock_type == IPC_SOCK_TCP) ? "TCP" : ((sock_type == IPC_SOCK_UDP) ? "UDP" : "???"), mtu_size);
+        fprintf(server->log_fp, "+++ TCP/IP Server on port %s with data size %zu +++\n", service, data_size);
         server->log_opt = logging;
         server->start = time_get();
     }
@@ -294,18 +271,16 @@ ipc_server_t ipc_server_start(const char *service, int sock_type, size_t mtu_siz
         return NULL;
     }
     /* disable Nagle's algorithm for TCP connections */
-#if (OPTION_CANIPC_TCPDELAY == 0) 
-    if (server->sock_type == SOCK_STREAM) {
-        opt = 1;
-        if (setsockopt(server->sock_fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt)) < 0) {
-            error = errno;
-            LOG_ERROR(server, "Set TCP_NODELAY failed (errno=%d)", error);
-            LOG_CLOSE(server);
-            CLOSE_SOCKET(server);
-            FREE_SERVER(server);
-            errno = error;
-            return NULL;
-        }
+#if (OPTION_TCPIP_TCPDELAY == 0) 
+    opt = 1;
+    if (setsockopt(server->sock_fd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt)) < 0) {
+        error = errno;
+        LOG_ERROR(server, "Set TCP_NODELAY failed (errno=%d)", error);
+        LOG_CLOSE(server);
+        CLOSE_SOCKET(server);
+        FREE_SERVER(server);
+        errno = error;
+        return NULL;
     }
 #endif
     /* start listening for incoming connections */
@@ -345,7 +320,7 @@ ipc_server_t ipc_server_start(const char *service, int sock_type, size_t mtu_siz
         return NULL;
     }
     /* return the server descriptor */
-    return (ipc_server_t)server;
+    return (tcp_server_t)server;
 }
 
 /*  Stop the server.
@@ -357,8 +332,8 @@ ipc_server_t ipc_server_start(const char *service, int sock_type, size_t mtu_siz
  *  - free() — deallocate memory (errno = EINVAL)
  *  + NULL pointer dereference (errno = ESRCH)
  */
-int ipc_server_stop(ipc_server_t server) {
-    int fildes = server ? ((struct ipc_server_desc *)server)->sock_fd : (-1);
+int tcp_server_stop(tcp_server_t server) {
+    int fildes = server ? ((struct tcp_server_desc *)server)->sock_fd : (-1);
 
     /* the server must be running */
     if (server == NULL) {
@@ -366,7 +341,7 @@ int ipc_server_stop(ipc_server_t server) {
         return (-1);
     }
     /* terminate the listening thread */
-    if (pthread_cancel(((struct ipc_server_desc *)server)->thread) != 0) {
+    if (pthread_cancel(((struct tcp_server_desc *)server)->thread) != 0) {
         /* errno set */
         LOG_ERROR(server, "Server could not be stopped (errno=%d)", errno);
         LOG_CLOSE(server);
@@ -377,27 +352,23 @@ int ipc_server_stop(ipc_server_t server) {
     errno = 0;
     /* close the log file */
     if (server->log_fp != NULL) {
-        fprintf(server->log_fp, "+++ Connection summary for IPC Server on port %s with mtu size %zu +++\n",
-            server->sock_port, server->mtu_size);
+        fprintf(server->log_fp, "+++ Connection summary for TCP/IP Server on port %s with data size %zu +++\n",
+            server->sock_port, server->data_size);
         fprintf(server->log_fp, "%11lu packet(s) sent to clients\n", server->sent_pkg);
         fprintf(server->log_fp, "%11lu packet(s) received from clients\n", server->recv_pkg);
         fprintf(server->log_fp, "%11lu packet(s) not processed by the host\n", server->lost_pkg);
-        fprintf(server->log_fp, "+++ IPC Server terminated: elapsed time %.4f sec +++\n",
+        fprintf(server->log_fp, "+++ TCP/IP Server terminated: elapsed time %.4f sec +++\n",
             time_diff(server->start, time_get()));
         fclose(server->log_fp);
         server->log_fp = NULL;
         server->log_opt = 0;
     }
-    /* destroy the IPC server descriptor */
+    /* destroy the TCP/IP server descriptor */
     DESTROY_MUTEX(server);
     FREE_SERVER(server);
     /* close the socket */
     errno = 0;
-#if !defined(_WIN32) && !defined(_WIN64)
     return close(fildes);
-#else
-    return closesocket(fildes);
-#endif
 }
 
 /*  Send data to the client.
@@ -409,7 +380,7 @@ int ipc_server_stop(ipc_server_t server) {
  *  - send() — send a message on a socket (errno = ECONNRESET, EPIPE)
  *  + NULL pointer dereference (errno = ESRCH, EINVAL)
  */
-int ipc_server_send(ipc_server_t server, const void *data, size_t size) {
+int tcp_server_send(tcp_server_t server, const void *data, size_t size) {
     fd_set write_fds;    /* file descriptor list for send() */
     int fdmax = 0;       /* maximum file descriptor number */
     ssize_t nbytes = 0;  /* number of bytes sent */
@@ -426,13 +397,13 @@ int ipc_server_send(ipc_server_t server, const void *data, size_t size) {
         return (-1);
     }
     /* get the master set and the maximum file descriptor number */
-    ENTER_CRITICAL_SECTION((struct ipc_server_desc *)server);
-    write_fds = ((struct ipc_server_desc *)server)->master;
-    fdmax = ((struct ipc_server_desc *)server)->fdmax;
-    LEAVE_CRITICAL_SECTION((struct ipc_server_desc *)server);
+    ENTER_CRITICAL_SECTION((struct tcp_server_desc *)server);
+    write_fds = ((struct tcp_server_desc *)server)->master;
+    fdmax = ((struct tcp_server_desc *)server)->fdmax;
+    LEAVE_CRITICAL_SECTION((struct tcp_server_desc *)server);
 
     /* remove the listener (we don't want to hear our own crap) */
-    FD_CLR(((struct ipc_server_desc *)server)->sock_fd, &write_fds);
+    FD_CLR(((struct tcp_server_desc *)server)->sock_fd, &write_fds);
     /* send data to all clients */
     LOG_DATA(server, LOG_DIR_SENT, data, size);
     for (i = 0; i <= fdmax; i++) {
@@ -446,7 +417,7 @@ int ipc_server_send(ipc_server_t server, const void *data, size_t size) {
     }
     if (n) {
         LOG_SENT(server, "Sent %ld bytes to %d client(s)\n", nbytes, n);
-        ((struct ipc_server_desc *)server)->sent_pkg++;
+        ((struct tcp_server_desc *)server)->sent_pkg++;
     } else {
         LOG_SENT(server, "Lost %lu bytes (no client connected)\n", size);
     }
@@ -474,7 +445,7 @@ int ipc_server_send(ipc_server_t server, const void *data, size_t size) {
  *  - FD_CLR() — clear a file descriptor from a set
  */
 static void *listening(void *arg) {
-    struct ipc_server_desc *server = (struct ipc_server_desc *)arg;
+    struct tcp_server_desc *server = (struct tcp_server_desc *)arg;
 
     fd_set read_fds;  /* file descriptor list for select() */
     FD_ZERO(&read_fds);
@@ -512,14 +483,12 @@ static void *listening(void *arg) {
                     addrlen = sizeof(remoteaddr);
                     if ((newfd = accept(server->sock_fd, (struct sockaddr *)&remoteaddr, &addrlen)) >= 0) {
                         /* disable Nagle's algorithm for TCP connections */
-#if (OPTION_CANIPC_TCPDELAY == 0)
-                        if (server->sock_type == SOCK_STREAM) {
-                            int opt = 1;
-                            if (setsockopt(newfd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt)) < 0) {
-                                LOG_ERROR(server, "Set TCP_NODELAY failed on socket %d (errno=%d)", newfd, errno);
-                                close(newfd);
-                                continue;   // FIXME: how to handle this?
-                            }
+#if (OPTION_TCPIP_TCPDELAY == 0)
+                        int opt = 1;
+                        if (setsockopt(newfd, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt)) < 0) {
+                            LOG_ERROR(server, "Set TCP_NODELAY failed on socket %d (errno=%d)", newfd, errno);
+                            close(newfd);
+                            continue;   // FIXME: how to handle this?
                         }
 #endif
                         ENTER_CRITICAL_SECTION(server);
@@ -541,7 +510,7 @@ static void *listening(void *arg) {
                     }
                 } else {
                     /* handle data from a client */
-                    if ((nbytes = recv(i, buf, server->mtu_size, 0)) > 0) {
+                    if ((nbytes = recv(i, buf, server->data_size, 0)) > 0) {
                         LOG_RECV(server, "Received %ld bytes from socket %d\n", nbytes, i);
                         LOG_DATA(server, LOG_DIR_RECV, buf, nbytes);
                         server->recv_pkg++;

@@ -5,14 +5,14 @@
  *  Copyright (c) 2002-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
  *  All rights reserved.
  *
- *  Module 'ipc_client' - Inter-Process Communication (IPC) client
+ *  Module 'tcp_client' - Stream Socket Client (TCP/IP)
  *
  *  This module is dual-licensed under the BSD 2-Clause "Simplified" License
  *  and under the GNU General Public License v2.0 (or any later version).
  *  You can choose between one of them if you use this module.
  *
  *  (1) BSD 2-Clause "Simplified" License
- * 
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *  1. Redistributions of source code must retain the above copyright notice, this
@@ -34,31 +34,31 @@
  *
  *  (2) GNU General Public License v2.0 or later
  *
- *  This module is free software: you can redistribute it and/or modify
+ *  This module is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 2 of the License, or
+ *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This module is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
- *  You should have received a copy of the GNU General Public License
- *  along with this module.  If not, see <https://www.gnu.org/licenses/>.
- */
-/** @file        ipc_client.c
  *
- *  @brief       Inter-Process Communication (IPC) client.
+ *  You should have received a copy of the GNU General Public License along
+ *  with this module; if not, see <https://www.gnu.org/licenses/>.
+ */
+/** @file        tcp_client.c
+ *
+ *  @brief       Stream Socket Client (TCP/IP).
  *
  *  @author      $Author: sedna $
  *
- *  @version     $Rev: 1447 $
+ *  @version     $Rev: 1452 $
  *
- *  @addtogroup  ipc
+ *  @addtogroup  tcp
  *  @{
  */
-#include "ipc_client.h"
+#include "tcp_client.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -67,7 +67,7 @@
 #include <limits.h>
 #include <assert.h>
 #include <errno.h>
-#if !defined(_WIN32) && !defined(_WIN64)
+
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -75,12 +75,7 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#else
-#include <winsock2.h>
-#include <ws2tcpip.h>
-// Need to link with Ws2_32.lib
-#pragma comment(lib, "ws2_32.lib")
-#endif
+
 
 /*  -----------  options  ------------------------------------------------
  */
@@ -88,8 +83,6 @@
 
 /*  -----------  defines  ------------------------------------------------
  */
-#define LOCALHOST_STR   "localhost"
-#define LOCALHOST_ADDR  IPC_ADDR_LOCALHOST
 
 
 /*  -----------  types  --------------------------------------------------
@@ -106,21 +99,12 @@
 
 /*  -----------  functions  ----------------------------------------------
  */
-int ipc_client_connect(const char *server, int sock_type) {
+int tcp_client_connect(const char *server) {
     int fildes = (-1);
     char *host = NULL, *port = NULL;
     struct addrinfo hints, *ai, *p;
     int error;
     errno = 0;
-#if (1)
-    // only stream sockets are supported yet!
-    if (sock_type != IPC_SOCK_TCP) {
-        errno = EINVAL;
-        return (-1);
-    }
-#else
-    // TODO: implement UDP (socket type SOCK_DGRAM)
-#endif
     /* Obtain address(es) matching host/port. */
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;      // alow IPv4 or IPv6
@@ -182,32 +166,27 @@ int ipc_client_connect(const char *server, int sock_type) {
         return (-1);
     }
     /* disable Nagle's algorithm for TCP connections */
-#if (OPTION_CANIPC_TCPDELAY == 0) 
-    if (sock_type == SOCK_STREAM) {
-        int opt = 1;
-        if (setsockopt(fildes, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt)) < 0) {
-            error = errno;
-            close(fildes);
-            fildes = (-1);
-            errno = error;
-            return (-1);
-        }
+#if (OPTION_TCPIP_TCPDELAY == 0) 
+    int opt = 1;
+    if (setsockopt(fildes, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt)) < 0) {
+        error = errno;
+        close(fildes);
+        fildes = (-1);
+        errno = error;
+        return (-1);
     }
 #endif
     /* return the socket file descriptor */
     return fildes;
 }
 
-int ipc_client_close(int fildes) {
+int tcp_client_close(int fildes) {
     errno = 0;
-#if !defined(_WIN32) && !defined(_WIN64)
+
     return close(fildes);
-#else
-    return closesocket(fildes);
-#endif
 }
 
-ssize_t ipc_client_send(int fildes, const void *buffer, size_t length) {
+ssize_t tcp_client_send(int fildes, const void *buffer, size_t length) {
     ssize_t n = 0;
     errno = 0;
 
@@ -217,16 +196,13 @@ ssize_t ipc_client_send(int fildes, const void *buffer, size_t length) {
         return (-1);
     }
     /* send data to the server */
-#if !defined(_WIN32) && !defined(_WIN64)
     n = send(fildes, buffer, length, 0);
-#else
-    n = send(fildes, buffer, (int)length, 0);
-#endif
+
     /* return the number of bytes sent, or -1 on error */
     return n;
 }
 
-ssize_t ipc_client_recv(int fildes, void *buffer, size_t length, unsigned short timeout) {
+ssize_t tcp_client_recv(int fildes, void *buffer, size_t length, unsigned short timeout) {
     ssize_t n = 0;
     fd_set readfds;
     struct timeval tv;
@@ -257,11 +233,8 @@ ssize_t ipc_client_recv(int fildes, void *buffer, size_t length, unsigned short 
         }
     }
     /* receive data from the server (if any) */
-#if !defined(_WIN32) && !defined(_WIN64)
     n = recv(fildes, buffer, length, 0);
-#else    
-    n = recv(fildes, buffer, (int)length, 0);
-#endif
+
     /* check the number of bytes received */
     if (n != (ssize_t)length) {
         if (n >= 0) {

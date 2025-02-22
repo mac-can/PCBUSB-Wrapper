@@ -1,6 +1,6 @@
 /*  SPDX-License-Identifier: BSD-2-Clause OR GPL-2.0-or-later */
 /*
- *  CAN Interface API, Version 3 (CAN IPC Interface)
+ *  CAN Interface API, Version 3 (CAN-over-Ethernet / RocketCAN)
  *
  *  Copyright (c) 2004-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
  *  All rights reserved.
@@ -47,19 +47,19 @@
  *  You should have received a copy of the GNU General Public License along
  *  with CAN API V3; if not, see <https://www.gnu.org/licenses/>.
  */
-/** @file        ipc_can.h
+/** @file        tcp_can.h
  *
- *  @brief       CAN/IPC Message Format
+ *  @brief       RocketCAN Message Format
  *
  *  @author      $Author: sedna $
  *
- *  @version     $Rev: 1451 $
+ *  @version     $Rev: 1452 $
  *
- *  @addtogroup  ipc
+ *  @defgroup    rocketcan RocketCAN - CAN-over-Ethernet
  *  @{
  */
-#ifndef CANIPC_MESSAGE_H_INCLUDED
-#define CANIPC_MESSAGE_H_INCLUDED
+#ifndef TCP_CAN_H_INCLUDED
+#define TCP_CAN_H_INCLUDED
 
 /*  -----------  includes  -----------------------------------------------
  */
@@ -79,22 +79,7 @@
 
 /*  -----------  defines  ------------------------------------------------
  */
-/** @name  CAN/IPC Frame Format
- *  @brief CAN message formats on the IPC level
- * @{ */
-#define CANIPC_ROCKETCAN     0   /**< CAN API V3 message format */
-#define CANIPC_SOCKETCAN     10  /**< SocketCAN CAN CC message format */
-#define CANIPC_SOCKETCAN_FD  11  /**< SocketCAN CAN FD message format */
-/** @} */
 
-/** @name  CAN/IPC Maximum Transmission Unit (MTU)
- *  @brief Maximum payload size (in [byte]) for the IPC level
- * @{ */
-#define CANIPC_MTU_ROCKETCAN     sizeof(can_ipc_message_t)  /**< MTU size for RocketCAN */
-// TODO: define MTU sizes for other CAN/IPC formats
-#define CANIPC_MTU_SOCKETCAN     0  /**< MTU size for SocketCAN CAN CC */
-#define CANIPC_MTU_SOCKETCAN_FD  0  /**< MTU size for SocketCAN CAN FD */
-/** @} */
 
 /*  - - - - - -  CAN API V3 - RocketCAN  - - - - - - - - - - - - - - - - -
  */
@@ -102,52 +87,52 @@
  *  @brief RocketCAN identifier range
  *  @note  Bit 31..29 are reserved for flags
  *  @{ */
-#define CANIPC_STD_ID(x)  (uint32_t)((x) & 0x7FFU)  /**< mask: standard identifier */
-#define CANIPC_XTD_ID(x)  (uint32_t)((x) & 0x1FFFFFFFU)  /**< mask: extended identifier */
+#define CANTCP_STD_ID(x)  (uint32_t)((x) & 0x7FFU)  /**< mask: standard identifier */
+#define CANTCP_XTD_ID(x)  (uint32_t)((x) & 0x1FFFFFFFU)  /**< mask: extended identifier */
 
-#define CANIPC_ID_VALID(x)  (bool)(((x) & 0xE0000000U) == 0U)  /**< check: valid identifier */
-#define CANIPC_ID_BIT31(x)  (bool)(((x) & 0x80000000U) != 0U)  /**< check: bit 31 set */
-#define CANIPC_ID_BIT30(x)  (bool)(((x) & 0x40000000U) != 0U)  /**< check: bit 30 set */
-#define CANIPC_ID_BIT29(x)  (bool)(((x) & 0x20000000U) != 0U)  /**< check: bit 29 set */
+#define CANTCP_ID_VALID(x)  (bool)(((x) & 0xE0000000U) == 0U)  /**< check: valid identifier */
+#define CANTCP_ID_BIT31(x)  (bool)(((x) & 0x80000000U) != 0U)  /**< check: bit 31 set */
+#define CANTCP_ID_BIT30(x)  (bool)(((x) & 0x40000000U) != 0U)  /**< check: bit 30 set */
+#define CANTCP_ID_BIT29(x)  (bool)(((x) & 0x20000000U) != 0U)  /**< check: bit 29 set */
 /** @} */
 
 /** @name  RocketCAN Data Length
  *  @brief Maximum payload length (in [byte])
  *  @{ */
-#define CANIPC_MAX_LEN  64  /**< max. payload length (CAN FD) */
+#define CANTCP_MAX_LEN  64  /**< max. payload length (CAN FD) */
 /** @} */
 
 /** @name  RocketCAN Message Flags
  *  @brief Message flags (8-bit, CAN API Vx compatible)
  *  @{ */
-#define CANIPC_XTD_FLAG(x)  (uint8_t)((x) ? 0x01 : 0)  /**< flag: extended format */
-#define CANIPC_RTR_FLAG(x)  (uint8_t)((x) ? 0x02 : 0)  /**< flag: remote frame */
-#define CANIPC_FDF_FLAG(x)  (uint8_t)((x) ? 0x04 : 0)  /**< flag: CAN FD format */
-#define CANIPC_BRS_FLAG(x)  (uint8_t)((x) ? 0x08 : 0)  /**< flag: bit-rate switching */
-#define CANIPC_ESI_FLAG(x)  (uint8_t)((x) ? 0x10 : 0)  /**< flag: error state indicator */
-#define CANIPC_STS_FLAG(x)  (uint8_t)((x) ? 0x80 : 0)  /**< flag: status message */
+#define CANTCP_XTD_FLAG(x)  (uint8_t)((x) ? 0x01 : 0)  /**< flag: extended format */
+#define CANTCP_RTR_FLAG(x)  (uint8_t)((x) ? 0x02 : 0)  /**< flag: remote frame */
+#define CANTCP_FDF_FLAG(x)  (uint8_t)((x) ? 0x04 : 0)  /**< flag: CAN FD format */
+#define CANTCP_BRS_FLAG(x)  (uint8_t)((x) ? 0x08 : 0)  /**< flag: bit-rate switching */
+#define CANTCP_ESI_FLAG(x)  (uint8_t)((x) ? 0x10 : 0)  /**< flag: error state indicator */
+#define CANTCP_STS_FLAG(x)  (uint8_t)((x) ? 0x80 : 0)  /**< flag: status message */
 
-#define CANIPC_XTD_MASK  (uint8_t)0x01  /**< mask: extended format */
-#define CANIPC_RTR_MASK  (uint8_t)0x02  /**< mask: remote frame */
-#define CANIPC_FDF_MASK  (uint8_t)0x04  /**< mask: CAN FD format */
-#define CANIPC_BRS_MASK  (uint8_t)0x08  /**< mask: bit-rate switching */
-#define CANIPC_ESI_MASK  (uint8_t)0x10  /**< mask: error state indicator */
-#define CANIPC_STS_MASK  (uint8_t)0x80  /**< mask: status message */
+#define CANTCP_XTD_MASK  (uint8_t)0x01  /**< mask: extended format */
+#define CANTCP_RTR_MASK  (uint8_t)0x02  /**< mask: remote frame */
+#define CANTCP_FDF_MASK  (uint8_t)0x04  /**< mask: CAN FD format */
+#define CANTCP_BRS_MASK  (uint8_t)0x08  /**< mask: bit-rate switching */
+#define CANTCP_ESI_MASK  (uint8_t)0x10  /**< mask: error state indicator */
+#define CANTCP_STS_MASK  (uint8_t)0x80  /**< mask: status message */
 /** @} */
 
 /** @name  RocketCAN Status Register
  *  @brief Status register (CAN API Vx compatible)
  *  @{ */
-#define CANIPC_STAT_RESET    (uint8_t)0x80  /**< CAN status: controller stopped */
-#define CANIPC_STAT_BOFF     (uint8_t)0x40  /**< CAN status: busoff status */
-#define CANIPC_STAT_EWRN     (uint8_t)0x20  /**< CAN status: error warning level */
-#define CANIPC_STAT_BERR     (uint8_t)0x10  /**< CAN status: bus error (LEC) */
-#define CANIPC_STAT_TX_BUSY  (uint8_t)0x08  /**< CAN status: transmitter busy */
-#define CANIPC_STAT_RX_EMPTY (uint8_t)0x04  /**< CAN status: receiver empty */
-#define CANIPC_STAT_MSG_LST  (uint8_t)0x02  /**< CAN status: message lost */
-#define CANIPC_STAT_QUE_OVR  (uint8_t)0x01  /**< CAN status: event-queue overrun */
+#define CANTCP_STAT_RESET    (uint8_t)0x80  /**< CAN status: controller stopped */
+#define CANTCP_STAT_BOFF     (uint8_t)0x40  /**< CAN status: busoff status */
+#define CANTCP_STAT_EWRN     (uint8_t)0x20  /**< CAN status: error warning level */
+#define CANTCP_STAT_BERR     (uint8_t)0x10  /**< CAN status: bus error (LEC) */
+#define CANTCP_STAT_TX_BUSY  (uint8_t)0x08  /**< CAN status: transmitter busy */
+#define CANTCP_STAT_RX_EMPTY (uint8_t)0x04  /**< CAN status: receiver empty */
+#define CANTCP_STAT_MSG_LST  (uint8_t)0x02  /**< CAN status: message lost */
+#define CANTCP_STAT_QUE_OVR  (uint8_t)0x01  /**< CAN status: event-queue overrun */
 /** @} */
-#define CANIPC_MAX_BUSLOAD  (uint16_t)10000 /**< max. bus load (100%) */
+#define CANTCP_MAX_BUSLOAD  (uint16_t)10000 /**< max. bus load (100%) */
 
 /** @name  RocketCAN Control Character
  *  @brief Control character (8-bit, ASCII code)
@@ -156,10 +141,10 @@
  *  @note  EOT = end of transmission (server will cancel connection, e.g. after the CAN device is lost)
  *  @note  ETB = end of transmission block (in a sequence of messages, optional for client and server)
  *  @{ */
-#define CANIPC_ETX_CHAR  0x03  /**< end of text */
-#define CANIPC_EOT_CHAR  0x04  /**< end of transmission */
-#define CANIPC_ETB_CHAR  0x17  /**< end of transmission block */  // TODO: Not used yet!
-#define CANIPC_CTRLCHAR  CANIPC_ETX_CHAR  /**< default control character */
+#define CANTCP_ETX_CHAR  0x03  /**< end of text */
+#define CANTCP_EOT_CHAR  0x04  /**< end of transmission */
+#define CANTCP_ETB_CHAR  0x17  /**< end of transmission block */  // TODO: Not used yet!
+#define CANTCP_CTRLCHAR  CANTCP_ETX_CHAR  /**< default control character */
 /** @} */
 
 /*  -----------  types  --------------------------------------------------
@@ -167,15 +152,15 @@
 #if defined(_MSC_VER)
 #pragma pack(push, 1)
 #endif
- /** @brief       CAN Message (IPC Format):
+ /** @brief       CAN Message (RocketCAN Format):
   */
-typedef struct can_ipc_message_t_ {
+typedef struct can_tcp_message_t_ {
     uint32_t id;                        /**< CAN identifier (11-bit or 29-bit) */
     uint8_t  flags;                     /**< message flags (8-bit, CAN API Vx) */
     uint8_t  length;                    /**< data length (in [byte], not CAN DLC!) */
     uint8_t  status;                    /**< status register (8-bit, CAN API Vx) */
     uint8_t  extra;                     /**< unspecific bit-field (8-bit) */  // TODO: Not used yet!
-    uint8_t  data[CANIPC_MAX_LEN];      /**< data (to hold CAN FD payload) */
+    uint8_t  data[CANTCP_MAX_LEN];      /**< data (to hold CAN FD payload) */
     struct timespec timestamp;          /**< time-stamp { sec, nsec } */
     uint8_t  reserved[4];               /**< reserved (4-byte) */
     uint16_t busload;                   /**< bus load (0 .. 10'000 = 0 .. 100%) */
@@ -185,48 +170,65 @@ typedef struct can_ipc_message_t_ {
 #if defined(__GNUC__) || defined(__clang__)
 __attribute__((packed))
 #endif
-can_ipc_message_t;
+can_tcp_message_t;
 #if defined(_MSC_VER)
 #pragma pack(pop)
 #endif
 
-typedef can_ipc_message_t CANIPC_Message_t;  /**< alias for CAN Message (IPC Format) */
+typedef can_tcp_message_t CANTCP_Message_t;  /**< alias for RocketCAN Message */
 
 
 /*  - - -  conversion between host and network byte order  - - - - - - - -
  */
 #if !defined(__APPLE__)
-#define htonll(x) (((uint64_t)htonl((x) & 0xFFFFFFFF) << 32) | htonl((x) >> 32))
-#define ntohll(x) (((uint64_t)ntohl((x) & 0xFFFFFFFF) << 32) | ntohl((x) >> 32))
+#if defined(_MSC_VER) || defined(_WIN32) || defined(_WIN64)
+    #include <intrin.h>
+    #define htonll(x) _byteswap_uint64(x)
+    #define ntohll(x) _byteswap_uint64(x)
+#elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+    #define htonll(x) (((uint64_t)htonl((x) & 0xFFFFFFFF) << 32) | htonl((x) >> 32))
+    #define ntohll(x) (((uint64_t)ntohl((x) & 0xFFFFFFFF) << 32) | ntohl((x) >> 32))
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+    #define htonll(x) (x)
+    #define ntohll(x) (x)
+#else
+    #error "Unknown endianness!"
 #endif
-#define TIMESPEC_HTON(ts) do { \
+#endif
+#define CANTCP_CAN_ID_HTON(id)  htonl((id))
+#define CANTCP_CAN_ID_NTOH(id)  ntohl((id))
+#define CANTCP_TIMESTAMP_HTON(ts) do { \
     (ts).tv_sec = htonll((uint64_t)(ts).tv_sec); \
     (ts).tv_nsec = htonll((uint64_t)(ts).tv_nsec); \
 } while (0)
-#define TIMESPEC_NTOH(ts) do { \
+#define CANTCP_TIMESTAMP_NTOH(ts) do { \
     (ts).tv_sec = ntohll((uint64_t)(ts).tv_sec); \
     (ts).tv_nsec = ntohll((uint64_t)(ts).tv_nsec); \
 } while (0)
+#define CANTCP_BUSLOAD_HTON(bl)  htons((bl))
+#define CANTCP_BUSLOAD_NTOH(bl)  ntohs((bl))
 
-/** @brief  Convert CAN Message (IPC Format) from Host to Network Byte Order.
+/** @brief  Convert RocketCAN Message from Host to Network Byte Order.
  *
- *  @param  msg  IPC CAN message (host byte order on input, network byte order on output)
+ *  @param  msg  RocketCAN message (host byte order on input, network byte order on output)
  */
-#define CAN_IPC_MSG_HTON(msg) do { \
-    (msg).id = htonl((msg).id); \
-    TIMESPEC_HTON((msg).timestamp); \
+#define CANTCP_MSG_HTON(msg) do { \
+    CANTCP_CAN_ID_HTON((msg).id); \
+    CANTCP_TIMESTAMP_HTON((msg).timestamp); \
+    CANTCP_BUSLOAD_HTON((msg).busload); \
 } while (0)
 
-/** @brief  Convert CAN Message (IPC Format) from Network to Host Byte Order.
+/** @brief  Convert RocketCAN Message from Network to Host Byte Order.
  *
- *  @param  msg  IPC CAN message (network byte order on input, host byte order on output)
+ *  @param  msg  RocketCAN message (network byte order on input, host byte order on output)
  */
-#define CAN_IPC_MSG_NTOH(msg) do { \
-    (msg).id = ntohl((msg).id); \
-    TIMESPEC_NTOH((msg).timestamp); \
+#define CANTCP_MSG_NTOH(msg) do { \
+    CANTCP_CAN_ID_NTOH((msg).id); \
+    CANTCP_TIMESTAMP_NTOH((msg).timestamp); \
+    CANTCP_BUSLOAD_NTOH((msg).busload); \
 } while (0)
 
-#endif /* CANIPC_MESSAGE_H_INCLUDED */
+#endif /* TCP_CAN_H_INCLUDED */
 /** @}
  */
 /*  ----------------------------------------------------------------------

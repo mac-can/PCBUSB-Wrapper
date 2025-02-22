@@ -5,14 +5,14 @@
  *  Copyright (c) 2002-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
  *  All rights reserved.
  *
- *  Module 'ipc_client' - Inter-Process Communication (IPC) client
+ *  Module 'tcp_common' - Stream Socket Communication (TCP/IP)
  *
  *  This module is dual-licensed under the BSD 2-Clause "Simplified" License
  *  and under the GNU General Public License v2.0 (or any later version).
  *  You can choose between one of them if you use this module.
  *
  *  (1) BSD 2-Clause "Simplified" License
- * 
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *  1. Redistributions of source code must retain the above copyright notice, this
@@ -34,48 +34,86 @@
  *
  *  (2) GNU General Public License v2.0 or later
  *
- *  This module is free software: you can redistribute it and/or modify
+ *  This module is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 2 of the License, or
+ *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This module is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
- *  You should have received a copy of the GNU General Public License
- *  along with this module.  If not, see <https://www.gnu.org/licenses/>.
- */
-/** @file        ipc_client.h
  *
- *  @brief       Inter-Process Communication (IPC) client.
+ *  You should have received a copy of the GNU General Public License along
+ *  with this module; if not, see <https://www.gnu.org/licenses/>.
+ */
+/** @file        tcp_common.h
+ *
+ *  @brief       Common definitions for Stream Socket communication (TCP/IP).
  *
  *  @author      $Author: sedna $
  *
- *  @version     $Rev: 1447 $
+ *  @version     $Rev: 1452 $
  *
- *  @addtogroup  ipc
+ *  @defgroup    tcp Stream Socket Communication (TCP/IP)
  *  @{
  */
-#ifndef IPC_CLIENT_H_INCLUDED
-#define IPC_CLIENT_H_INCLUDED
+#ifndef TCP_COMMON_H_INCLUDED
+#define TCP_COMMON_H_INCLUDED
 
 /*  -----------  includes  -----------------------------------------------
  */
-#include "ipc_common.h"  /* common definitions for IPC server and client */
-
+#include <stdio.h>   /* for type 'size_t' */
+#ifdef _MSC_VER
+#include <BaseTsd.h>  /* for type 'ssize_t' */
+typedef SSIZE_T ssize_t;
+#endif
 
 /*  -----------  options  ------------------------------------------------
  */
 
+/** @name  Compiler Switches
+ *  @brief Options for conditional compilation.
+ *  @{ */
+/** @note  Set define OPTION_TCPIP_TCPDELAY to a non-zero value to compile
+ *         without socket option TCP_NODELAY. (e.g. in the build environment).
+ *         The socket option TCP_NODELAY disables the Nagle algorithm, which
+ *         is used to reduce the number of small packets sent over the network.
+ *         *) Option TCP_NODELAY is set by default for use with RocketCAN.
+ */
+/** @note  Set define OPTION_TCPIP_BACKLOG to a suitalbe value to set the
+ *         maximun number of pending connections in the listening queue (e.g.
+ *         in the build environment). The default value is 5.
+ *         *) This value is a common default in many network applications and
+ *         operating systems, as it provides a reasonable balance between allowing
+ *         multiple simultaneous connection attempts and limiting resource usage.
+ */
+#ifndef OPTION_DISABLED
+#define OPTION_DISABLED  0  /**< if a define is not defined, it is automatically set to 0 */
+#endif
+/** @} */
 
 /*  -----------  defines  ------------------------------------------------
  */
+#define TCP_MTU_SIZE  1500  /**< maximum transmission unit (MTU) size */
+#define TCP_MSS_SIZE  1460  /**< maximum segment size (MSS) for TCP */
+#define TCP_BUF_SIZE  TCP_MSS_SIZE  /**< data buffer size */
+#define TCP_WAIT_FOREVER  65535U  /**< infinite time-out (blocking operation) */
+#define TCP_IPv4_LOCALHOST  "127.0.0.1"  /**< local host address (IPv4) */
+#define TCP_IPv6_LOCALHOST  "::1"  /**< local host address (IPv6) */
 
 
 /*  -----------  types  --------------------------------------------------
  */
+/** @brief   TCP/IP receive event callback function.
+ *
+ *  @param   data  The event data.
+ *  @param   size  Size of the data.
+ *  @param   para  An event reference.
+ *
+ *  @return  0 on success, or a negative value on error.
+ */
+typedef int (*tcp_event_cbk_t)(const void *, size_t, void *);
 
 
 /*  -----------  variables  ----------------------------------------------
@@ -88,51 +126,10 @@
 extern "C" {
 #endif
 
-/** @brief   Open a connection to the server.
- *
- *  @param   server     The server address ("<host>:<port>").
- *  @param   sock_type  The socket type (SOCK_STREAM, SOCK_DGRAM, SOCK_SEQPACKET).
- *
- *  @return  The file descriptor of the client socket or -1 on error.
- */
-extern int ipc_client_connect(const char *server, int sock_type);
-
-/** @brief   Close the connection to the server.
- *
- *  @param   fildes  The file descriptor of the client socket.
- *
- *  @return  0 on success, -1 on error.
- */
-extern int ipc_client_close(int fildes);
-
-/** @brief   Send data to the server.
- *
- *  @param   fildes  The file descriptor of the client socket.
- *  @param   buffer  The data to be sent.
- *  @param   length  The length of the data to be sent.
- *
- *  @return  The number of bytes sent or -1 on error.
- */
-extern ssize_t ipc_client_send(int fildes, const void *buffer, size_t length);
-
-/** @brief   Receive data from the server.
- *
- *  @param   fildes   The file descriptor of the client socket.
- *  @param   buffer   The buffer to store the received data.
- *  @param   length   The length of the buffer.
- *  @param   timeout  The timeout in milliseconds:
- *                    0 means the function returns immediately,
- *                    65535 means blocking read, and any other
- *                    value means the time to wait im milliseconds
- *
- *  @return  The number of bytes received or -1 on error.
- */
-extern ssize_t ipc_client_recv(int fildes, void *buffer, size_t length, unsigned short timeout);
-
 #ifdef __cplusplus
 }
 #endif
-#endif  /* IPC_CLIENT_H_INCLUDED */
+#endif  /* TCP_COMMON_H_INCLUDED */
 /** @}
  */
 /*  ----------------------------------------------------------------------

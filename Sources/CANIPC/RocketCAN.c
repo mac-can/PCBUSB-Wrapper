@@ -1,6 +1,6 @@
 /*  SPDX-License-Identifier: BSD-2-Clause OR GPL-2.0-or-later */
 /*
- *  CAN Interface API, Version 3 (CAN IPC Interface)
+ *  CAN Interface API, Version 3 (CAN-over-Ethernet / RocketCAN)
  *
  *  Copyright (c) 2004-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
  *  All rights reserved.
@@ -49,13 +49,13 @@
  */
 /** @file        RocketCAN.c
  *
- *  @brief       CAN/IPC RocketCAN Message Format
+ *  @brief       CAN API V3 message to RocketCAN message and vice versa.
  *
  *  @author      $Author: sedna $
  *
- *  @version     $Rev: 1445 $
+ *  @version     $Rev: 1453 $
  *
- *  @addtogroup  ipc
+ *  @addtogroup  rocketcan
  *  @{
  */
 #include "RocketCAN.h"
@@ -95,68 +95,68 @@ static uint8_t len2dlc(uint8_t len);
 
 /*  -----------  functions  ----------------------------------------------
  */
-bool rock_msg_is_valid(const can_ipc_message_t *msg) {
+bool rock_msg_is_valid(const can_tcp_message_t *msg) {
     /* sanity check */
     if (msg == NULL) {
         return false;
     }
     /* check for correct checksum */
     if (msg->checksum != crc_j1850_calc((const uint8_t*)msg, 
-            sizeof(can_ipc_message_t) - sizeof(msg->checksum), NULL)) {
+            sizeof(can_tcp_message_t) - sizeof(msg->checksum), NULL)) {
         return false;
     }
     /* check for control character (ETX) */
-    if (msg->ctrlchar != CANIPC_CTRLCHAR) {
+    if (msg->ctrlchar != CANTCP_CTRLCHAR) {
         return false;
     }
     /* RocketCAN message is valid */
     return true;
 }
 
-void rock_msg_to_can(can_message_t *can, can_ipc_message_t *net) {
+void rock_msg_to_can(can_message_t *can, can_tcp_message_t *net) {
     /* sanity check */
     if (can == NULL || net == NULL) {
         return;
     }
     memset(can, 0, sizeof(can_message_t));
     /* convert RocketCAN message from network to host byte order */
-    CAN_IPC_MSG_NTOH(*net);
+    CANTCP_MSG_NTOH(*net);
     /* map RocketCAN message to CAN message (CAN API V3) */
     can->id = net->id;
-    can->xtd = (net->flags & CANIPC_XTD_MASK) ? 1 : 0;
-    can->rtr = (net->flags & CANIPC_RTR_MASK) ? 1 : 0;
-    can->fdf = (net->flags & CANIPC_FDF_MASK) ? 1 : 0;
-    can->brs = (net->flags & CANIPC_BRS_MASK) ? 1 : 0;
-    can->esi = (net->flags & CANIPC_ESI_MASK) ? 1 : 0;
-    can->sts = (net->flags & CANIPC_STS_MASK) ? 1 : 0;
+    can->xtd = (net->flags & CANTCP_XTD_MASK) ? 1 : 0;
+    can->rtr = (net->flags & CANTCP_RTR_MASK) ? 1 : 0;
+    can->fdf = (net->flags & CANTCP_FDF_MASK) ? 1 : 0;
+    can->brs = (net->flags & CANTCP_BRS_MASK) ? 1 : 0;
+    can->esi = (net->flags & CANTCP_ESI_MASK) ? 1 : 0;
+    can->sts = (net->flags & CANTCP_STS_MASK) ? 1 : 0;
     can->dlc = len2dlc(net->length);
-    memcpy(can->data, net->data, MAX(CANFD_MAX_LEN, CANIPC_MAX_LEN));
+    memcpy(can->data, net->data, MAX(CANFD_MAX_LEN, CANTCP_MAX_LEN));
 }
 
-void rock_msg_from_can(can_ipc_message_t *net, const can_message_t *can) {
+void rock_msg_from_can(can_tcp_message_t *net, const can_message_t *can) {
     /* sanity check */
     if (net == NULL || can == NULL) {
         return;
     }
-    memset(net, 0, sizeof(can_ipc_message_t));
+    memset(net, 0, sizeof(can_tcp_message_t));
     /* map CAN message (CAN API V3) to RocketCAN message */
     net->id = can->id;
-    net->flags = CANIPC_XTD_FLAG(can->xtd) | CANIPC_RTR_FLAG(can->rtr) |
-                 CANIPC_FDF_FLAG(can->fdf) | CANIPC_BRS_FLAG(can->brs) |
-                 CANIPC_ESI_FLAG(can->esi) | CANIPC_STS_FLAG(can->sts);
+    net->flags = CANTCP_XTD_FLAG(can->xtd) | CANTCP_RTR_FLAG(can->rtr) |
+                 CANTCP_FDF_FLAG(can->fdf) | CANTCP_BRS_FLAG(can->brs) |
+                 CANTCP_ESI_FLAG(can->esi) | CANTCP_STS_FLAG(can->sts);
     net->length = dlc2len(can->dlc);
     net->timestamp = can->timestamp;
-    memcpy(net->data, can->data, MAX(CANIPC_MAX_LEN, CANFD_MAX_LEN));
+    memcpy(net->data, can->data, MAX(CANTCP_MAX_LEN, CANFD_MAX_LEN));
     /* convert RocketCAN message from host to network byte order */
-    CAN_IPC_MSG_HTON(*net);
+    CANTCP_MSG_HTON(*net);
     /* set control character (ETX) */
-    net->ctrlchar = CANIPC_CTRLCHAR;
+    net->ctrlchar = CANTCP_CTRLCHAR;
     /* calculate and store the CRC checksum */
     net->checksum = crc_j1850_calc((const uint8_t*)net, 
-            sizeof(can_ipc_message_t) - sizeof(net->checksum), NULL);
+            sizeof(can_tcp_message_t) - sizeof(net->checksum), NULL);
 }
 
-void rock_msg_add_status(can_ipc_message_t *net, uint8_t status) {
+void rock_msg_add_status(can_tcp_message_t *net, uint8_t status) {
     /* sanity check */
     if (net == NULL) {
         return;
@@ -165,31 +165,30 @@ void rock_msg_add_status(can_ipc_message_t *net, uint8_t status) {
     net->status = status;
     /* update the CRC checksum */
     net->checksum = crc_j1850_calc((const uint8_t*)net, 
-            sizeof(can_ipc_message_t) - sizeof(net->checksum), NULL);
+            sizeof(can_tcp_message_t) - sizeof(net->checksum), NULL);
 }
 
-void rock_msg_add_busload(can_ipc_message_t *net, uint16_t busload) {
+void rock_msg_add_busload(can_tcp_message_t *net, uint16_t busload) {
     /* sanity check */
     if (net == NULL) {
         return;
     }
     /* add CAN bus load to RocketCAN message */
-    net->busload = (busload > 10000U) ? 255U : (uint16_t)
-        (((uint32_t)busload * (uint32_t)255U) / (uint32_t)10000U);
+    net->busload = (busload < CANTCP_MAX_BUSLOAD) ? busload : CANTCP_MAX_BUSLOAD;
     /* update the CRC checksum */
     net->checksum = crc_j1850_calc((const uint8_t*)net, 
-            sizeof(can_ipc_message_t) - sizeof(net->checksum), NULL);
+            sizeof(can_tcp_message_t) - sizeof(net->checksum), NULL);
 }
 
-void rock_msg_abort(can_ipc_message_t *net) {
+void rock_msg_abort(can_tcp_message_t *net) {
     /* sanity check */
     if (net == NULL) {
         return;
     }
     /* create RocketCAN abort message */
-    memset(net, 0, sizeof(can_ipc_message_t));
+    memset(net, 0, sizeof(can_tcp_message_t));
     net->id = 0x001U;
-    net->flags = CANIPC_STS_FLAG(1U);
+    net->flags = CANTCP_STS_FLAG(1U);
     net->length = 4U;
     net->status = CANSTAT_RESET;
     net->data[3] = CANSTAT_RESET;
@@ -199,26 +198,26 @@ void rock_msg_abort(can_ipc_message_t *net) {
         net->timestamp = now;
     }
     /* set control character (EOT) */
-    net->ctrlchar = CANIPC_EOT_CHAR;
+    net->ctrlchar = CANTCP_EOT_CHAR;
     /* convert RocketCAN message from host to network byte order */
-    CAN_IPC_MSG_HTON(*net);
+    CANTCP_MSG_HTON(*net);
     /* calculate and store the CRC checksum */
     net->checksum = crc_j1850_calc((const uint8_t*)net, 
-            sizeof(can_ipc_message_t) - sizeof(net->checksum), NULL);
+            sizeof(can_tcp_message_t) - sizeof(net->checksum), NULL);
 }
 
-bool rock_msg_is_abort(const can_ipc_message_t *msg) {
+bool rock_msg_is_abort(const can_tcp_message_t *msg) {
     /* sanity check */
     if (msg == NULL) {
         return false;
     }
     /* check for correct checksum */
     if (msg->checksum != crc_j1850_calc((const uint8_t*)msg, 
-            sizeof(can_ipc_message_t) - sizeof(msg->checksum), NULL)) {
+            sizeof(can_tcp_message_t) - sizeof(msg->checksum), NULL)) {
         return false;
     }
     /* check for control character (EOT) */
-    if (msg->ctrlchar != CANIPC_EOT_CHAR) {
+    if (msg->ctrlchar != CANTCP_EOT_CHAR) {
         return false;
     }
     /* abort message is valid */

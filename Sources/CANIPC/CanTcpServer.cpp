@@ -1,6 +1,6 @@
 //  SPDX-License-Identifier: BSD-2-Clause OR GPL-2.0-or-later
 //
-//  CAN Interface API, Version 3 (RocketCAN Server)
+//  CAN Interface API, Version 3 (CAN-over-Ethernet Server)
 //
 //  Copyright (c) 2008-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 //  All rights reserved.
@@ -8,8 +8,8 @@
 //  This file is part of CAN API V3.
 //
 //  CAN API V3 is dual-licensed under the BSD 2-Clause "Simplified" License
-//  and under the GNU General Public License v2.0 (or any later version).
-//  You can choose between one of them if you use this file.
+//  and under the GNU General Public License v2.0 (or any later version). You can
+//  choose between one of them if you use CAN API V3 in whole or in part.
 //
 //  (1) BSD 2-Clause "Simplified" License
 //
@@ -47,8 +47,8 @@
 //  You should have received a copy of the GNU General Public License along
 //  with CAN API V3; if not, see <https://www.gnu.org/licenses/>.
 //
-#include "CanIpcServer.h"
-#include "ipc_server.h"
+#include "CanTcpServer.h"
+#include "tcp_server.h"
 #include "RocketCAN.h"
 
 #include <stdio.h>
@@ -66,40 +66,22 @@
 
 // TODO: Check retun values with original RocketCAN code
 
-CCanIpcServer::CCanIpcServer(EIpcProtocol protocol) {
+CCanTcpServer::CCanTcpServer() {
     SERVER_NULL();
     SERVICE_NULL();
     m_evCallback = NULL;
     m_pParameter = NULL;
-    m_ePprotocol = protocol;
-    m_eFrameFormat = eRocketCAN;
-    m_nMtuSize = CANIPC_MTU_ROCKETCAN;
-    m_nLogging = IPC_LOGGING_NONE;
+    m_nLogging = TCP_LOGGING_NONE;
+    m_nFrameSize = sizeof(CANTCP_Message_t);
 }
 
-CCanIpcServer::~CCanIpcServer() {
+CCanTcpServer::~CCanTcpServer() {
     (void)Stop();
 }
 
-bool CCanIpcServer::SetFrameFormat(EFrameFormat format) {
-    if (m_pServer == NULL) {
-        switch (format) {
-            case eRocketCAN: m_nMtuSize = CANIPC_MTU_ROCKETCAN; break;
-#if (OPTION_CANIPC_SOCKETCAN != 0) 
-            case eSocketCAN: m_nMtuSize = CANIPC_MTU_SOCKETCAN; break;
-            case eSocketCAN_FD: m_nMtuSize = CANIPC_MTU_SOCKETCAN_FD; break;
-#endif
-            default: return false;
-        }
-        m_eFrameFormat = format;
-        return true;
-    }
-    return false;
-}
-
-CANAPI_Return_t CCanIpcServer::Start(const char *service) {
+CANAPI_Return_t CCanTcpServer::Start(const char *service) {
     if (m_pServer != NULL) return CANERR_YETINIT;
-    if ((m_pServer = ipc_server_start(service, (int)m_ePprotocol, m_nMtuSize, m_evCallback, m_pParameter, m_nLogging)) != NULL) {
+    if ((m_pServer = tcp_server_start(service, m_nFrameSize, m_evCallback, m_pParameter, m_nLogging)) != NULL) {
         strncpy(m_szService, service, sizeof(m_szService) - 1);
         m_szService[sizeof(m_szService) - 1] = '\0';
         return CANERR_NOERROR;
@@ -108,60 +90,60 @@ CANAPI_Return_t CCanIpcServer::Start(const char *service) {
     return (CANERR_SYSTEM - errno);
 }
 
-CANAPI_Return_t CCanIpcServer::Stop(void) {
+CANAPI_Return_t CCanTcpServer::Stop(void) {
     CANAPI_Return_t retVal = CANERR_FATAL;
     if (m_pServer == NULL) return CANERR_NOTINIT;
-    retVal = ipc_server_stop(m_pServer);
+    retVal = tcp_server_stop(m_pServer);
     SERVICE_NULL();
     SERVER_NULL();
     return (retVal == 0) ? CANERR_NOERROR : (CANERR_SYSTEM - errno);
 }
 
-CANAPI_Return_t CCanIpcServer::Send(const void *data, size_t size) {
+CANAPI_Return_t CCanTcpServer::Send(const void *data, size_t size) {
     CANAPI_Return_t retVal = CANERR_FATAL;
     // send data over the network
     if (m_pServer == NULL) return CANERR_NOTINIT;
-    retVal = ipc_server_send(m_pServer, data, size);
+    retVal = tcp_server_send(m_pServer, data, size);
     return (retVal == 0) ? CANERR_NOERROR : (CANERR_SYSTEM - errno);
 }
 
-CANAPI_Return_t CCanIpcServer::Send(CANAPI_Message_t message, uint8_t status, uint16_t load) {
+CANAPI_Return_t CCanTcpServer::Send(CANAPI_Message_t message, uint8_t status, uint16_t load) {
     CANAPI_Return_t retVal = CANERR_FATAL;
-    CANIPC_Message_t packet = {};
+    CANTCP_Message_t packet = {};
     // map CAN API V3 message to RocketCAN message
     rock_msg_from_can(&packet, &message);
     rock_msg_add_status(&packet, status);
     rock_msg_add_busload(&packet, load);
     // send RocketCAN message over the network
     if (m_pServer == NULL) return CANERR_NOTINIT;
-    retVal = ipc_server_send(m_pServer, (void*)&packet, sizeof(packet));
+    retVal = tcp_server_send(m_pServer, (void*)&packet, sizeof(packet));
     return (retVal == 0) ? CANERR_NOERROR : (CANERR_SYSTEM - errno);
 }
 
-CANAPI_Return_t CCanIpcServer::SendAbort(uint8_t status) {
+CANAPI_Return_t CCanTcpServer::SendAbort(uint8_t status) {
     CANAPI_Return_t retVal = CANERR_FATAL;
-    CANIPC_Message_t packet = {};
+    CANTCP_Message_t packet = {};
     // make RocketCANabort message
     rock_msg_abort(&packet);
     rock_msg_add_status(&packet, status);
     // send RocketCANabort message over the network
     if (m_pServer == NULL) return CANERR_NOTINIT;
-    retVal = ipc_server_send(m_pServer, (void*)&packet, sizeof(packet));
+    retVal = tcp_server_send(m_pServer, (void*)&packet, sizeof(packet));
     return (retVal == 0) ? CANERR_NOERROR : (CANERR_SYSTEM - errno);
 }
 
-void CCanIpcServer::CanToNet(const CANAPI_Message_t &can, CANIPC_Message_t &net) {
+void CCanTcpServer::CanToNet(const CANAPI_Message_t &can, CANTCP_Message_t &net) {
     // map CAN API V3 message to RocketCAN message
     rock_msg_from_can(&net, &can);
 }
 
-bool CCanIpcServer::NetToCan(const CANIPC_Message_t &net, CANAPI_Message_t &can) {
+bool CCanTcpServer::NetToCan(const CANTCP_Message_t &net, CANAPI_Message_t &can) {
     // check RocketCAN message for validity
     if (!rock_msg_is_valid(&net)) {
         return false;
     }
     // map RocketCAN message to CAN API V3 message
-    can_ipc_message_t tmp = net;
+    can_tcp_message_t tmp = net;
     rock_msg_to_can(&can, &tmp);
     return true;
 }

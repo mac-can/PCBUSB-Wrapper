@@ -1,6 +1,6 @@
 //  SPDX-License-Identifier: BSD-2-Clause OR GPL-2.0-or-later
 //
-//  CAN Interface API, Version 3 (RocketCAN Client)
+//  CAN Interface API, Version 3 (CAN-over-Ethernet Client)
 //
 //  Copyright (c) 2008-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 //  All rights reserved.
@@ -8,8 +8,8 @@
 //  This file is part of CAN API V3.
 //
 //  CAN API V3 is dual-licensed under the BSD 2-Clause "Simplified" License
-//  and under the GNU General Public License v2.0 (or any later version).
-//  You can choose between one of them if you use this file.
+//  and under the GNU General Public License v2.0 (or any later version). You can
+//  choose between one of them if you use CAN API V3 in whole or in part.
 //
 //  (1) BSD 2-Clause "Simplified" License
 //
@@ -47,22 +47,16 @@
 //  You should have received a copy of the GNU General Public License along
 //  with CAN API V3; if not, see <https://www.gnu.org/licenses/>.
 //
-#ifndef CAN_IPC_CLIENT_H_INCLUDED
-#define CAN_IPC_CLIENT_H_INCLUDED
+#ifndef CAN_TCP_CLIENT_H_INCLUDED
+#define CAN_TCP_CLIENT_H_INCLUDED
 
 #include "CANAPI.h"
-#include "ipc_can.h"
-#include "ipc_common.h"
+#include "tcp_can.h"
+#include "tcp_common.h"
 
 /// \name  Compiler Switches
 /// \brief Options for conditional compilation.
 /// \{
-/// \note  Set define OPTION_CANIPC_SOCKETCAN to a non-zero value to compile
-///        this module with SocketCAN support (e.g. in the build environment).
-///
-/// \note  Set define OPTION_CANIPC_PCANBASIC to a non-zero value to compile
-///        this module with PCAN-Basic support (e.g. in the build environment).
-///
 /// \note  Do not set define OPTION_CAN_2_0_ONLY to a non-zero value to compile
 ///        with CAN 2.0 frame format only. This frame format is not supported!
 ///
@@ -74,70 +68,35 @@
 #endif
 /// @}
 
-/// \name   CAN IPC Client
-/// \brief  CAN Inter-Process Communication (IPC) Client.
+/// \name   CAN TCP/IP Client
+/// \brief  CAN-over-Ethernet Client with RocketCAN frame format.
 /// \{
-class CCanIpcClient {
-public:
-    enum EIpcProtocol {
-        eTcp = IPC_SOCK_TCP,  ///< TCP/IP protocol (SOCK_STREAM)
-        eUdp = IPC_SOCK_UDP,  ///< UDP/IP protocol (SOCK_DGRAM)
-    };
-    enum EFrameFormat {
-        eRocketCAN = CANIPC_ROCKETCAN,  ///< RocketCAN frame format (CAN API V3)
-        eSocketCAN = CANIPC_SOCKETCAN,  ///< SocketCAN CAN CC frame format
-        eSocketCAN_FD = CANIPC_SOCKETCAN_FD,  ///< SocketCAN CAN FD frame format
-        eUnknown = -1  ///< unknown frame format
-    };
+class CCanTcpClient {
 private:
-    EIpcProtocol m_ePprotocol;  ///< IPC protocol
-    EFrameFormat m_eFrameFormat;  ///< CAN frame format
-    size_t m_nMtuSize;  ///< Maximum Transmission Unit (MTU) size
+    size_t m_nFrameSize;  ///< Frame size (in bytes)
     int m_nSocket;  ///< Socket file descriptor
 public:
     /// \brief  Constructor (default frame format is RocketCAN).
     ///
-    /// \param  protocol     IPC protocol
-    ///
-    CCanIpcClient(EIpcProtocol protocol = eTcp);
+    CCanTcpClient();
     
     /// \brief  Destructor.
     ///
-    ~CCanIpcClient();
+    ~CCanTcpClient();
     
-    /// \brief  Set the CAN frame format.
+    /// \brief  Get the frame size.
     ///
-    /// \param  format  CAN frame format (RocketCAN, SocketCAN)
+    /// \return Frame size (in bytes)
     ///
-    /// \return true if the frame format has been set, or false on error
-    ///
-    bool SetFrameFormat(EFrameFormat format = eRocketCAN);
+    size_t GetFrameSize() { return m_nFrameSize; }
 
-    /// \brief  Get the CAN frame format.
+    /// \brief  Check if the TCP/IP client is connected.
     ///
-    /// \return CAN frame format (RocketCAN, SocketCAN)
-    ///
-    EFrameFormat GetFrameFormat() { return m_eFrameFormat; }
-
-    /// \brief  Get the transport protocol.
-    ///
-    /// \return Transport protocol (TCP, UDP, SCTP)
-    ///
-    EIpcProtocol GetTransportProtocol() { return m_ePprotocol; }
-
-    /// \brief  Get the MTU size.
-    ///
-    /// \return Maximum Transmission Unit (MTU) size
-    ///
-    size_t GetMtuSize() { return m_nMtuSize; }
-
-    /// \brief  Check if the IPC client is connected.
-    ///
-    /// \return true if the IPC client is connected, or false otherwise
+    /// \return true if the TCP/IP client is connected, or false otherwise
     ///
     bool IsConnected() { return (m_nSocket >= 0) ? true : false; }
 
-    /// \brief  Connect to a listening IPC server.
+    /// \brief  Connect to a listening TCP/IP server.
     ///
     /// \param  server  Server address ("<host>:<port>")
     ///
@@ -145,7 +104,7 @@ public:
     ///
     CANAPI_Return_t Connect(const char *server);
     
-    /// \brief  Disconnect from IPC server.
+    /// \brief  Disconnect from TCP/IP server.
     ///
     /// \return 0 on success, or a negative value on error
     ///
@@ -182,7 +141,7 @@ public:
     /// \brief  Send data over the network.
     ///
     /// \param  data         Data to be sent (in network byte order)
-    /// \param  size         Size of the data (must match the MTU size)
+    /// \param  size         Size of the data (must match the frame size)
     /// \param  inhibitTime  Inhibit time in milliseconds
     ///
     /// \return 0 on success, or a negative value on error
@@ -198,44 +157,28 @@ public:
     static const char *localhost(const char *port) {
         static char server[100];
         if (port)
-            snprintf(server, sizeof(server), IPC_IPv4_LOCALHOST ":%s", port);
+            snprintf(server, sizeof(server), TCP_IPv4_LOCALHOST ":%s", port);
         else
-            snprintf(server, sizeof(server), IPC_IPv4_LOCALHOST ":0");
+            snprintf(server, sizeof(server), TCP_IPv4_LOCALHOST ":0");
         return (const char *)server;
     }
 public:
-    /// \brief  Set the MTU size.
+    /// \brief  Set the frame size.
     ///
     /// \warning  This method is intended for testing purposes only!
     ///
     /// \note   The client must not be connected.
     ///
-    /// \param  mtuSize  Maximum Transmission Unit (MTU) size
+    /// \param  size  Frame size (in bytes)
     ///
-    /// \return true if the MTU size has been set, or false on error
+    /// \return true if the frame size has been set, or false on error
     ///
-    bool SetMtuSize(size_t mtuSize) {
+    bool SetFrameSize(size_t size) {
         if (m_nSocket >= 0) return false;
-        m_nMtuSize = mtuSize;
-        m_eFrameFormat = eUnknown;
-        return true;
-    }
-    /// \brief  Set the transport protocol.
-    ///
-    /// \warning  This method is intended for testing purposes only!
-    ///
-    /// \note   The client must not be connected.
-    ///
-    /// \param  protocol  Transport protocol (TCP, UDP, SCTP)
-    ///
-    /// \return true if the transport protocol has been set, or false on error
-    ///
-    bool SetTransportProtocol(EIpcProtocol protocol) {
-        if (m_nSocket >= 0) return false;
-        m_ePprotocol = protocol;
+        m_nFrameSize = size;
         return true;
     }
 };
 /// \}
 
-#endif  // CAN_IPC_CLIENT_H_INCLUDED
+#endif  // CAN_TCP_CLIENT_H_INCLUDED

@@ -1,6 +1,6 @@
 /*  SPDX-License-Identifier: BSD-2-Clause OR GPL-2.0-or-later */
 /*
- *  CAN Interface API, Version 3 (CAN IPC Interface)
+ *  CAN Interface API, Version 3 (CAN-over-Ethernet / RocketCAN)
  *
  *  Copyright (c) 2004-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
  *  All rights reserved.
@@ -49,13 +49,15 @@
  */
 /** @file        RocketCAN.h
  *
- *  @brief       CAN/IPC RocketCAN Message Format
+ *  @brief       CAN API V3 message to RocketCAN message and vice versa.
+ *
+ *  @note        RocketCAN messages are transmitted in network byte order. 
  *
  *  @author      $Author: sedna $
  *
- *  @version     $Rev: 1445 $
+ *  @version     $Rev: 1453 $
  *
- *  @addtogroup  ipc
+ *  @addtogroup  rocketcan
  *  @{
  */
 #ifndef ROCKETCAN_H_INCLUDED
@@ -63,8 +65,8 @@
 
 /*  -----------  includes  -----------------------------------------------
  */
-#include "ipc_can.h"  /* CAN/IPC message format: RocketCAN */
 #include "CANAPI_Types.h"  /* CAN API V3 message and return types */
+#include "tcp_can.h"       /* CAN-over-Ethernet message: RocketCAN */
 
 
 /*  -----------  options  ------------------------------------------------
@@ -103,7 +105,7 @@ extern "C" {
  *
  *  @return  true if message is valid, false otherwise
  */
-extern bool rock_msg_is_valid(const can_ipc_message_t *msg);
+extern bool rock_msg_is_valid(const can_tcp_message_t *msg);
 
 /** @brief  Convert RocketCAN message to CAN API V3 message.
  *
@@ -114,7 +116,7 @@ extern bool rock_msg_is_valid(const can_ipc_message_t *msg);
  *  @param  can  CAN API V3 message (host byte order)
  *  @param  net  RocketCAN message (network byte order)
  */
-extern void rock_msg_to_can(can_message_t *can, can_ipc_message_t *net);
+extern void rock_msg_to_can(can_message_t *can, can_tcp_message_t *net);
 
 /** @brief  Convert CAN API V3 message to RocketCAN message.
  * 
@@ -124,7 +126,7 @@ extern void rock_msg_to_can(can_message_t *can, can_ipc_message_t *net);
  *  @param  net  RocketCAN message (network byte order)
  *  @param  can  CAN API V3 message (host byte order)
  */
-extern void rock_msg_from_can(can_ipc_message_t *net, const can_message_t *can);
+extern void rock_msg_from_can(can_tcp_message_t *net, const can_message_t *can);
 
 /** @brief  Add CAN status register to RocketCAN message.
  *
@@ -133,7 +135,7 @@ extern void rock_msg_from_can(can_ipc_message_t *net, const can_message_t *can);
  *  @param  net     RocketCAN message (network byte order)
  *  @param  status  CAN status register (8-bit value)
  */
-extern void rock_msg_add_status(can_ipc_message_t *net, uint8_t status);
+extern void rock_msg_add_status(can_tcp_message_t *net, uint8_t status);
 
 /** @brief  Add CAN bus load to RocketCAN message.
  *
@@ -142,10 +144,10 @@ extern void rock_msg_add_status(can_ipc_message_t *net, uint8_t status);
  *  @param  net      RocketCAN message (network byte order)
  *  @param  busload  CAN bus load (0 .. 10'000 ==> 0 .. 255)
  */
-extern void rock_msg_add_busload(can_ipc_message_t *net, uint16_t busload);
+extern void rock_msg_add_busload(can_tcp_message_t *net, uint16_t busload);
 
 /** @brief  Create RocketCAN abort message to signal to all clients that
- *          the server is shutting down due.
+ *          the server is shutting down.
  *
  *          RocketCAN abort message:
  *          - CAN identifier = 0x001
@@ -158,7 +160,7 @@ extern void rock_msg_add_busload(can_ipc_message_t *net, uint16_t busload);
  *
  *  @param  net  RocketCAN message (network byte order)
  */
-extern void rock_msg_abort(can_ipc_message_t *net);
+extern void rock_msg_abort(can_tcp_message_t *net);
 
 /** @brief  Check if RocketCAN message is an abort message.
  *
@@ -169,7 +171,7 @@ extern void rock_msg_abort(can_ipc_message_t *net);
  *
  *  @return  true if message is an abort message, false otherwise
  */
-extern bool rock_msg_is_abort(const can_ipc_message_t *msg);
+extern bool rock_msg_is_abort(const can_tcp_message_t *msg);
 
 #ifdef __cplusplus
 }

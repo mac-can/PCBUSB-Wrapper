@@ -1,6 +1,6 @@
 //  SPDX-License-Identifier: BSD-2-Clause OR GPL-2.0-or-later
 //
-//  CAN Interface API, Version 3 (RocketCAN Client)
+//  CAN Interface API, Version 3 (CAN-over-Ethernet Client)
 //
 //  Copyright (c) 2008-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 //  All rights reserved.
@@ -8,8 +8,8 @@
 //  This file is part of CAN API V3.
 //
 //  CAN API V3 is dual-licensed under the BSD 2-Clause "Simplified" License
-//  and under the GNU General Public License v2.0 (or any later version).
-//  You can choose between one of them if you use this file.
+//  and under the GNU General Public License v2.0 (or any later version). You can
+//  choose between one of them if you use CAN API V3 in whole or in part.
 //
 //  (1) BSD 2-Clause "Simplified" License
 //
@@ -47,8 +47,8 @@
 //  You should have received a copy of the GNU General Public License along
 //  with CAN API V3; if not, see <https://www.gnu.org/licenses/>.
 //
-#include "CanIpcClient.h"
-#include "ipc_client.h"
+#include "CanTcpClient.h"
+#include "tcp_client.h"
 #include "RocketCAN.h"
 
 #include <stdio.h>
@@ -64,41 +64,23 @@
 
 // TODO: Check retun values with original RocketCAN code
 
-CCanIpcClient::CCanIpcClient(EIpcProtocol protocol) {
+CCanTcpClient::CCanTcpClient() {
     m_nSocket = (-1);
-    m_ePprotocol = protocol;
-    m_eFrameFormat = eRocketCAN;
-    m_nMtuSize = CANIPC_MTU_ROCKETCAN;
+    m_nFrameSize = sizeof(CANTCP_Message_t);
 }
 
-CCanIpcClient::~CCanIpcClient() {
+CCanTcpClient::~CCanTcpClient() {
     (void)Disconnect();
 }
 
-bool CCanIpcClient::SetFrameFormat(EFrameFormat format) {
-    if (m_nSocket < 0) {
-        switch (format) {
-            case eRocketCAN: m_nMtuSize = CANIPC_MTU_ROCKETCAN; break;
-#if (OPTION_CANIPC_SOCKETCAN != 0) 
-            case eSocketCAN: m_nMtuSize = CANIPC_MTU_SOCKETCAN; break;
-            case eSocketCAN_FD: m_nMtuSize = CANIPC_MTU_SOCKETCAN_FD; break;
-#endif
-            default: return false;
-        }
-        m_eFrameFormat = format;
-        return true;
-    }
-    return false;
-}
-
-CANAPI_Return_t CCanIpcClient::Connect(const char *serverName) {
-    m_nSocket = ipc_client_connect(serverName, (int)m_ePprotocol);
+CANAPI_Return_t CCanTcpClient::Connect(const char *serverName) {
+    m_nSocket = tcp_client_connect(serverName);
     return (m_nSocket >= 0) ? CANERR_NOERROR : (CANERR_SYSTEM - errno);
 }
 
-CANAPI_Return_t CCanIpcClient::Disconnect(void) {
+CANAPI_Return_t CCanTcpClient::Disconnect(void) {
     if (m_nSocket >= 0) {
-        if (ipc_client_close(m_nSocket) != 0) {
+        if (tcp_client_close(m_nSocket) != 0) {
             return (CANERR_SYSTEM - errno);
         }
         m_nSocket = (-1);
@@ -106,10 +88,10 @@ CANAPI_Return_t CCanIpcClient::Disconnect(void) {
     return CANERR_NOERROR;
 }
 
-CANAPI_Return_t CCanIpcClient::Receive(CANAPI_Message_t &message, uint16_t timeout) {
-    CANIPC_Message_t packet = {};
+CANAPI_Return_t CCanTcpClient::Receive(CANAPI_Message_t &message, uint16_t timeout) {
+    CANTCP_Message_t packet = {};
     // receive RocketCAN message from network
-    ssize_t nbyte = ipc_client_recv(m_nSocket, (void*)&packet, sizeof(packet), timeout);
+    ssize_t nbyte = tcp_client_recv(m_nSocket, (void*)&packet, sizeof(packet), timeout);
     if (nbyte < 0) {
         return (errno == ENODATA) ? CANERR_RX_EMPTY : (CANERR_SYSTEM - errno);
     } else if (nbyte != (ssize_t)sizeof(packet)) {
@@ -125,14 +107,14 @@ CANAPI_Return_t CCanIpcClient::Receive(CANAPI_Message_t &message, uint16_t timeo
     return CANERR_NOERROR;
 }
 
-CANAPI_Return_t CCanIpcClient::Send(CANAPI_Message_t message, uint16_t inhibitTime) {
-    CANIPC_Message_t packet = {};
+CANAPI_Return_t CCanTcpClient::Send(CANAPI_Message_t message, uint16_t inhibitTime) {
+    CANTCP_Message_t packet = {};
     // no timestamp on CAN TX messages, take current time instead
     (void)clock_gettime(CLOCK_REALTIME, &message.timestamp);
     // map CAN API V3 message to RocketCAN message
     rock_msg_from_can(&packet, &message);
     // send RocketCAN message over the network
-    ssize_t nbyte = ipc_client_send(m_nSocket, (const void*)&packet, sizeof(packet));
+    ssize_t nbyte = tcp_client_send(m_nSocket, (const void*)&packet, sizeof(packet));
     if (nbyte < 0) {
         return (CANERR_SYSTEM - errno);
     } else if (nbyte != (ssize_t)sizeof(packet)) {
@@ -143,8 +125,8 @@ CANAPI_Return_t CCanIpcClient::Send(CANAPI_Message_t message, uint16_t inhibitTi
     return CANERR_NOERROR;
 }
 
-CANAPI_Return_t CCanIpcClient::Receive(void *data, size_t size, uint16_t timeout) {
-    ssize_t nbyte = ipc_client_recv(m_nSocket, data, size, timeout);
+CANAPI_Return_t CCanTcpClient::Receive(void *data, size_t size, uint16_t timeout) {
+    ssize_t nbyte = tcp_client_recv(m_nSocket, data, size, timeout);
     if (nbyte < 0) {
         return (errno == ENODATA) ? CANERR_RX_EMPTY : (CANERR_SYSTEM - errno);
     } else if (nbyte != (ssize_t)size) {
@@ -153,8 +135,8 @@ CANAPI_Return_t CCanIpcClient::Receive(void *data, size_t size, uint16_t timeout
     return CANERR_NOERROR;
 }
 
-CANAPI_Return_t CCanIpcClient::Send(const void *data, size_t size, uint16_t inhibitTime) {
-    ssize_t nbyte = ipc_client_send(m_nSocket, data, size);
+CANAPI_Return_t CCanTcpClient::Send(const void *data, size_t size, uint16_t inhibitTime) {
+    ssize_t nbyte = tcp_client_send(m_nSocket, data, size);
     if (nbyte < 0) {
         return (CANERR_SYSTEM - errno);
     } else if (nbyte != (ssize_t)size) {

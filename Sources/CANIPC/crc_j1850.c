@@ -51,18 +51,9 @@
  *
  *  @brief       CRC Calculation according to SAE-J1850 CRC8 Standard.
  * 
- *               Polynomial: x^8 + x^4 + x^3 + x^2 + 1 (0x1D)
+ *  @author      $Author: sedna $
  *
- *               Whereby:
- *               - initial value: 0xFF
- *               - final XOR: 0xFF
- *               - CRC width: 8 bits
- *               - input data reflected:  No 
- *               - result data reflected:  No 
- *
- *  @author      $Author$
- *
- *  @version     $Rev$
+ *  @version     $Rev: 846 $
  *
  *  @addtogroup  crc
  *  @{

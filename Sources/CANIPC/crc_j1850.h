@@ -5,7 +5,7 @@
  *  Copyright (c) 2002-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
  *  All rights reserved.
  *
- *  Module 'crc_j1850' - CRC Calculation according to SAE-J1850 CRC8 Standard
+ *  Module 'crc_j1850' - CRC Calculation (SAE-J1850 CRC8 Standard)
  *
  *  This module is dual-licensed under the BSD 2-Clause "Simplified" License
  *  and under the GNU General Public License v2.0 (or any later version).
@@ -51,9 +51,18 @@
  *
  *  @brief       CRC Calculation according to SAE-J1850 CRC8 Standard.
  *
- *  @author      $Author$
+ *               Polynomial: x^8 + x^4 + x^3 + x^2 + 1 (0x1D)
  *
- *  @version     $Rev$
+ *               Whereby:<br>
+ *               - initial value: 0xFF<br>
+ *               - final XOR: 0xFF<br>
+ *               - CRC width: 8 bits<br>
+ *               - input data reflected:  No<br> 
+ *               - result data reflected:  No
+ *
+ *  @author      $Author: sedna $
+ *
+ *  @version     $Rev: 846 $
  *
  *  @addtogroup  crc
  *  @{
