@@ -53,17 +53,17 @@
  *
  *  @note        This is only a dummy file to have a SVN revision number.
  * 
- *  @author      $Author: sedna $
+ *  @author      $Author: gonggong $
  *
- *  @version     $Rev: 1455 $
+ *  @version     $Rev: 1466 $
  *
  *  @addtogroup  rocketcan
  *  @{
  */
 #ifndef ROCKETCAN_VERSION_H_INCLUDED
 #define ROCKETCAN_VERSION_H_INCLUDED
-// SVN revision number (update with each commit: X)
-#define ROCKETCAN_SVN_REV  "$Rev: 1455 $"
+// SVN revision number (update with each commit: XI)
+#define ROCKETCAN_SVN_REV  "$Rev: 1466 $"
 #endif  /* ROCKETCAN_VERSION_H_INCLUDED */
 /** @}
  */

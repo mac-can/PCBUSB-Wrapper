@@ -51,9 +51,9 @@
  *
  *  @brief       Stream Socket Server (TCP/IP).
  *
- *  @author      $Author: sedna $
+ *  @author      $Author: gonggong $
  *
- *  @version     $Rev: 1452 $
+ *  @version     $Rev: 1466 $
  *
  *  @addtogroup  tcp
  *  @{
@@ -174,7 +174,7 @@ tcp_server_t tcp_server_start(const char *service, size_t data_size,
                               tcp_event_cbk_t recv_cbk, void *recv_ref, int logging) {
     struct tcp_server_desc *server = NULL;
     struct addrinfo hints, *ai, *p;
-    char filename[32];
+    char filename[10 + NI_MAXSERV];
     int rc, opt;
     int error;
     errno = 0;

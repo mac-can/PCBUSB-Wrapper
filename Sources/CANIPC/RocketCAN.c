@@ -51,9 +51,9 @@
  *
  *  @brief       CAN API V3 message to RocketCAN message and vice versa.
  *
- *  @author      $Author: sedna $
+ *  @author      $Author: gonggong $
  *
- *  @version     $Rev: 1453 $
+ *  @version     $Rev: 1466 $
  *
  *  @addtogroup  rocketcan
  *  @{
@@ -227,7 +227,7 @@ bool rock_msg_is_abort(const can_tcp_message_t *msg) {
 /*  -----------  local functions  ----------------------------------------
  */
 static uint8_t dlc2len(uint8_t dlc) {
-    const static uint8_t dlc_table[16] = {
+    static const uint8_t dlc_table[16] = {
         0U, 1U, 2U, 3U, 4U, 5U, 6U, 7U, 8U, 12U, 16U, 20U, 24U, 32U, 48U, 64U
     };
     return dlc_table[(dlc < 16U) ? dlc : 15U];

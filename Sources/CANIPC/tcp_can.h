@@ -51,9 +51,9 @@
  *
  *  @brief       RocketCAN Message Format
  *
- *  @author      $Author: sedna $
+ *  @author      $Author: gonggong $
  *
- *  @version     $Rev: 1452 $
+ *  @version     $Rev: 1466 $
  *
  *  @defgroup    rocketcan RocketCAN - CAN-over-Ethernet
  *  @{
@@ -195,8 +195,8 @@ typedef can_tcp_message_t CANTCP_Message_t;  /**< alias for RocketCAN Message */
     #error "Unknown endianness!"
 #endif
 #endif
-#define CANTCP_CAN_ID_HTON(id)  htonl((id))
-#define CANTCP_CAN_ID_NTOH(id)  ntohl((id))
+#define CANTCP_CAN_ID_HTON(id)  (id) = htonl((id))
+#define CANTCP_CAN_ID_NTOH(id)  (id) = ntohl((id))
 #define CANTCP_TIMESTAMP_HTON(ts) do { \
     (ts).tv_sec = htonll((uint64_t)(ts).tv_sec); \
     (ts).tv_nsec = htonll((uint64_t)(ts).tv_nsec); \
@@ -205,8 +205,8 @@ typedef can_tcp_message_t CANTCP_Message_t;  /**< alias for RocketCAN Message */
     (ts).tv_sec = ntohll((uint64_t)(ts).tv_sec); \
     (ts).tv_nsec = ntohll((uint64_t)(ts).tv_nsec); \
 } while (0)
-#define CANTCP_BUSLOAD_HTON(bl)  htons((bl))
-#define CANTCP_BUSLOAD_NTOH(bl)  ntohs((bl))
+#define CANTCP_BUSLOAD_HTON(bl)  (bl) = htons((bl))
+#define CANTCP_BUSLOAD_NTOH(bl)  (bl) = ntohs((bl))
 
 /** @brief  Convert RocketCAN Message from Host to Network Byte Order.
  *
