@@ -106,6 +106,13 @@ See header file `PeakCAN.h` for a description of all class members.
 ___libUVCANPCB___ is a dynamic library with a CAN API V3 compatible application programming interface for use in __C__ applications.
 See header file `can_api.h` for a description of all API functions.
 
+#### can_send
+
+`can_send` is a command line tool to send CAN messages that are entered at the program prompt.
+The syntax is taken from the Linux SocketCAN utility [can_utils\cansend](https://github.com/linux-can/can-utils/tree/master).
+
+Type `can_send --help` to display all program options.
+
 #### can_moni
 
 `can_moni` is a command line tool to view incoming CAN messages.
@@ -121,6 +128,16 @@ Originally developed for electronic environmental tests on an embedded Linux sys
 
 Type `can_test --help` to display all program options.
 
+#### can_port
+
+`can_port` is a command line tool designed to open a network socket for CAN-over-Ethernet communication.
+It connects to a CAN device and handles the data exchange between the CAN bus and local or remote clients.
+
+_Be aware that this may expose your computer to security vulnerabilities, unauthorized access, data interception, denial of service attacks, and resource exhaustion.
+Implement appropriate security measures to mitigate these risks._
+
+Type `can_port --help` to display all program options.
+
 ### Target Platforms
 - macOS 13.0 and later (Intel x64 and Apple silicon)
 - Debian GNU/Linux 12 (Linux Kernel 6.x)
@@ -128,15 +145,15 @@ Type `can_test --help` to display all program options.
 ### Development Environments
 
 #### macOS Sequoia
-- macOS Sequoia (15.3) on a Mac mini (M4 Pro, 2024)
+- macOS Sequoia (15.3.1) on a Mac mini (M4 Pro, 2024)
 - Apple clang version 16.0.0 (clang-1600.0.26.6)
 
 #### macOS Ventura
-- macOS Ventura (13.7.3) on a MacBook Pro (2019)
+- macOS Ventura (13.7.4) on a MacBook Pro (2019)
 - Apple clang version 14.0.3 (clang-1403.0.22.14.1)
 
 #### Debian 12.9 ("bookworm")
-- Debian 6.1.123-1 (2024-11-22) x86_64 GNU/Linux
+- Debian 6.1.128-1 (2025-02-07) x86_64 GNU/Linux
 - gcc (Debian 12.2.0-14) 12.2.0
 
 ### Required Library
@@ -145,7 +162,7 @@ Type `can_test --help` to display all program options.
 - `libPCBUSB.x.y.dylib` - Version 0.13 or later _(Latest is Greatest!)_
 
 #### Linux
-- `libpcanbasic.so` - PCAN Driver and Library for Linux, Version 8.19
+- `libpcanbasic.so` - PCAN Driver and Library for Linux, Version 8.20
 
 ## Known Bugs and Caveats
 
