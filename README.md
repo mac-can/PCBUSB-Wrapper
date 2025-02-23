@@ -153,7 +153,7 @@ Type `can_port --help` to display all program options.
 - Apple clang version 14.0.3 (clang-1403.0.22.14.1)
 
 #### Debian 12.9 ("bookworm")
-- Debian 6.1.123-1 (2024-11-22) x86_64 GNU/Linux
+- Debian 6.1.128-1 (2025-02-07) x86_64 GNU/Linux
 - gcc (Debian 12.2.0-14) 12.2.0
 
 ### Required Library
@@ -162,7 +162,7 @@ Type `can_port --help` to display all program options.
 - `libPCBUSB.x.y.dylib` - Version 0.13 or later _(Latest is Greatest!)_
 
 #### Linux
-- `libpcanbasic.so` - PCAN Driver and Library for Linux, Version 8.19
+- `libpcanbasic.so` - PCAN Driver and Library for Linux, Version 8.20
 
 ## Known Bugs and Caveats
 
