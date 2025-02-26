@@ -37,7 +37,7 @@ CANAPI_DIR = $(PROJ_DIR)/Sources/CANAPI
 CANIPC_DIR = $(PROJ_DIR)/Sources/CANIPC
 
 OBJECTS = $(OUTDIR)/main.o $(OUTDIR)/Options.o $(OUTDIR)/Timer.o \
-	$(OUTDIR)/CanTcpServer.o $(OUTDIR)/tcp_server.o \
+	$(OUTDIR)/CanTcpServer.o $(OUTDIR)/tcp_server_p.o \
 	$(OUTDIR)/RocketCAN.o $(OUTDIR)/crc_j1850.o
 
 DEFINES = -DOPTION_CANAPI_DRIVER=1 \
@@ -63,8 +63,7 @@ CXXFLAGS += -O2 -g -Wall -Wextra -pthread \
 	$(DEFINES) \
 	$(HEADERS)
 
-LDFLAGS  +=  -rpath /usr/local/lib \
-	-Wl,-framework -Wl,IOKit -Wl,-framework -Wl,CoreFoundation
+LDFLAGS  +=  -rpath /usr/local/lib
 
 ifeq ($(BINARY),UNIVERSAL)
 CFLAGS += -arch arm64 -arch x86_64
@@ -160,7 +159,7 @@ $(OUTDIR)/Timer.o: $(MAIN_DIR)/Timer.cpp
 $(OUTDIR)/CanTcpServer.o: $(CANIPC_DIR)/CanTcpServer.cpp
 	$(CXX) $(CXXFLAGS) -MMD -MF $*.d -o $@ -c $<
 
-$(OUTDIR)/tcp_server.o: $(CANIPC_DIR)/tcp_server.c
+$(OUTDIR)/tcp_server_p.o: $(CANIPC_DIR)/tcp_server_p.c
 	$(CC) $(CFLAGS) -MMD -MF $*.d -o $@ -c $<
 
 $(OUTDIR)/RocketCAN.o: $(CANIPC_DIR)/RocketCAN.c

@@ -219,6 +219,12 @@ int main(int argc, const char* argv[]) {
                              opts.m_BusSpeed.nominal.speed / 1000.,
                              opts.m_BusSpeed.nominal.samplepoint * 100., -opts.m_Bitrate.index);
         }
+        /* -- acceptance filter (if set) */
+        if ((opts.m_StdFilter.m_u32Code != CANACC_CODE_11BIT) || (opts.m_StdFilter.m_u32Mask != CANACC_MASK_11BIT))
+            fprintf(stdout, "Acc.-filter 11-bit=set (code=%03Xh, mask=%03Xh)\n", opts.m_StdFilter.m_u32Code, opts.m_StdFilter.m_u32Mask);
+        if (((opts.m_XtdFilter.m_u32Code != CANACC_CODE_29BIT) || (opts.m_XtdFilter.m_u32Mask != CANACC_MASK_29BIT)) && !opts.m_OpMode.nxtd)
+            fprintf(stdout, "Acc.-filter 29-bit=set (code=%08Xh, mask=%08Xh)\n", opts.m_XtdFilter.m_u32Code, opts.m_XtdFilter.m_u32Mask);
+        fputc('\n', stdout);
     }
     /* - search the <interface> by its name in the device list */
     bool flagFound = false;
@@ -281,6 +287,24 @@ int main(int argc, const char* argv[]) {
             fprintf(stderr, "\n           - possibly CAN operating mode %02Xh not supported", opts.m_OpMode.byte);
         fputc('\n', stderr);
         goto farewell;
+    }
+    /* -- set acceptance filter for 11-bit IDs */
+    if ((opts.m_StdFilter.m_u32Code != CANACC_CODE_11BIT) || (opts.m_StdFilter.m_u32Mask != CANACC_MASK_11BIT)) {
+        retVal = canDevice.SetFilter11Bit(opts.m_StdFilter.m_u32Code, opts.m_StdFilter.m_u32Mask);
+        if (retVal != CCanApi::NoError) {
+            fprintf(stdout, "FAILED!\n");
+            fprintf(stderr, "+++ error: CAN acceptance filter could not be set (%i)\n", retVal);
+            goto teardown;
+        }
+    }
+    /* -- set acceptance filter for 29-bit IDs */
+    if (((opts.m_XtdFilter.m_u32Code != CANACC_CODE_29BIT) || (opts.m_XtdFilter.m_u32Mask != CANACC_MASK_29BIT)) && !opts.m_OpMode.nxtd) {
+        retVal = canDevice.SetFilter29Bit(opts.m_XtdFilter.m_u32Code, opts.m_XtdFilter.m_u32Mask);
+        if (retVal != CCanApi::NoError) {
+            fprintf(stdout, "FAILED!\n");
+            fprintf(stderr, "+++ error: CAN acceptance filter could not be set (%i)\n", retVal);
+            goto teardown;
+        }
     }
     fprintf(stdout, "OK!\n");
     /* - start communication */
@@ -350,6 +374,7 @@ int main(int argc, const char* argv[]) {
             fprintf(stderr, "Execution aborted: Security risks were not accepted by the user.\n");
             goto teardown;
         }
+        (void)getchar();  // consume newline
     }
     fprintf(stdout, "\n" CAN_PORT_ACCEPTED "\n\n");
     /* - start CAN-over-Ethernet server */
@@ -373,9 +398,13 @@ int main(int argc, const char* argv[]) {
         if (errno) perror("+++ cause");
         goto teardown;
     }
-    fprintf(stdout, "\b\b\b started. 🚀\n");
+    fprintf(stdout, "\b\b\b started.\n");
     /* - reception loop */
     canDevice.ReceptionLoop();
+	/* -- send abort to all clients (if error frames enabled) */
+	if (opts.m_OpMode.byte & CANMODE_ERR) {
+		(void)ipcServer.SendAbort();
+	}
     /* - stop CAN-over-Ethernet server */
     retVal = ipcServer.Stop();
     if (retVal != 0) {
@@ -383,7 +412,7 @@ int main(int argc, const char* argv[]) {
         if (errno) perror("+++ cause");
         goto teardown;
     } else {
-        fprintf(stdout, "CAN-over-Ethernet server on port %s stopped. 🪦\n\n", opts.m_szServerPort);
+        fprintf(stdout, "CAN-over-Ethernet server on port %s stopped.\n\n", opts.m_szServerPort);
     }
     /* - stop trace session (if enabled) */
 #if (CAN_TRACE_SUPPORTED != 0)
@@ -392,7 +421,7 @@ int main(int argc, const char* argv[]) {
         retVal = canDevice.GetProperty(CANPROP_GET_TRACE_FILE, (void*)property, CANPROP_MAX_BUFFER_SIZE);
         if (retVal == CCanApi::NoError) {
             property[CANPROP_MAX_BUFFER_SIZE] = '\0';
-            fprintf(stdout, "Trace written into \"%s\"\n\n", property);
+            fprintf(stdout, "Trace-file=%s\n", property);
         }
         /* -- set trace inactive */
         property[0] = CANPARA_TRACE_OFF;
@@ -431,22 +460,26 @@ farewell:
 uint64_t CCanDevice::ReceptionLoop() {
     CANAPI_Message_t message = CANAPI_Message_t();
     CANAPI_Return_t retVal = 0;
-    uint8_t status = 0U;
-    uint16_t load = 0U;
     uint64_t frames = 0U;
+	uint8_t status = 0x80U;
 
+	static uint8_t lastStatus = status;
+
+#if !defined(_WIN32) && !defined(_WIN64)
     fprintf(stdout, "\nPress ^C to abort or execute `kill -15 <pid>' to exit the program properly.\n\n");
+#else
+	fprintf(stdout, "\nPress ^C to abort or execute `taskkill /F /PID <pid>' to exit the program properly.\n\n");
+#endif
     while(running) {
         if ((retVal = ReadMessage(message)) == CCanApi::NoError) {
-            /* get CAN status register (8-bit) and bus load (0 .. 10'000 = 100%) */
-            if ((GetProperty(CANPROP_GET_STATUS, (void*)&status, sizeof(uint8_t)) != CCanApi::NoError) ||
-                (GetProperty(CANPROP_GET_BUSLOAD, (void*)&load, sizeof(uint16_t)) != CCanApi::NoError)) {
-                /* this should never happen, but we set load to 100% to indicate an error */
-                status = (uint8_t)0x00;
-                load = (uint16_t)(~0);
+            /* get CAN status register (8-bit) */
+            if (GetProperty(CANPROP_GET_STATUS, (void*)&status, sizeof(uint8_t)) != CCanApi::NoError) {
+                /* this should never happen, but we send the last status */
+                status = lastStatus;
             }
             /* send RocketCAN message to all clients */
-            (void)ipcServer.Send(message, status, load);
+            (void)ipcServer.Send(message, status);
+			lastStatus = status;
             frames++;
         } 
         else if ((retVal == CCanApi::ResourceError) || (retVal == CCanApi::FatalError)) {

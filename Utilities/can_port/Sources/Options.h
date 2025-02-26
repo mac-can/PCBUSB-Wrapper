@@ -75,6 +75,10 @@ struct SOptions {
     CANAPI_BusSpeed_t m_BusSpeed;
     bool m_bHasDataPhase;
     bool m_bHasNoSamp;
+    struct {
+        uint32_t m_u32Code;
+        uint32_t m_u32Mask;
+    } m_StdFilter, m_XtdFilter;
 #if (CAN_TRACE_SUPPORTED != 0)
     enum ETraceMode {
         eTraceOff,

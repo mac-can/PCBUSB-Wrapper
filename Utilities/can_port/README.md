@@ -5,11 +5,18 @@ Copyright &copy; 2008,2012-2025 by Uwe Vogt, UV Software, Berlin
 Usage: can_port <interface>@<port> [<option>...]
 Options:
  -m, --mode=(2.0|FDF[+BRS])           CAN operation mode: CAN 2.0 or CAN FD mode
+     --listen-only                    monitor mode (listen-only mode)
+     --error-frames                   allow reception of error frames
+     --no-remote-frames               suppress remote frames (RTR frames)
+     --no-extended-frames             suppress extended frames (29-bit identifier)
+     --code=<id>                      acceptance code for 11-bit IDs (default=0x000)
+     --mask=<id>                      acceptance mask for 11-bit IDs (default=0x000)
+     --xtd-code=<id>                  acceptance code for 29-bit IDs (default=0x00000000)
+     --xtd-mask=<id>                  acceptance mask for 29-bit IDs (default=0x00000000)
  -b, --baudrate=<baudrate>            CAN bit-timing in kbps (default=250), or
      --bitrate=<bit-rate>             CAN bit-rate settings (as key/value list)
  -v, --verbose                        show detailed bit-rate settings
-     --error-frames                   allow reception of error frames
-     --logging=<level>                set logging level (default=0)
+     --logging=<level>                set server logging level (default=0)
      --security-risks="I ACCEPT"      accept security risks (skip interactive input)
      --list-bitrates[=<mode>]         list standard bit-rate settings and exit
  -L, --list-boards                    list all supported CAN interfaces and exit
