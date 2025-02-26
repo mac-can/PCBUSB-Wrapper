@@ -55,8 +55,8 @@ int main(int argc, char *argv[]) {
         msg.data[3] = (uint8_t)((i >> 24) & 0xFF);
         msg.ctrlchar = CANTCP_ETX_CHAR;
         if (clock_gettime(CLOCK_REALTIME, &now) == 0) {
-            msg.timestamp.tv_sec = now.tv_sec;
-            msg.timestamp.tv_nsec = now.tv_nsec;
+            msg.ts_sec = (uint64_t)now.tv_sec;
+            msg.ts_nsec = (uint32_t)now.tv_nsec;
         }
         CANTCP_MSG_HTON(msg);
         msg.checksum = crc_j1850_calc(&msg, sizeof(msg) - 1U, NULL);

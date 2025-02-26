@@ -63,12 +63,20 @@ int main() {
         } else {
             error = 0;
         }
+        if ((msg.ctrlchar != CANTCP_ETX_CHAR) && (msg.ctrlchar != CANTCP_EOT_CHAR)) {
+            printf("+++ error: invalid control character\n");
+            if (++error > 10)
+                break;
+            continue;
+        } else {
+            error = 0;
+        }
         if (!frames) {
             clock_gettime(CLOCK_REALTIME, &start);
         }
         CANTCP_MSG_NTOH(msg);
         printf("))) %i\t", frames++);
-        printf("%7li.%04li\t", (long)msg.timestamp.tv_sec, msg.timestamp.tv_nsec / 100000);
+        printf("%7lu.%04u\t", (long)msg.ts_sec, msg.ts_nsec / 100000);
         printf("%03X\t", msg.id);
         if (!(msg.flags & CANTCP_STS_MASK)) {
             putchar((msg.flags & CANTCP_XTD_MASK) ? 'X' : 'S');
@@ -85,7 +93,7 @@ int main() {
         }
 #ifdef CANTCP_LATENCY
         if (clock_gettime(CLOCK_REALTIME, &now) == 0) {
-            latency = (double)(now.tv_sec - msg.timestamp.tv_sec) + 1e-9 * (now.tv_nsec - msg.timestamp.tv_nsec);
+            latency = (double)(now.tv_sec - (time_t)msg.ts_sec) + 1e-9 * (now.tv_nsec - (long)msg.ts_nsec);
             sum += latency;
             printf("  dt=%.6f\tavg=%.6f", latency, sum / (double)frames);
         }
@@ -95,6 +103,11 @@ int main() {
             elapsed = (double)(stop.tv_sec - start.tv_sec) + 1e-9 * (stop.tv_nsec - start.tv_nsec);
         }
         printf("\n");
+        // emergency exit
+        if ((msg.ctrlchar == CANTCP_EOT_CHAR) && ((msg.flags & CANTCP_STS_MASK))) {
+            printf("+++ error: connection aborted by the server :(");
+            break;
+        }
     }
     if (tcp_client_close(fildes) < 0) {
         perror("+++ error");

@@ -54,10 +54,10 @@ int main(/*int argc, const char * argv[]*/) {
         std::cerr << "+++ error: interface could not be started" << std::endl;
         goto teardown;
     }
-    std::cout << "Press Ctrl+C to abort..." << std::endl;
+    std::cout << "Press ^C to abort." << std::endl;
     while (running) {
         if ((retVal = myDriver.ReadMessage(message, CANREAD_INFINITE)) == CCanApi::NoError) {
-            fprintf(stdout, ">>> %i\t", frames++);
+            fprintf(stdout, "%i\t", frames++);
             fprintf(stdout, "%7li.%04li\t", (long)message.timestamp.tv_sec, message.timestamp.tv_nsec / 100000);
             fprintf(stdout, "%03X\t", message.id);
             if (!message.sts) {
