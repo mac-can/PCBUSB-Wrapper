@@ -5,7 +5,7 @@
  *  Copyright (c) 2002-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
  *  All rights reserved.
  *
- *  Module 'tcp_server' - Stream Socket Server (TCP/IP)
+ *  Module 'tcp_client' - Stream Socket Client (TCP/IP)
  *
  *  This module is dual-licensed under the BSD 2-Clause "Simplified" License
  *  and under the GNU General Public License v2.0 (or any later version).
@@ -47,11 +47,50 @@
  *  You should have received a copy of the GNU General Public License along
  *  with this module; if not, see <https://www.gnu.org/licenses/>.
  */
-#if !defined(_WIN64)
-#include "tcp_server_p.c"
-#else
-#include "tcp_server_w.c"
-#endif
+/** @file        tcp_client.c
+ *
+ *  @brief       Stream Socket Client (TCP/IP).
+ *
+ *  @author      $Author: quaoar $
+ *
+ *  @version     $Rev: 1469 $
+ *
+ *  @addtogroup  tcp
+ *  @{
+ */
+#include "tcp_client.h"
+
+
+/*  -----------  options  ------------------------------------------------
+ */
+
+
+/*  -----------  defines  ------------------------------------------------
+ */
+
+
+/*  -----------  types  --------------------------------------------------
+ */
+
+
+/*  -----------  prototypes  ---------------------------------------------
+ */
+
+
+/*  -----------  variables  ----------------------------------------------
+ */
+
+
+/*  -----------  functions  ----------------------------------------------
+ */
+
+
+/*  -----------  local functions  ----------------------------------------
+ */
+
+
+/** @}
+ */
 /*  ----------------------------------------------------------------------
  *  Uwe Vogt,  UV Software,  Chausseestrasse 33 A,  10115 Berlin,  Germany
  *  Tel.: +49-30-46799872,  Fax: +49-30-46799873,  Mobile: +49-170-3801903

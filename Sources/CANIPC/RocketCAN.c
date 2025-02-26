@@ -51,9 +51,9 @@
  *
  *  @brief       CAN API V3 message to RocketCAN message and vice versa.
  *
- *  @author      $Author: gonggong $
+ *  @author      $Author: quaoar $
  *
- *  @version     $Rev: 1466 $
+ *  @version     $Rev: 1469 $
  *
  *  @addtogroup  rocketcan
  *  @{
@@ -70,8 +70,8 @@
 #include <time.h>
 
 
- /*  -----------  options  ------------------------------------------------
-  */
+/*  -----------  options  ------------------------------------------------
+ */
 
 
 /*  -----------  defines  ------------------------------------------------
@@ -145,7 +145,8 @@ void rock_msg_from_can(can_tcp_message_t *net, const can_message_t *can) {
                  CANTCP_FDF_FLAG(can->fdf) | CANTCP_BRS_FLAG(can->brs) |
                  CANTCP_ESI_FLAG(can->esi) | CANTCP_STS_FLAG(can->sts);
     net->length = dlc2len(can->dlc);
-    net->timestamp = can->timestamp;
+	net->ts_sec = (uint64_t)can->timestamp.tv_sec;
+	net->ts_nsec = (uint32_t)can->timestamp.tv_nsec;
     memcpy(net->data, can->data, MAX(CANTCP_MAX_LEN, CANFD_MAX_LEN));
     /* convert RocketCAN message from host to network byte order */
     CANTCP_MSG_HTON(*net);
@@ -168,13 +169,13 @@ void rock_msg_add_status(can_tcp_message_t *net, uint8_t status) {
             sizeof(can_tcp_message_t) - sizeof(net->checksum), NULL);
 }
 
-void rock_msg_add_busload(can_tcp_message_t *net, uint16_t busload) {
+void rock_msg_add_extra(can_tcp_message_t *net, uint8_t extra) {
     /* sanity check */
     if (net == NULL) {
         return;
     }
-    /* add CAN bus load to RocketCAN message */
-    net->busload = (busload < CANTCP_MAX_BUSLOAD) ? busload : CANTCP_MAX_BUSLOAD;
+    /* add extrabreit to RocketCAN message */
+	net->extra = extra;
     /* update the CRC checksum */
     net->checksum = crc_j1850_calc((const uint8_t*)net, 
             sizeof(can_tcp_message_t) - sizeof(net->checksum), NULL);
@@ -192,10 +193,16 @@ void rock_msg_abort(can_tcp_message_t *net) {
     net->length = 4U;
     net->status = CANSTAT_RESET;
     net->data[3] = CANSTAT_RESET;
-    /* get current system time */
+	/* get current system time in UTC */
     struct timespec now;
-    if (clock_gettime(CLOCK_REALTIME, &now) == 0) {
-        net->timestamp = now;
+#if !defined(_MSC_VER) && !defined(_WIN32) && !defined(_WIN64)
+    if (clock_gettime(CLOCK_REALTIME, &now) == 0)
+#else
+	if (timespec_get(&now, TIME_UTC) == TIME_UTC)
+#endif
+    {
+		net->ts_sec = (uint64_t)now.tv_sec;
+		net->ts_nsec = (uint32_t)now.tv_nsec;
     }
     /* set control character (EOT) */
     net->ctrlchar = CANTCP_EOT_CHAR;

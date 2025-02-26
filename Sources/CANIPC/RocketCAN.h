@@ -53,9 +53,9 @@
  *
  *  @note        RocketCAN messages are transmitted in network byte order. 
  *
- *  @author      $Author: sedna $
+ *  @author      $Author: quaoar $
  *
- *  @version     $Rev: 1453 $
+ *  @version     $Rev: 1469 $
  *
  *  @addtogroup  rocketcan
  *  @{
@@ -137,14 +137,14 @@ extern void rock_msg_from_can(can_tcp_message_t *net, const can_message_t *can);
  */
 extern void rock_msg_add_status(can_tcp_message_t *net, uint8_t status);
 
-/** @brief  Add CAN bus load to RocketCAN message.
+/** @brief  Add additional byte to RocketCAN message.
  *
  *          The function also updates the CRC checksum.
  *
  *  @param  net      RocketCAN message (network byte order)
- *  @param  busload  CAN bus load (0 .. 10'000 ==> 0 .. 255)
+ *  @param  extra    additional byte (8-bit value)
  */
-extern void rock_msg_add_busload(can_tcp_message_t *net, uint16_t busload);
+extern void rock_msg_add_extra(can_tcp_message_t *net, uint8_t extra);
 
 /** @brief  Create RocketCAN abort message to signal to all clients that
  *          the server is shutting down.

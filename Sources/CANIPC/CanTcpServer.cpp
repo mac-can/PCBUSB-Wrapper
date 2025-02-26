@@ -107,13 +107,13 @@ CANAPI_Return_t CCanTcpServer::Send(const void *data, size_t size) {
     return (retVal == 0) ? CANERR_NOERROR : (CANERR_SYSTEM - errno);
 }
 
-CANAPI_Return_t CCanTcpServer::Send(CANAPI_Message_t message, uint8_t status, uint16_t load) {
+CANAPI_Return_t CCanTcpServer::Send(CANAPI_Message_t message, uint8_t status, uint8_t extra) {
     CANAPI_Return_t retVal = CANERR_FATAL;
     CANTCP_Message_t packet = {};
     // map CAN API V3 message to RocketCAN message
     rock_msg_from_can(&packet, &message);
     rock_msg_add_status(&packet, status);
-    rock_msg_add_busload(&packet, load);
+    rock_msg_add_extra(&packet, extra);
     // send RocketCAN message over the network
     if (m_pServer == NULL) return CANERR_NOTINIT;
     retVal = tcp_server_send(m_pServer, (void*)&packet, sizeof(packet));

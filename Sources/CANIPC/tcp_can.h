@@ -51,9 +51,9 @@
  *
  *  @brief       RocketCAN Message Format
  *
- *  @author      $Author: gonggong $
+ *  @author      $Author: quaoar $
  *
- *  @version     $Rev: 1466 $
+ *  @version     $Rev: 1469 $
  *
  *  @defgroup    rocketcan RocketCAN - CAN-over-Ethernet
  *  @{
@@ -159,11 +159,11 @@ typedef struct can_tcp_message_t_ {
     uint8_t  flags;                     /**< message flags (8-bit, CAN API Vx) */
     uint8_t  length;                    /**< data length (in [byte], not CAN DLC!) */
     uint8_t  status;                    /**< status register (8-bit, CAN API Vx) */
-    uint8_t  extra;                     /**< unspecific bit-field (8-bit) */  // TODO: Not used yet!
+    uint8_t  extra;                     /**< unspecific bit-field (8-bit) */
     uint8_t  data[CANTCP_MAX_LEN];      /**< data (to hold CAN FD payload) */
-    struct timespec timestamp;          /**< time-stamp { sec, nsec } */
-    uint8_t  reserved[4];               /**< reserved (4-byte) */
-    uint16_t busload;                   /**< bus load (0 .. 10'000 = 0 .. 100%) */
+	uint64_t ts_sec;                    /**< timestamp (seconds since 1970-01-01) */
+	uint32_t ts_nsec;                   /**< timestamp (nanoseconds) */
+	uint8_t  reserved[2];               /**< reserved (2 bytes) */
     uint8_t  ctrlchar;                  /**< control character (ETX or EOT) */
     uint8_t  checksum;                  /**< J1850 checksum (8-bit) */
 }
@@ -180,33 +180,34 @@ typedef can_tcp_message_t CANTCP_Message_t;  /**< alias for RocketCAN Message */
 
 /*  - - -  conversion between host and network byte order  - - - - - - - -
  */
-#if !defined(__APPLE__)
+#define CANTCP_CAN_ID_HTON(id)  (id) = htonl((id))
+#define CANTCP_CAN_ID_NTOH(id)  (id) = ntohl((id))
+#if defined(__APPLE__)
+    #define CANTCP_TS_SEC_HTON(sec)  (sec) = (uint64_t)htonll((sec))
+    #define CANTCP_TS_SEC_NTOH(sec)  (sec) = (uint64_t)ntohll((sec))
+    #define CANTCP_TS_NSEC_HTON(nsec)  (nsec) = (uint32_t)htonl((nsec))
+    #define CANTCP_TS_NSEC_NTOH(nsec)  (nsec) = (uint32_t)ntohl((nsec))
+#else
 #if defined(_MSC_VER) || defined(_WIN32) || defined(_WIN64)
     #include <intrin.h>
-    #define htonll(x) _byteswap_uint64(x)
-    #define ntohll(x) _byteswap_uint64(x)
+    #define CANTCP_TS_SEC_HTON(sec)  (sec) = (uint64_t)_byteswap_uint64((sec))
+    #define CANTCP_TS_SEC_NTOH(sec)  (sec) = (uint64_t)_byteswap_uint64((sec))
+    #define CANTCP_TS_NSEC_HTON(nsec)  (nsec) = (uint32_t)htonl((nsec))
+    #define CANTCP_TS_NSEC_NTOH(nsec)  (nsec) = (uint32_t)ntohl((nsec))
 #elif __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-    #define htonll(x) (((uint64_t)htonl((x) & 0xFFFFFFFF) << 32) | htonl((x) >> 32))
-    #define ntohll(x) (((uint64_t)ntohl((x) & 0xFFFFFFFF) << 32) | ntohl((x) >> 32))
+    #define CANTCP_TS_SEC_HTON(sec)  (sec) = (((uint64_t)htonl((sec) & 0xFFFFFFFFU) << 32) | (uint64_t)htonl((sec) >> 32))
+    #define CANTCP_TS_SEC_NTOH(sec)  (sec) = (((uint64_t)htonl((sec) & 0xFFFFFFFFU) << 32) | (uint64_t)htonl((sec) >> 32))
+    #define CANTCP_TS_NSEC_HTON(nsec)  (nsec) = (uint32_t)htonl((nsec))
+    #define CANTCP_TS_NSEC_NTOH(nsec)  (nsec) = (uint32_t)ntohl((nsec))
 #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-    #define htonll(x) (x)
-    #define ntohll(x) (x)
+    #define CANTCP_TS_SEC_HTON(sec)  do { } while (0)
+    #define CANTCP_TS_SEC_NTOH(sec)  do { } while (0)
+    #define CANTCP_TS_NSEC_HTON(nsec)  do { } while (0)
+    #define CANTCP_TS_NSEC_NTOH(nsec)  do { } while (0)
 #else
     #error "Unknown endianness!"
 #endif
 #endif
-#define CANTCP_CAN_ID_HTON(id)  (id) = htonl((id))
-#define CANTCP_CAN_ID_NTOH(id)  (id) = ntohl((id))
-#define CANTCP_TIMESTAMP_HTON(ts) do { \
-    (ts).tv_sec = htonll((uint64_t)(ts).tv_sec); \
-    (ts).tv_nsec = htonll((uint64_t)(ts).tv_nsec); \
-} while (0)
-#define CANTCP_TIMESTAMP_NTOH(ts) do { \
-    (ts).tv_sec = ntohll((uint64_t)(ts).tv_sec); \
-    (ts).tv_nsec = ntohll((uint64_t)(ts).tv_nsec); \
-} while (0)
-#define CANTCP_BUSLOAD_HTON(bl)  (bl) = htons((bl))
-#define CANTCP_BUSLOAD_NTOH(bl)  (bl) = ntohs((bl))
 
 /** @brief  Convert RocketCAN Message from Host to Network Byte Order.
  *
@@ -214,8 +215,8 @@ typedef can_tcp_message_t CANTCP_Message_t;  /**< alias for RocketCAN Message */
  */
 #define CANTCP_MSG_HTON(msg) do { \
     CANTCP_CAN_ID_HTON((msg).id); \
-    CANTCP_TIMESTAMP_HTON((msg).timestamp); \
-    CANTCP_BUSLOAD_HTON((msg).busload); \
+    CANTCP_TS_SEC_HTON((msg).ts_sec); \
+    CANTCP_TS_NSEC_HTON((msg).ts_nsec); \
 } while (0)
 
 /** @brief  Convert RocketCAN Message from Network to Host Byte Order.
@@ -224,8 +225,8 @@ typedef can_tcp_message_t CANTCP_Message_t;  /**< alias for RocketCAN Message */
  */
 #define CANTCP_MSG_NTOH(msg) do { \
     CANTCP_CAN_ID_NTOH((msg).id); \
-    CANTCP_TIMESTAMP_NTOH((msg).timestamp); \
-    CANTCP_BUSLOAD_NTOH((msg).busload); \
+    CANTCP_TS_SEC_NTOH((msg).ts_sec); \
+    CANTCP_TS_NSEC_NTOH((msg).ts_nsec); \
 } while (0)
 
 #endif /* TCP_CAN_H_INCLUDED */

@@ -158,15 +158,13 @@ public:
 
     /// @brief  Send a CAN message over the network (RocketCAN frame format).
     ///
-    /// @note   To use the extra fields in a RocketCAN message, use the raw Send() method.
-    ///
     /// @param  message  CAN message (CAN API V3 format)
     /// @param  status   CAN status register (as 8-bit value)
-    /// @param  load     CAN bus load (0 .. 10'000 = 0 .. 100%)
+	/// @param  extra	 Additional information (as 8-bit value)
     ///
     /// @return 0 on success, or a negative value on error
     ///
-    CANAPI_Return_t Send(CANAPI_Message_t message, uint8_t status = 0x00U, uint16_t load = 0U);
+    CANAPI_Return_t Send(CANAPI_Message_t message, uint8_t status = 0x00U, uint8_t extra = 0U);
 
     /// @brief  Send an abort message over the network.
     ///
