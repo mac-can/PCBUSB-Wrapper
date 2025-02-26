@@ -13,6 +13,8 @@ Utilities/can_port/.objects
 Utilities/can_port/can_port
 Utilities/can_send/.objects
 Utilities/can_send/can_send
+Utilities/can_simu/.objects
+Utilities/can_simu/can_simu
 Utilities/can_test/.objects
 Utilities/can_test/can_test
 Tests/CANAPI/.objects
