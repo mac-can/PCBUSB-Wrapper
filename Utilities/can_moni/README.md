@@ -15,7 +15,6 @@ Options:
      --xtd-code=<id>                  acceptance code for 29-bit IDs (default=0x00000000)
      --xtd-mask=<id>                  acceptance mask for 29-bit IDs (default=0x00000000)
  -m, --mode=(2.0|FDF[+BRS])           CAN operation mode: CAN 2.0 or CAN FD mode
-     --shared                         shared CAN controller access (if supported)
      --listen-only                    monitor mode (listen-only mode)
      --error-frames                   allow reception of error frames
      --no-remote-frames               suppress remote frames (RTR frames)

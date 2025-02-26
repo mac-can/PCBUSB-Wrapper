@@ -60,8 +60,7 @@ CXXFLAGS += -O2 -g -Wall -Wextra -pthread \
 	$(DEFINES) \
 	$(HEADERS)
 
-LDFLAGS  +=  -rpath /usr/local/lib \
-	-Wl,-framework -Wl,IOKit -Wl,-framework -Wl,CoreFoundation
+LDFLAGS  +=  -rpath /usr/local/lib
 
 ifeq ($(BINARY),UNIVERSAL)
 CFLAGS += -arch arm64 -arch x86_64

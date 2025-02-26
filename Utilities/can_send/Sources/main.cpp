@@ -381,8 +381,11 @@ uint64_t CCanDevice::SendMessage() {
     struct timespec t0;
     uint64_t dt = 0;
     uint32_t data = 0;
-
+#if !defined(_WIN32) && !defined(_WIN64)
     fprintf(stdout, "\nEnter a message to send (or ^D to quit):\n");
+#else
+	fprintf(stdout, "\nEnter a message to send (or ^Z + Enter to quit):\n");
+#endif
     while (!feof(stdin) && running) {
         fprintf(stdout, "> "); fflush(stdout);
         memset(&message, 0, sizeof(message));

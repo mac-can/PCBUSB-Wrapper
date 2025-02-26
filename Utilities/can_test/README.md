@@ -8,7 +8,6 @@ Options for receiver test (default test mode):
  -n, --number=<number>                check up-counting numbers starting with <number>
  -s, --stop                           stop on error (with option --number)
  -m, --mode=(2.0|FDF[+BRS])           CAN operation mode: CAN 2.0 or CAN FD mode
-     --shared                         shared CAN controller access (if supported)
      --listen-only                    monitor mode (listen-only mode)
      --error-frames                   allow reception of error frames
      --no-remote-frames               suppress remote frames (RTR frames)

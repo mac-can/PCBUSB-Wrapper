@@ -1,8 +1,8 @@
 //  SPDX-License-Identifier: GPL-2.0-or-later
 //
-//  CAN Monitor for generic Interfaces (CAN API V3)
+//  CAN Sender for generic Interfaces (CAN API V3)
 //
-//  Copyright (c) 2007,2012-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
+//  Copyright (c) 2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 //  with this program; if not, see <https://www.gnu.org/licenses/>.
 //
 #include "Options.h"
-#include "Message.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -63,41 +62,27 @@ extern "C" {
 #define OP_LSTNONLY_STR   14
 #define OP_SHARED_STR     15
 #define OP_SHARED_CHR     16
-#define MODE_TIME_STR     17
-#define MODE_TIME_CHR     18
-#define MODE_ID_STR       19
-#define MODE_ID_CHR       20
-#define MODE_DATA_STR     21
-#define MODE_DATA_CHR     22
-#define MODE_ASCII_STR    23
-#define MODE_ASCII_CHR    24
-#define WRAPAROUND_STR    25
-#define WRAPAROUND_CHR    26
-#define EXCLUDE_STR       27
-#define EXCLUDE_CHR       28
-#define STD_CODE_STR      29
-#define STD_MASK_CHR      30
-#define XTD_CODE_STR      31
-#define XTD_MASK_CHR      32
-#define SCRIPT_STR        33
-#define SCRIPT_CHR        34
-#define TRACEFILE_STR     35
-#define TRACEFILE_CHR     36
-#define LISTBITRATES_STR  37
-#define LISTBOARDS_STR    38
-#define LISTBOARDS_CHR    39
-#define TESTBOARDS_STR    40
-#define TESTBOARDS_CHR    41
-#define PROTOCOL_STR      42
-#define PROTOCOL_CHR      43
-#define JSON_STR          44
-#define JSON_CHR          45
-#define HELP              46
-#define QUESTION_MARK     47
-#define ABOUT             48
-#define CHARACTER_MJU     49
-#define VERSION           50
-#define MAX_OPTIONS       51
+#define STD_CODE_STR      17
+#define STD_MASK_CHR      18
+#define XTD_CODE_STR      19
+#define XTD_MASK_CHR      20
+#define TRACEFILE_STR     21
+#define TRACEFILE_CHR     22
+#define LISTBITRATES_STR  23
+#define LISTBOARDS_STR    24
+#define LISTBOARDS_CHR    25
+#define TESTBOARDS_STR    26
+#define TESTBOARDS_CHR    27
+#define PROTOCOL_STR      28
+#define PROTOCOL_CHR      29
+#define JSON_STR          30
+#define JSON_CHR          31
+#define HELP              32
+#define QUESTION_MARK     33
+#define ABOUT             34
+#define CHARACTER_MJU     35
+#define VERSION           36
+#define MAX_OPTIONS       37
 
 static char* option[MAX_OPTIONS] = {
     (char*)"BAUDRATE", (char*)"bd",
@@ -109,15 +94,8 @@ static char* option[MAX_OPTIONS] = {
     (char*)"ERR", (char*)"ERROR-FRAMES",
     (char*)"MON", (char*)"MONITOR", (char*)"LISTEN-ONLY",
     (char*)"SHARED", (char*)"shrd",
-    (char*)"TIME", (char*)"t",
-    (char*)"ID", (char*)"i",
-    (char*)"DATA", (char*)"d",
-    (char*)"ASCII", (char*)"a",
-    (char*)"WARAPAROUND", (char*)"w",
-    (char*)"EXCLUDE", (char*)"x",
     (char*)"CODE", (char*)"MASK",
     (char*)"XTD-CODE", (char*)"XTD-MASK",
-    (char*)"SCRIPT", (char*)"s",
     (char*)"TRACE", (char*)"trc",
     (char*)"LIST-BITRATES",
     (char*)"LIST-BOARDS", (char*)"list",
@@ -132,11 +110,11 @@ static char* option[MAX_OPTIONS] = {
     (char*)"ABOUT", (char*)"\xB5",
     (char*)"VERSION"
 };
-static const char* c_szApplication = CAN_MONI_APPLICATION;
-static const char* c_szCopyright = CAN_MONI_COPYRIGHT;
-static const char* c_szWarranty = CAN_MONI_WARRANTY;
-static const char* c_szLicense = CAN_MONI_LICENSE;
-static const char* c_szBasename = CAN_MONI_PROGRAM;
+static const char* c_szApplication = CAN_SEND_APPLICATION;
+static const char* c_szCopyright = CAN_SEND_COPYRIGHT;
+static const char* c_szWarranty = CAN_SEND_WARRANTY;
+static const char* c_szLicense = CAN_SEND_LICENSE;
+static const char* c_szBasename = CAN_SEND_PROGRAM;
 static const char* c_szInterface = "(unknown)";
 
 #if (USE_BASENAME != 0)
@@ -166,7 +144,6 @@ SOptions::SOptions() {
     m_StdFilter.m_u32Mask = CANACC_MASK_11BIT;
     m_XtdFilter.m_u32Code = CANACC_CODE_29BIT;
     m_XtdFilter.m_u32Mask = CANACC_MASK_29BIT;
-    m_szExcludeList = (char*)NULL;
 #if (CAN_TRACE_SUPPORTED != 0)
     m_eTraceMode = SOptions::eTraceOff;
 #endif
@@ -195,14 +172,6 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
     int optStdMask = 0;
     int optXtdCode = 0;
     int optXtdMask = 0;
-    int optFmtTime = 0;
-    int optFmtId = 0;
-    int optFmtData = 0;
-    int optFmtAscii = 0;
-#if (CAN_FD_SUPPORTED != 0)
-    int optFmtWrap = 0;
-#endif
-    int optExclude = 0;
 #if (CAN_TRACE_SUPPORTED != 0)
     int optTraceMode = 0;
 #endif
@@ -217,18 +186,6 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
 #else
     int optJson = 0;
 #endif
-    /* default format options */
-    CCanMessage::EFormatTimestamp fmtModeTime = CCanMessage::OptionZero;
-    CCanMessage::EFormatNumber fmtModeId = CCanMessage::OptionHex;
-    CCanMessage::EFormatNumber fmtModeData = CCanMessage::OptionHex;
-    CCanMessage::EFormatOption fmtModeAscii = CCanMessage::OptionOn;
-    CCanMessage::EFormatWraparound fmtWraparound = CCanMessage::OptionWraparoundNo;
-    (void)CCanMessage::SetTimestampFormat(fmtModeTime);
-    (void)CCanMessage::SetIdentifierFormat(fmtModeId);
-    (void)CCanMessage::SetDataFormat(fmtModeData);
-    (void)CCanMessage::SetAsciiFormat(fmtModeAscii);
-    (void)CCanMessage::SetWraparound(fmtWraparound);
-
     // (0) sanity check
     if ((argc <= 0) || (argv == NULL))
         return (-1);
@@ -596,155 +553,6 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
             }
             break;
 #endif
-        /* option '--time=(ABS|REL|ZERO)' (-t) */
-        case MODE_TIME_STR:
-        case MODE_TIME_CHR:
-            if ((optFmtTime++)) {
-                fprintf(err, "%s: duplicated option /TIME\n", m_szBasename);
-                return 1;
-            }
-            if ((optarg = getOptionParameter()) == NULL) {
-                fprintf(err, "%s: missing argument for option /TIME\n", m_szBasename);
-                return 1;
-            }
-            if (!strcasecmp(optarg, "ABSOLUTE") || !strcasecmp(optarg, "ABS") || !strcasecmp(optarg, "a"))
-                fmtModeTime = CCanMessage::OptionAbsolute;
-            else if (!strcasecmp(optarg, "RELATIVE") || !strcasecmp(optarg, "REL") || !strcasecmp(optarg, "r"))
-                fmtModeTime = CCanMessage::OptionRelative;
-            else if (!strcasecmp(optarg, "ZERO") || !strcasecmp(optarg, "0") || !strcasecmp(optarg, "z"))
-                fmtModeTime = CCanMessage::OptionZero;
-            else {
-                fprintf(err, "%s: illegal argument for option /TIME\n", m_szBasename);
-                return 1;
-            }
-            if (!CCanMessage::SetTimestampFormat(fmtModeTime)) {
-                fprintf(err, "%s: illegal argument for option /TIME\n", m_szBasename);
-                return 1;
-            }
-            break;
-        /* option '--id=(HEX|DEC|OCT)' (-i) */
-        case MODE_ID_STR:
-        case MODE_ID_CHR:
-            if ((optFmtId++)) {
-                fprintf(err, "%s: duplicated option /ID\n", m_szBasename);
-                return 1;
-            }
-            if ((optarg = getOptionParameter()) == NULL) {
-                fprintf(err, "%s: missing argument for option /ID\n", m_szBasename);
-                return 1;
-            }
-            if (!strcasecmp(optarg, "HEXADECIMAL") || !strcasecmp(optarg, "HEX") || !strcasecmp(optarg, "h") || !strcasecmp(optarg, "16"))
-                fmtModeId = CCanMessage::OptionHex;
-            else if (!strcasecmp(optarg, "DECIMAL") || !strcasecmp(optarg, "DEC") || !strcasecmp(optarg, "d") || !strcasecmp(optarg, "10"))
-                fmtModeId = CCanMessage::OptionDec;
-            else if (!strcasecmp(optarg, "OCTAL") || !strcasecmp(optarg, "OCT") || !strcasecmp(optarg, "o") || !strcasecmp(optarg, "8"))
-                fmtModeId = CCanMessage::OptionOct;
-            else {
-                fprintf(err, "%s: illegal argument for option /ID\n", m_szBasename);
-                return 1;
-            }
-            if (!CCanMessage::SetIdentifierFormat(fmtModeId)) {
-                fprintf(err, "%s: illegal argument for option /ID\n", m_szBasename);
-                return 1;
-            }
-            break;
-        /* option '--data=(HEX|DEC|OCT)' (-d) */
-        case MODE_DATA_STR:
-        case MODE_DATA_CHR:
-            if ((optFmtData++)) {
-                fprintf(err, "%s: duplicated option /DATA\n", m_szBasename);
-                return 1;
-            }
-            if ((optarg = getOptionParameter()) == NULL) {
-                fprintf(err, "%s: missing argument for option /DATA\n", m_szBasename);
-                return 1;
-            }
-            if (!strcasecmp(optarg, "HEXADECIMAL") || !strcasecmp(optarg, "HEX") || !strcasecmp(optarg, "h") || !strcasecmp(optarg, "16"))
-                fmtModeData = CCanMessage::OptionHex;
-            else if (!strcasecmp(optarg, "DECIMAL") || !strcasecmp(optarg, "DEC") || !strcasecmp(optarg, "d") || !strcasecmp(optarg, "10"))
-                fmtModeData = CCanMessage::OptionDec;
-            else if (!strcasecmp(optarg, "OCTAL") || !strcasecmp(optarg, "OCT") || !strcasecmp(optarg, "o") || !strcasecmp(optarg, "8"))
-                fmtModeData = CCanMessage::OptionOct;
-            else {
-                fprintf(err, "%s: illegal argument for option /DATA\n", m_szBasename);
-                return 1;
-            }
-            if (!CCanMessage::SetDataFormat(fmtModeData)) {
-                fprintf(err, "%s: illegal argument for option /DATA\n", m_szBasename);
-                return 1;
-            }
-            break;
-        /* option '--ascii=(ON|OFF)' (-a) */
-        case MODE_ASCII_STR:
-        case MODE_ASCII_CHR:
-            if ((optFmtAscii++)) {
-                fprintf(err, "%s: duplicated option /ASCII\n", m_szBasename);
-                return 1;
-            }
-            if ((optarg = getOptionParameter()) == NULL) {
-                fprintf(err, "%s: missing argument for option /ASCII\n", m_szBasename);
-                return 1;
-            }
-            if (!strcasecmp(optarg, "OFF") || !strcasecmp(optarg, "NO") || !strcasecmp(optarg, "n") || !strcasecmp(optarg, "0"))
-                fmtModeAscii = CCanMessage::OptionOff;
-            else if (!strcasecmp(optarg, "ON") || !strcasecmp(optarg, "YES") || !strcasecmp(optarg, "y") || !strcasecmp(optarg, "1"))
-                fmtModeAscii = CCanMessage::OptionOn;
-            else {
-                fprintf(err, "%s: illegal argument for option /ASCII\n", m_szBasename);
-                return 1;
-            }
-            if (!CCanMessage::SetAsciiFormat(fmtModeAscii)) {
-                fprintf(err, "%s: illegal argument for option /ASCII\n", m_szBasename);
-                return 1;
-            }
-            break;
-#if (CAN_FD_SUPPORTED != 0)
-        /* option '--wrap=(No|8|10|16|32|64)' (-w) */
-        case WRAPAROUND_STR:
-        case WRAPAROUND_CHR:
-            if ((optFmtWrap++)) {
-                fprintf(err, "%s: duplicated option /WRAPAROUND\n", m_szBasename);
-                return 1;
-            }
-            if ((optarg = getOptionParameter()) == NULL) {
-                fprintf(err, "%s: missing argument for option /WRAPAROUND\n", m_szBasename);
-                return 1;
-            }
-            if (!strcasecmp(optarg, "NO") || !strcasecmp(optarg, "n") || !strcasecmp(optarg, "0"))
-                fmtWraparound = CCanMessage::OptionWraparoundNo;
-            else if (!strcasecmp(optarg, "8"))
-                fmtWraparound = CCanMessage::OptionWraparound8;
-            else if (!strcasecmp(optarg, "10"))
-                fmtWraparound = CCanMessage::OptionWraparound10;
-            else if (!strcasecmp(optarg, "16"))
-                fmtWraparound = CCanMessage::OptionWraparound16;
-            else if (!strcasecmp(optarg, "32"))
-                fmtWraparound = CCanMessage::OptionWraparound32;
-            else if (!strcasecmp(optarg, "64"))
-                fmtWraparound = CCanMessage::OptionWraparound64;
-            else {
-                fprintf(err, "%s: illegal argument for option /WRAPAROUND\n", m_szBasename);
-                return 1;
-            }
-            if (!CCanMessage::SetWraparound(fmtWraparound)) {
-                fprintf(err, "%s: illegal argument for option /WRAPAROUND\n", m_szBasename);
-                return 1;
-            }
-            break;
-#endif
-        /* option '--exclude=[~]<id-list>' (-x) */
-        case EXCLUDE_STR:
-        case EXCLUDE_CHR:
-            if ((optExclude++)) {
-                fprintf(err, "%s: duplicated option /EXCLUDE\n", m_szBasename);
-                return 1;
-            }
-            if ((optarg = getOptionParameter()) == NULL) {
-                fprintf(err, "%s: missing argument for option /EXCLUDE\n", m_szBasename);
-                return 1;
-            }
-            m_szExcludeList = optarg;
-            break;
         /* option '--list-bitrates[=(2.0|FDF[+BRS])]' */
         case LISTBITRATES_STR:
             if ((optListBitrates++)) {
@@ -892,32 +700,23 @@ void SOptions::ShowUsage(FILE* stream, bool args) {
         return;
     fprintf(stream, "Usage: %s <interface> [<option>...]\n", m_szBasename);
     fprintf(stream, "Options:\n");
-    fprintf(stream, "  /Time:(ZERO|ABS|REL)                absolute or relative time (default=0)\n");
-    fprintf(stream, "  /Id:(HEX|DEC|OCT)                   display mode of CAN-IDs (default=HEX)\n");
-    fprintf(stream, "  /Data:(HEX|DEC|OCT)                 display mode of data bytes (default=HEX)\n");
-    fprintf(stream, "  /Ascii:(ON|OFF)                     display data bytes in ASCII (default=ON)\n");
-#if (CAN_FD_SUPPORTED != 0)
-    fprintf(stream, "  /Wraparound:(No|8|10|16|32|64)      wraparound after n data bytes (default=NO)\n");
-#endif
-    fprintf(stream, "  /eXclude:[~]<id-list>               exclude CAN-IDs: <id-list> = <id>[-<id>]{,<id>[-<id>]}\n");
-    fprintf(stream, "  /CODE:<id>                          acceptance code for 11-bit IDs (default=0x%03lx)\n", CANACC_CODE_11BIT);
-    fprintf(stream, "  /MASK:<id>                          acceptance mask for 11-bit IDs (default=0x%03lx)\n", CANACC_MASK_11BIT);
-    fprintf(stream, "  /XTD-CODE:<id>                      acceptance code for 29-bit IDs (default=0x%08lx)\n", CANACC_CODE_29BIT);
-    fprintf(stream, "  /XTD-MASK:<id>                      acceptance mask for 29-bit IDs (default=0x%08lx)\n", CANACC_MASK_29BIT);
-//    fprintf(stream, "  /Script:<filename>                  execute a script file\n"); // TODO: script engine
 #if (OPTION_CANAPI_LIBRARY != 0)
     fprintf(stream, "  /Path:<pathname>                    search path for JSON configuration files\n");
 #endif
 #if (CAN_FD_SUPPORTED != 0)
-    fprintf(stream, "  /Mode:(2.0|FDf[+BRS])               CAN operation mode: CAN 2.0 or CAN FD mode\n");
+    fprintf(stream, "  /Mode:(2.0|FDf[+BRS])               CAN operation mode: CAN CC or CAN FD mode\n");
 #else
-    fprintf(stream, "  /Mode:2.0                           CAN operation mode: CAN 2.0\n");
+    fprintf(stream, "  /Mode:2.0                           CAN operation mode: CAN CC\n");
 #endif
     fprintf(stream, "  /SHARED                             shared CAN controller access (if supported)\n");
     fprintf(stream, "  /MONitor:(No|Yes) | /LISTEN-ONLY    monitor mode (listen-only mode)\n");
     fprintf(stream, "  /ERR:(No|Yes) | /ERROR-FRAMES       allow reception of error frames\n");
     fprintf(stream, "  /RTR:(Yes|No)                       allow remote frames (RTR frames)\n");
     fprintf(stream, "  /XTD:(Yes|No)                       allow extended frames (29-bit identifier)\n");
+    fprintf(stream, "  /CODE:<id>                          acceptance code for 11-bit IDs (default=0x%03lx)\n", CANACC_CODE_11BIT);
+    fprintf(stream, "  /MASK:<id>                          acceptance mask for 11-bit IDs (default=0x%03lx)\n", CANACC_MASK_11BIT);
+    fprintf(stream, "  /XTD-CODE:<id>                      acceptance code for 29-bit IDs (default=0x%08lx)\n", CANACC_CODE_29BIT);
+    fprintf(stream, "  /XTD-MASK:<id>                      acceptance mask for 29-bit IDs (default=0x%08lx)\n", CANACC_MASK_29BIT);
     fprintf(stream, "  /BauDrate:<baudrate>                CAN bit-timing in kbps (default=250), or\n");
     fprintf(stream, "  /BitRate:<bitrate>                  CAN bit-rate settings (as key/value list)\n");
     fprintf(stream, "  /Verbose                            show detailed bit-rate settings\n");
@@ -973,6 +772,29 @@ void SOptions::ShowUsage(FILE* stream, bool args) {
         fprintf(stream, "                 data_tseg2=<value>   time segment 2 (FD data)\n");
         fprintf(stream, "                 data_sjw=<value>     sync. jump width (FD data).\n");
     }
+    fprintf(stream, "Syntax:\n");
+    fprintf(stream, " <can_frame>:\n");
+    fprintf(stream, "  <can_id>#{data}                     for CAN CC data frames\n");
+    fprintf(stream, "  <can_id>#R{len}                     for CAN CC remote frames\n");
+    //fprintf(stream, "  <can_id>#{data}_{dlc}               for CAN CC data frames with 9..F DLC\n");
+    //fprintf(stream, "  <can_id>#R{len}_{dlc}               for CAN CC remote frames with 9..F DLC\n");
+    fprintf(stream, "  <can_id>##<flags>{data}             for CAN FD data frames (up to 64 bytes)\n");
+    fprintf(stream, " <can_id>:\n");
+    fprintf(stream, "  3  ASCII hex. characters for Standard frame format (SFF) or\n");
+    fprintf(stream, "  8  ASCII hex. characters for eXtended frame format (EFF)\n");
+    fprintf(stream, " {data}:\n");
+    fprintf(stream, "  0 .. 8   ASCII hex. values in CAN CC mode (optionally separated by '.') or\n");
+    fprintf(stream, "  0 .. 64  ASCII hex. values in CAN FD mode (optionally separated by '.')\n");
+    fprintf(stream, " {len}:\n");
+    fprintf(stream, "  an optional 0 .. 8 value as RTR frames can contain a valid DLC field\n");
+    //fprintf(stream, " _{dlc}:\n");
+    //fprintf(stream, "  an optional 9..F data length code value when payload length is 8\n");
+    fprintf(stream, " <flags>:\n");
+    fprintf(stream, "  one ASCII hex. character which defines CAN FD flags:\n");
+    fprintf(stream, "  4 = FDF                             for CAN FD frame format\n");
+    fprintf(stream, "  5 = FDF and BRS                     for CAN FD with Bit Rate Switch\n");
+    fprintf(stream, "  6 = FDF and ESI                     for CAN FD with Error State Indicator\n");
+    fprintf(stream, "  7 = FDF, BRS and ESI                all together now\n");
     fprintf(stream, "Hazard note:\n");
     fprintf(stream, "  If you connect your CAN device to a real CAN network when using this program,\n");
     fprintf(stream, "  you might damage your application.\n");

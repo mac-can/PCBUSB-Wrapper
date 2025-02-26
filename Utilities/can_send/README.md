@@ -5,7 +5,6 @@ Copyright &copy; 2025 by Uwe Vogt, UV Software, Berlin
 Usage: can_send <interface> [<option>...]
 Options:
  -m, --mode=(2.0|FDF[+BRS])           CAN operation mode: CAN 2.0 or CAN FD mode
-     --shared                         shared CAN controller access (if supported)
      --listen-only                    monitor mode (listen-only mode)
      --error-frames                   allow reception of error frames
      --no-remote-frames               suppress remote frames (RTR frames)
@@ -20,11 +19,11 @@ Options:
      --list-bitrates[=<mode>]         list standard bit-rate settings and exit
  -L, --list-boards                    list all supported CAN interfaces and exit
  -T, --test-boards                    list all available CAN interfaces and exit
- -J, --json=<filename>                write configuration into JSON file and exit
+ -j, --json=<filename>                write configuration into JSON file and exit
  -h, --help                           display this help screen and exit
      --version                        show version information and exit
 Arguments:
-  <id>           CAN identifier (11-bit)
+  <id>           CAN identifier (11-bit or 29-bit)
   <interface>    CAN interface board (list all with /LIST)
   <baudrate>     CAN baud rate index (default=3):
                  0 = 1000 kbps
