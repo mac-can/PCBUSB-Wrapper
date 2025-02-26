@@ -51,9 +51,9 @@
  *
  *  @brief       CAN Message Formatter
  *
- *  @author      $Author: sedna $
+ *  @author      $Author: quaoar $
  *
- *  @version     $Rev: 1458 $
+ *  @version     $Rev: 1467 $
  *
  *  @addtogroup  can_msg
  *  @{
@@ -720,7 +720,7 @@ int msg_parse(const char *str, msg_message_t *msg, uint32_t *cnt, uint64_t *cyc,
     if ((endptr - ptr) == 8) {
         msg->xtd = 1;
     }
-    if (can_id > (msg->xtd ? CAN_MAX_XTD_ID : CAN_MAX_STD_ID)) {
+    if ((uint32_t)can_id > (uint32_t)(msg->xtd ? CAN_MAX_XTD_ID : CAN_MAX_STD_ID)) {
         return -1;
     }
     msg->id = (uint32_t)can_id;
