@@ -7,7 +7,7 @@ Options for receiver test (default test mode):
  -r, --receive                        count received messages until ^C is pressed
  -n, --number=<number>                check up-counting numbers starting with <number>
  -s, --stop                           stop on error (with option --number)
- -m, --mode=(CCF|FDF[+BRS])           CAN operation mode: CAN 2.0 or CAN FD mode
+ -m, --mode=(CCF|FDF[+BRS])           CAN operation mode: CAN CC or CAN FD mode
      --listen-only                    monitor mode (listen-only mode)
      --error-frames                   allow reception of error frames
      --no-remote-frames               suppress remote frames (RTR frames)
@@ -29,7 +29,7 @@ Options for transmitter test:
  -i, --id=<can-id>                    use given identifier (default=100h)
  -e, --extended                       use extended identifier (29-bit)
  -n, --number=<number>                set first up-counting number (default=0)
- -m, --mode=(CCF|FDF[+BRS])           CAN operation mode: CAN 2.0 or CAN FD mode
+ -m, --mode=(CCF|FDF[+BRS])           CAN operation mode: CAN CC or CAN FD mode
  -b, --baudrate=<baudrate>            CAN bit-timing in kbps (default=250), or
      --bitrate=<bit-rate>             CAN bit-rate settings (as key/value list)
  -v, --verbose                        show detailed bit-rate settings
