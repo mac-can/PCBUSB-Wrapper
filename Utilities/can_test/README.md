@@ -7,8 +7,7 @@ Options for receiver test (default test mode):
  -r, --receive                        count received messages until ^C is pressed
  -n, --number=<number>                check up-counting numbers starting with <number>
  -s, --stop                           stop on error (with option --number)
- -m, --mode=(2.0|FDF[+BRS])           CAN operation mode: CAN 2.0 or CAN FD mode
-     --shared                         shared CAN controller access (if supported)
+ -m, --mode=(CCF|FDF[+BRS])           CAN operation mode: CAN CC or CAN FD mode
      --listen-only                    monitor mode (listen-only mode)
      --error-frames                   allow reception of error frames
      --no-remote-frames               suppress remote frames (RTR frames)
@@ -30,8 +29,7 @@ Options for transmitter test:
  -i, --id=<can-id>                    use given identifier (default=100h)
  -e, --extended                       use extended identifier (29-bit)
  -n, --number=<number>                set first up-counting number (default=0)
- -m, --mode=(2.0|FDF[+BRS])           CAN operation mode: CAN 2.0 or CAN FD mode
-     --shared                         shared CAN controller access (if supported)
+ -m, --mode=(CCF|FDF[+BRS])           CAN operation mode: CAN CC or CAN FD mode
  -b, --baudrate=<baudrate>            CAN bit-timing in kbps (default=250), or
      --bitrate=<bit-rate>             CAN bit-rate settings (as key/value list)
  -v, --verbose                        show detailed bit-rate settings
@@ -72,7 +70,7 @@ Arguments:
                  data_brp=<value>     bit-rate prescaler (FD data)
                  data_tseg1=<value>   time segment 1 (FD data)
                  data_tseg2=<value>   time segment 2 (FD data)
-                 data_sjw=<value>     sync. jump width (FD data).
+                 data_sjw=<value>     sync. jump width (FD data)
 Hazard note:
   If you connect your CAN device to a real CAN network when using this program,
   you might damage your application.

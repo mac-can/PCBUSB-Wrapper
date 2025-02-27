@@ -1,0 +1,35 @@
+# CAN-over-Ethernet Server for generic Interfaces (CAN API V3)
+
+Copyright &copy; 2008 by Uwe Vogt, UV Software, Friedrichshafen \
+Copyright &copy; 2012-2025 by Uwe Vogt, UV Software, Berlin (info@uv-software.com)
+
+## Utility program `can_port`
+
+`can_port` is a command line tool designed to open a network socket for CAN-over-Ethernet communication.
+It connects to a CAN device and handles the data exchange between the CAN bus and local or remote clients. 
+
+## CAN Interface API, Version 3
+
+**CAN API V3** is a wrapper specification by UV Software to have a uniform CAN Interface API for various CAN interfaces from different vendors running under multiple operating systems.
+
+## Git repo `can_port`
+
+This repo only contains the source code for the utility program `can_port` to be integrated into CAN API V3 wrapper implementations as a git submodule.
+
+## License
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, see <https://www.gnu.org/licenses/>.
+
+CAN API V3 is dual-licensed under the terms of the BSD 2-Clause "Simplified" License and under the terms of the GNU General Public License v2.0 (or any later version).
+In connection with this program, the terms of the GNU General Public License v2.0 (or any later version) shall be applied to CAN API V3.

@@ -37,16 +37,16 @@
 #define BITRATE_10K(x)   PEAKCAN_BR_10K(x)
 #define BITRATE_5K(x)    PEAKCAN_BR_5K(x)
 #else
-#define BITRATE_1M(x)    DEFAULT_CAN_BR_1M(x)  
+#define BITRATE_1M(x)    DEFAULT_CAN_BR_1M(x)
 #define BITRATE_800K(x)  DEFAULT_CAN_BR_800K(x)
 #define BITRATE_500K(x)  DEFAULT_CAN_BR_500K(x)
 #define BITRATE_250K(x)  DEFAULT_CAN_BR_250K(x)
 #define BITRATE_125K(x)  DEFAULT_CAN_BR_125K(x)
 #define BITRATE_100K(x)  DEFAULT_CAN_BR_100K(x)
-#define BITRATE_50K(x)   DEFAULT_CAN_BR_50K(x) 
-#define BITRATE_20K(x)   DEFAULT_CAN_BR_20K(x) 
-#define BITRATE_10K(x)   DEFAULT_CAN_BR_10K(x) 
-#define BITRATE_5K(x)    DEFAULT_CAN_BR_5K(x)  
+#define BITRATE_50K(x)   DEFAULT_CAN_BR_50K(x)
+#define BITRATE_20K(x)   DEFAULT_CAN_BR_20K(x)
+#define BITRATE_10K(x)   DEFAULT_CAN_BR_10K(x)
+#define BITRATE_5K(x)    DEFAULT_CAN_BR_5K(x)
 #endif
 #if (OPTION_PCAN_BIT_TIMING == 1)
 #define BITRATE_FD_1M(x)      PEAKCAN_FD_BR_1M(x)
@@ -454,6 +454,11 @@ int main(int argc, const char * argv[]) {
         else
             fprintf(stderr, "+++ error: myDriver.GetProperty(PEAKCAN_PROPERTY_HARDWARE_NAME) returned %i\n", retVal);
 #if (0)
+            retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_DEVICE_GUID, (void*)szVal, CANPROP_MAX_BUFFER_SIZE);
+        if (retVal == CCanApi::NoError)
+            fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_DEVICE_GUID): value = '%s'\n", szVal);
+        //else [optional property]
+        //    fprintf(stderr, "+++ error: myDriver.GetProperty(PEAKCAN_PROPERTY_DEVICE_GUID) returned %i\n", retVal);
         retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_SERIAL_NUMBER, (void*)szVal, CANPROP_MAX_BUFFER_SIZE);
         if (retVal == CCanApi::NoError)
             fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_SERIAL_NUMBER): value = '%s'\n", szVal);
@@ -521,7 +526,7 @@ int main(int argc, const char * argv[]) {
             verbose(opMode, bitrate, speed);
 
         uint32_t code, mask;
-        if ((myDriver.GetFilter11Bit(code, mask) == CCanApi::NoError) && 
+        if ((myDriver.GetFilter11Bit(code, mask) == CCanApi::NoError) &&
             ((code != CANACC_CODE_11BIT) || (mask != CANACC_MASK_11BIT)))
             fprintf(stdout, "    Filter11: code = 0x%03X, mask = 0x%03X\n", code, mask);
         if ((myDriver.GetFilter29Bit(code, mask) == CCanApi::NoError) &&
@@ -552,6 +557,10 @@ int main(int argc, const char * argv[]) {
        if (!option_retry)
            fprintf(stdout, "Attention: The program will throw errors if the transmit queue is full.\n"
                            "           Use program option RETRY to avoid this.\n");
+#else
+//        if ((txTimeout == 0U) && !option_retry)
+//            fprintf(stdout, "Attention: The program will be aborted when the transmitter is busy.\n"
+//                            "           Use program option RETRY or T:<timeout> to avoid this.\n");
 #endif
         fprintf(stdout, "Press Ctrl+C to abort..."); fflush(stdout);
         frames = 0;

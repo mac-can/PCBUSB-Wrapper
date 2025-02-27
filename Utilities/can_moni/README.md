@@ -14,8 +14,7 @@ Options:
      --mask=<id>                      acceptance mask for 11-bit IDs (default=0x000)
      --xtd-code=<id>                  acceptance code for 29-bit IDs (default=0x00000000)
      --xtd-mask=<id>                  acceptance mask for 29-bit IDs (default=0x00000000)
- -m, --mode=(2.0|FDF[+BRS])           CAN operation mode: CAN 2.0 or CAN FD mode
-     --shared                         shared CAN controller access (if supported)
+ -m, --mode=(CCF|FDF[+BRS])           CAN operation mode: CAN CC or CAN FD mode
      --listen-only                    monitor mode (listen-only mode)
      --error-frames                   allow reception of error frames
      --no-remote-frames               suppress remote frames (RTR frames)
@@ -53,7 +52,7 @@ Arguments:
                  data_brp=<value>     bit-rate prescaler (FD data)
                  data_tseg1=<value>   time segment 1 (FD data)
                  data_tseg2=<value>   time segment 2 (FD data)
-                 data_sjw=<value>     sync. jump width (FD data).
+                 data_sjw=<value>     sync. jump width (FD data)
 Hazard note:
   If you connect your CAN device to a real CAN network when using this program,
   you might damage your application.

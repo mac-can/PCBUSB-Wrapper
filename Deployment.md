@@ -21,15 +21,21 @@ _All rights reserved._
    from the SVN repo and commit them with commit comment:
   - `Update CAN API V3 sources to rev. `_nnn_ \
     `- `_list of major changes (optional)_
-3. If necessary, update the CAN API V3 testing sources in `$(PROJROOT)\Tests`
+3. If necessary, update the RocketCAN sources in `$(PROJROOT)\Sources\CANIPC`
+   from the SVN repo and commit them with commit comment:
+  - `Update CAN-over-Ethernet sources to rev. `_nnn_ \
+    `- `_list of major changes (optional)_
+4. If necessary, update the CAN API V3 testing sources in `$(PROJROOT)\Tests`
    from the SVN repo and commit them with commit comment:
   - `Update CAN API V3 testing sources to rev. `_nnn_ \
     `- `_list of major changes (optional)_
-4. Check and update the version and date information in the following files:
+5. Check and update the version and date information in the following files:
   - `$(PROJROOT)\Sources\Version.h`
   - `$(PROJROOT)/Libraries/CANAPI/Makefile`<sup>*</sup>
   - `$(PROJROOT)/Libraries/PeakCAN/Makefile`<sup>*</sup>
   - `$(PROJROOT)/Utilities/can_moni/README.md`
+  - `$(PROJROOT)/Utilities/can_port/README.md`
+  - `$(PROJROOT)/Utilities/can_send/README.md`
   - `$(PROJROOT)/Utilities/can_test/README.md`
 
   <sup>*</sup>_) Set variable_ `CURRENT_VERSION` _and_ `COMPATIBILITY_VERSION` _accordingly._
@@ -45,17 +51,18 @@ _All rights reserved._
 3. Select the Xcode Testing target and run all test cases:
   - _**There should be no failed test case.**_
   - _If there are failed tests then fix the root cause or define a workaround._
-5. Run the `Makefile` in the project root directory with option `BINARY=UNIVERSAL`.
+4. Run the `Makefile` in the project root directory with option `BINARY=UNIVERSAL`.
   - _**There should be absolutely no compiler or linker error!**_
   - _If there are compiler or linker warnings then think twice._
-6. Try out the trial program with different options.
+5. Try out the trial program with different options.
   - _**There should be no crash, hangup, or any other error.**_
   - _If there is an error then fix it or create an issue in the repo._
-7. Try out the utilities with different options.
+6. Try out the utilities with different options.
   - _**There should be no crash, hangup, or any other error.**_
   - _If there is an error then fix it or create an issue in the repo._
-8. Build and try out the examples (fix them if necessary);
+7. Build and try out the examples (fix them if necessary);
   - `$(PROJROOT)/Examples/C++`
+  - `$(PROJROOT)/Examples/IPC`
   - `$(PROJROOT)/Examples/Python`
 
 ### Pull Request
@@ -82,11 +89,11 @@ _All rights reserved._
   - `uv-pc013mac:CANAPI eris$ make clean`
   - `uv-pc013mac:CANAPI eris$ make all`
 5. Run the CAN API V3 GoogleTest program with two PCAN-USB devices in CAN 2.0 mode:
-  - `uv-pc013mac:CANAPI eris$./pcb_testing --can_dut1=PCAN-USB1 --can_dut2=PCAN-USB2 --gtest_output=xml:TestReport_PCAN-USB.xml --run_all=YES --smoketest_frames=100000` [...]
+  - `uv-pc013mac:CANAPI eris$./pcb_testing --can_dut1=PCAN-USB1 --can_dut2=PCAN-USB2 --gtest_output=xml:TestReport_PCAN-USB.xml --run_all=YES --smoketest_frames=100000 --gateway=60000` [...]
   - _If there is any error then **stop** here or create an issue for each error in the repo._
   - Copy the test report into the binary's directory `$(PROJROOT)/Binaries`.
 6. Run the CAN API V3 GoogleTest program with two PCAN-USB FD devices in CAN FD mode:
-  - `uv-pc013mac:CANAPI eris$./pcb_testing --can_dut1=PCAN-USB3 --can_dut2=PCAN-USB4 --can_mode=FDF+BRS --can_bitrate=DEFAULT --gtest_output=xml:TestReport_PCAN-USB_FD.xml --run_all=YES --smoketest_frames=100000` [...]
+  - `uv-pc013mac:CANAPI eris$./pcb_testing --can_dut1=PCAN-USB3 --can_dut2=PCAN-USB4 --can_mode=FDF+BRS --can_bitrate=DEFAULT --gtest_output=xml:TestReport_PCAN-USB_FD.xml --run_all=YES --smoketest_frames=100000 --gateway=60000` [...]
   - _If there is any error then **stop** here or create an issue for each error in the repo._
   - Copy the test report into the binary's directory `$(PROJROOT)/Binaries`.
 7. Pack the artifacts into a .zip-archive, e.g. `artifacts.zip`:
@@ -100,7 +107,7 @@ _All rights reserved._
 
 1. Click on `Draft a new release` in the [GitHub](https://github.com/mac-can/PCBUSB-Wrapper) repo.
 2. Fill out all required fields:
-  - Tag version: e.g `v0.2.9` (cf. semantic versioning)
+  - Tag version: e.g `v0.4` (cf. semantic versioning)
   - Target: `main` (default branch)
   - Release title: e.g. `Release of January 19, 2038`
   - Change-log: list all major changes, e.g. from commit comments

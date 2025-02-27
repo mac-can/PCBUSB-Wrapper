@@ -1,19 +1,19 @@
 ### macOS&reg; Wrapper Library for PCAN Interfaces from PEAK-System
 
-_Copyright&copy; 2005-2010, 2012-2025 Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
+_Copyright&copy; 2005-2010, 2012-2025  Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
 
 ![macOS Build](https://github.com/mac-can/PCBUSB-Wrapper/actions/workflows/macos-build.yml/badge.svg)
 
-# CAN API V3 for PCAN-USB Interfaces
+# CAN API V3 for PCAN USB Interfaces
 
 CAN API V3 is a wrapper specification to have a uniform CAN Interface API for various CAN interfaces from different vendors running under multiple operating systems.
 
 ## PCBUSB-Wrapper
 
-This repo contains the source code for a CAN API V3 compatible wrapper library under macOS for PCAN-USB interfaces from PEAK-System Technik GmbH.
+This repo contains the source code for a CAN API V3 compatible wrapper library under macOS for PCAN USB interfaces from PEAK-System Technik GmbH.
 The wrapper library is build upon the PCBUSB library from UV&nbsp;Software.
 
-The [PCBUSB](https://www.mac-can.com) library is a user-space driver for PCAN-USB interfaces under macOS, and is almost compatible to PEAK´s PCANBasic DLL.
+The [PCBUSB](https://www.mac-can.com) library is a user-space driver for PCAN USB interfaces under macOS, and is almost compatible to PEAK´s PCANBasic DLL.
 
 Note: _The PCBUSB library is not included in this repo, and must be installed separately!_
 
@@ -81,32 +81,43 @@ public:
 
 _Important note_: To build any of the following build targets run the script `build_no.sh` to generate a pseudo build number.
 ```
-uv-pc013mac:~ eris$ cd ~/Projects/CAN/Drivers/PeakCAN
+uv-pc013mac:~ eris$ cd ~/Projects/CAN/PCBUSB-Wrapper
 uv-pc013mac:PeakCAN eris$ ./build_no.sh
 ```
 Repeat this step after each `git commit`, `git pull`, `git clone`, etc.
 
 Then you can build all targets by typing the usual commands:
 ```
-uv-pc013mac:~ eris$ cd ~/Projects/CAN/Drivers/PeakCAN
+uv-pc013mac:~ eris$ cd ~/Projects/CAN/PCBUSB-Wrapper
 uv-pc013mac:PeakCAN eris$ make clean
 uv-pc013mac:PeakCAN eris$ make all
 uv-pc013mac:PeakCAN eris$ sudo make install
 uv-pc013mac:PeakCAN eris$
 ```
-_(The version number of the libraries can be adapted by editing the `Makefile`s in the corresponding subfolders and changing the variable `VERSION` accordingly.  Don´t forget to set the version number also in the header file `Version.h`.)_
+_(The version number of the libraries can be adapted by editing the appropriated `Makefile`s and changing the variable `VERSION` accordingly.  Don´t forget to set the version number also in the header file `Version.h`.)_
 
-#### libPeakCAN
+#### Libraries
+
+##### libPeakCAN
 
 ___libPeakCAN___ is a dynamic library with a CAN API V3 compatible application programming interface for use in __C++__ applications.
 See header file `PeakCAN.h` for a description of all class members.
 
-#### libUVCANPCB
+##### libUVCANPCB
 
 ___libUVCANPCB___ is a dynamic library with a CAN API V3 compatible application programming interface for use in __C__ applications.
 See header file `can_api.h` for a description of all API functions.
 
-#### can_moni
+#### Utilities
+
+##### can_send
+
+`can_send` is a command line tool to send CAN messages that are entered at the program prompt.
+The syntax is taken from the Linux SocketCAN utility [can_utils\cansend](https://github.com/linux-can/can-utils/tree/master).
+
+Type `can_send --help` to display all program options.
+
+##### can_moni
 
 `can_moni` is a command line tool to view incoming CAN messages.
 I hate this messing around with binary masks for identifier filtering.
@@ -114,12 +125,22 @@ So I wrote this little program to have an exclude list for single identifiers or
 
 Type `can_moni --help` to display all program options.
 
-#### can_test
+##### can_test
 
 `can_test` is a command line tool to test CAN communication.
 Originally developed for electronic environmental tests on an embedded Linux system with SocketCAN, I´m using it for many years as a traffic generator for CAN stress-tests.
 
 Type `can_test --help` to display all program options.
+
+##### can_port
+
+`can_port` is a command line tool designed to open a network socket for CAN-over-Ethernet communication.
+It connects to a CAN device and handles the data exchange between the CAN bus and local or remote clients.
+
+_Be aware that this may expose your computer to security vulnerabilities, unauthorized access, data interception, denial of service attacks, and resource exhaustion.
+Implement appropriate security measures to mitigate these risks._
+
+Type `can_port --help` to display all program options.
 
 ### Target Platforms
 - macOS 13.0 and later (Intel x64 and Apple silicon)
@@ -128,15 +149,15 @@ Type `can_test --help` to display all program options.
 ### Development Environments
 
 #### macOS Sequoia
-- macOS Sequoia (15.3) on a Mac mini (M4 Pro, 2024)
+- macOS Sequoia (15.3.1) on a Mac mini (M4 Pro, 2024)
 - Apple clang version 16.0.0 (clang-1600.0.26.6)
 
 #### macOS Ventura
-- macOS Ventura (13.7.3) on a MacBook Pro (2019)
+- macOS Ventura (13.7.4) on a MacBook Pro (2019)
 - Apple clang version 14.0.3 (clang-1403.0.22.14.1)
 
 #### Debian 12.9 ("bookworm")
-- Debian 6.1.123-1 (2024-11-22) x86_64 GNU/Linux
+- Debian 6.1.128-1 (2025-02-07) x86_64 GNU/Linux
 - gcc (Debian 12.2.0-14) 12.2.0
 
 ### Required Library
@@ -145,7 +166,7 @@ Type `can_test --help` to display all program options.
 - `libPCBUSB.x.y.dylib` - Version 0.13 or later _(Latest is Greatest!)_
 
 #### Linux
-- `libpcanbasic.so` - PCAN Driver and Library for Linux, Version 8.19
+- `libpcanbasic.so` - PCAN Driver and Library for Linux, Version 8.20
 
 ## Known Bugs and Caveats
 
@@ -181,7 +202,7 @@ You can choose between one of them if you use these portions of this work in who
 
 ### Trademarks
 
-Mac and macOS are trademarks of Apple Inc., registered in the U.S. and other countries. \
+Mac and macOS are trademarks of Apple Inc., registered in the U.S. and other countries and regions. \
 PCAN is a registered trademark of PEAK-System Technik GmbH, Darmstadt, Germany. \
 POSIX is a registered trademark of the Institute of Electrical and Electronic Engineers, Inc. \
 GNU C/C++ is a registered trademark of Free Software Foundation, Inc. \

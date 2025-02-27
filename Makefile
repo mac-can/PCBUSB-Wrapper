@@ -54,32 +54,50 @@ all:
 	$(MAKE) -C Trial $@
 	$(MAKE) -C Libraries/CANAPI $@
 	$(MAKE) -C Libraries/PeakCAN $@
-	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Utilities/can_moni $@
+#	$(MAKE) -C Utilities/can_play $@
+	$(MAKE) -C Utilities/can_port $@
+	$(MAKE) -C Utilities/can_send $@
+	$(MAKE) -C Utilities/can_simu $@
+	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Tests/CANAPI $@
 
 clean:
 	$(MAKE) -C Trial $@
 	$(MAKE) -C Libraries/CANAPI $@
 	$(MAKE) -C Libraries/PeakCAN $@
-	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Utilities/can_moni $@
+#	$(MAKE) -C Utilities/can_play $@
+	$(MAKE) -C Utilities/can_port $@
+	$(MAKE) -C Utilities/can_send $@
+	$(MAKE) -C Utilities/can_simu $@
+	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Tests/CANAPI $@
 
 pristine:
 	$(MAKE) -C Trial $@
 	$(MAKE) -C Libraries/CANAPI $@
 	$(MAKE) -C Libraries/PeakCAN $@
-	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Utilities/can_moni $@
+#	$(MAKE) -C Utilities/can_play $@
+	$(MAKE) -C Utilities/can_port $@
+	$(MAKE) -C Utilities/can_send $@
+	$(MAKE) -C Utilities/can_simu $@
+	$(MAKE) -C Utilities/can_test $@
 	$(MAKE) -C Tests/CANAPI $@
+	$(MAKE) -C Examples/C++ $@
+	$(MAKE) -C Examples/IPC $@
 
 install:
 #	$(MAKE) -C Trial $@
 	$(MAKE) -C Libraries/CANAPI $@
 	$(MAKE) -C Libraries/PeakCAN $@
-#	$(MAKE) -C Utilities/can_test $@
 #	$(MAKE) -C Utilities/can_moni $@
+##	$(MAKE) -C Utilities/can_play $@
+#	$(MAKE) -C Utilities/can_port $@
+#	$(MAKE) -C Utilities/can_send $@
+#	$(MAKE) -C Utilities/can_simu $@
+#	$(MAKE) -C Utilities/can_test $@
 #	$(MAKE) -C Tests/CANAPI $@
 
 test:
@@ -94,6 +112,10 @@ xctest:
 smoketest:
 	$(MAKE) -C Tests/CANAPI clean all
 	./Tests/CANAPI/pcb_testing --gtest_filter="SmokeTest.*:*.SunnydayScenario"
+
+testflight:
+	$(MAKE) -C Tests/CANAPI all
+	./Tests/CANAPI/pcb_testing --gtest_filter="SmokeTest.*:*.SunnydayScenario" --gateway=60000
 
 build_no:
 	@./build_no.sh
