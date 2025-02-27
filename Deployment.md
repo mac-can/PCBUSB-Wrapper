@@ -17,19 +17,19 @@ _All rights reserved._
    from MacCAN´s website and commit it with commit comment:
   - `Update PCBUSB header file (version `_n_`.`_n_`.`_n_`)` \
     `- `_list of major changes (optional)_
-1. If necessary, update the CAN API V3 sources in `$(PROJROOT)\Sources\CANAPI`
+2. If necessary, update the CAN API V3 sources in `$(PROJROOT)\Sources\CANAPI`
    from the SVN repo and commit them with commit comment:
   - `Update CAN API V3 sources to rev. `_nnn_ \
     `- `_list of major changes (optional)_
-1. If necessary, update the RocketCAN sources in `$(PROJROOT)\Sources\CANIPC`
+3. If necessary, update the RocketCAN sources in `$(PROJROOT)\Sources\CANIPC`
    from the SVN repo and commit them with commit comment:
   - `Update CAN-over-Ethernet sources to rev. `_nnn_ \
     `- `_list of major changes (optional)_
-1. If necessary, update the CAN API V3 testing sources in `$(PROJROOT)\Tests`
+4. If necessary, update the CAN API V3 testing sources in `$(PROJROOT)\Tests`
    from the SVN repo and commit them with commit comment:
   - `Update CAN API V3 testing sources to rev. `_nnn_ \
     `- `_list of major changes (optional)_
-1. Check and update the version and date information in the following files:
+5. Check and update the version and date information in the following files:
   - `$(PROJROOT)\Sources\Version.h`
   - `$(PROJROOT)/Libraries/CANAPI/Makefile`<sup>*</sup>
   - `$(PROJROOT)/Libraries/PeakCAN/Makefile`<sup>*</sup>
@@ -45,22 +45,22 @@ _All rights reserved._
 1. Check the working directory for uncommitted changes.
   - _**There should not be any uncommitted changes.**_
   - _If there are uncommitted changes then commit or undo them._
-1. Open the trial program with Xcode and run a code analysis.
+2. Open the trial program with Xcode and run a code analysis.
   - _**There should not be any serious finding.**_
   - _If there are findings then fix them or create an issue in the repo._
-1. Select the Xcode Testing target and run all test cases:
+3. Select the Xcode Testing target and run all test cases:
   - _**There should be no failed test case.**_
   - _If there are failed tests then fix the root cause or define a workaround._
-1. Run the `Makefile` in the project root directory with option `BINARY=UNIVERSAL`.
+4. Run the `Makefile` in the project root directory with option `BINARY=UNIVERSAL`.
   - _**There should be absolutely no compiler or linker error!**_
   - _If there are compiler or linker warnings then think twice._
-1. Try out the trial program with different options.
+5. Try out the trial program with different options.
   - _**There should be no crash, hangup, or any other error.**_
   - _If there is an error then fix it or create an issue in the repo._
-1. Try out the utilities with different options.
+6. Try out the utilities with different options.
   - _**There should be no crash, hangup, or any other error.**_
   - _If there is an error then fix it or create an issue in the repo._
-1. Build and try out the examples (fix them if necessary);
+7. Build and try out the examples (fix them if necessary);
   - `$(PROJROOT)/Examples/C++`
   - `$(PROJROOT)/Examples/IPC`
   - `$(PROJROOT)/Examples/Python`
