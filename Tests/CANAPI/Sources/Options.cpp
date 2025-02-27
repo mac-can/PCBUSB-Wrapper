@@ -320,7 +320,7 @@ int COptions::ScanOptions(int argc, char* argv[], char* err, size_t len) {
                 return false;
             }
         }
-        // option: --can_mode=(CAN2.0|CANFD[+BRS])
+        // option: --can_mode=(CANCC|CANFD[+BRS])
 #if (CAN_FD_SUPPORTED == FEATURE_SUPPORTED)
         else if (strncmp(argv[i], OPTION_MODE, strlen(OPTION_MODE)) == 0)
         {
@@ -341,7 +341,9 @@ int COptions::ScanOptions(int argc, char* argv[], char* err, size_t len) {
                     !strcasecmp(opt, "classic") ||
                     !strcasecmp(opt, "CAN2.0") ||
                     !strcasecmp(opt, "CAN20") ||
-                    !strcasecmp(opt, "2.0")) {
+                    !strcasecmp(opt, "2.0") ||
+                    !strcasecmp(opt, "CC") ||
+                    !strcasecmp(opt, "CCF")) {
                     m_Dut[DUT1].m_OpMode.fdoe = m_Dut[DUT2].m_OpMode.fdoe = 0;
                     m_Dut[DUT1].m_OpMode.brse = m_Dut[DUT2].m_OpMode.brse = 0;
                 }
@@ -783,9 +785,9 @@ int COptions::ShowHelp() {
         std::cout << "      This option must be given before option " << OPTION_DUT1 << " and " << OPTION_DUT2 << "." << std::endl;
 #endif
 #if (CAN_FD_SUPPORTED == FEATURE_SUPPORTED)
-        std::cout << "  " << OPTION_MODE << "=(CAN2.0|CANFD[+BRS])" << std::endl;
+        std::cout << "  " << OPTION_MODE << "=(CANCC|CANFD[+BRS])" << std::endl;
         std::cout << "      CAN operation mode: CAN 2.0 or CAN FD format." <<  std::endl;
-        std::cout << "              CAN2.0    = CAN classic (default)" << std::endl;
+        std::cout << "              CANCC     = CAN classic (default)" << std::endl;
         std::cout << "              CANFD     = CAN FD long frames only" << std::endl;
         std::cout << "              CANFD+BRS = CAN FD long and fast frames" << std::endl;
 #endif
@@ -864,4 +866,4 @@ int COptions::ShowHelp() {
     return m_fShowHelp;
 }
 
-// $Id: Options.cpp 1456 2025-02-19 21:22:16Z sedna $  Copyright (c) UV Software, Berlin //
+// $Id: Options.cpp 1478 2025-02-27 08:25:36Z sedna $  Copyright (c) UV Software, Berlin //
