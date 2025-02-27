@@ -4,7 +4,7 @@ Copyright &copy; 2008,2012-2025 by Uwe Vogt, UV Software, Berlin
 ```
 Usage: can_port <interface>@<port> [<option>...]
 Options:
- -m, --mode=(2.0|FDF[+BRS])           CAN operation mode: CAN 2.0 or CAN FD mode
+ -m, --mode=(CCF|FDF[+BRS])           CAN operation mode: CAN CC or CAN FD mode
      --listen-only                    monitor mode (listen-only mode)
      --error-frames                   allow reception of error frames
      --no-remote-frames               suppress remote frames (RTR frames)
@@ -16,7 +16,7 @@ Options:
  -b, --baudrate=<baudrate>            CAN bit-timing in kbps (default=250), or
      --bitrate=<bit-rate>             CAN bit-rate settings (as key/value list)
  -v, --verbose                        show detailed bit-rate settings
-     --logging=<level>                set server logging level (default=0)
+     --logging=<level>                set logging level (default=0)
      --security-risks="I ACCEPT"      accept security risks (skip interactive input)
      --list-bitrates[=<mode>]         list standard bit-rate settings and exit
  -L, --list-boards                    list all supported CAN interfaces and exit
@@ -25,7 +25,7 @@ Options:
  -h, --help                           display this help screen and exit
      --version                        show version information and exit
 Arguments:
-  <port>         CAN-over-Ethernet port on local computer
+  <port>         CAN-over-Ethernet port number (TCP/IP)
   <interface>    CAN interface board (list all with -L)
   <baudrate>     CAN baud rate index (default=3):
                  0 = 1000 kbps

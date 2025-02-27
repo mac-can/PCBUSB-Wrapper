@@ -5,11 +5,11 @@ Copyright &copy; 2008,2025 by Uwe Vogt, UV Software, Berlin
 Usage: can_port <port> [<option>...]
 Options:
      --security-risks="I ACCEPT"      accept security risks (skip interactive input)
-     --logging=<level>                set server logging level (default=0)
+     --logging=<level>                set logging level (default=0)
  -h, --help                           display this help screen and exit
      --version                        show version information and exit
 Arguments:
-  <port>         CAN-over-Ethernet port on local computer
+  <port>                              TCP/IP port number
 Syntax:
  <can_frame>:
   <can_id>#{data}                     for CAN CC data frames

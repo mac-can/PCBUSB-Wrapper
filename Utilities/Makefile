@@ -21,7 +21,7 @@
 all:
 	@echo "\033[1mBuilding my beloved CAN Utilities...\033[0m"
 	$(MAKE) -C can_moni $@
-	$(MAKE) -C can_play $@
+#	$(MAKE) -C can_play $@
 	$(MAKE) -C can_port $@
 	$(MAKE) -C can_send $@
 	$(MAKE) -C can_simu $@
@@ -29,7 +29,7 @@ all:
 
 clean:
 	$(MAKE) -C can_moni $@
-	$(MAKE) -C can_play $@
+#	$(MAKE) -C can_play $@
 	$(MAKE) -C can_port $@
 	$(MAKE) -C can_send $@
 	$(MAKE) -C can_simu $@
@@ -37,7 +37,7 @@ clean:
 
 pristine:
 	$(MAKE) -C can_moni $@
-	$(MAKE) -C can_play $@
+#	$(MAKE) -C can_play $@
 	$(MAKE) -C can_port $@
 	$(MAKE) -C can_send $@
 	$(MAKE) -C can_simu $@
@@ -45,7 +45,7 @@ pristine:
 
 install:
 #	$(MAKE) -C can_moni $@
-#	$(MAKE) -C can_play $@
+##	$(MAKE) -C can_play $@
 #	$(MAKE) -C can_port $@
 #	$(MAKE) -C can_send $@
 #	$(MAKE) -C can_simu $@
@@ -53,7 +53,7 @@ install:
 
 check:
 	$(MAKE) -C can_moni $@
-	$(MAKE) -C can_play $@
+#	$(MAKE) -C can_play $@
 	$(MAKE) -C can_port $@
 	$(MAKE) -C can_send $@
 	$(MAKE) -C can_simu $@

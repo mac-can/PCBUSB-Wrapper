@@ -652,7 +652,8 @@ int SOptions::ScanCommanline(int argc, const char* argv[], FILE* err, FILE* out)
                     return 1;
                 }
                 if (!strcasecmp(optarg, "DEFAULT") || !strcasecmp(optarg, "CLASSIC") || !strcasecmp(optarg, "CLASSICAL") ||
-                    !strcasecmp(optarg, "CAN20") || !strcasecmp(optarg, "CAN2.0") || !strcasecmp(optarg, "2.0"))
+                    !strcasecmp(optarg, "CAN20") || !strcasecmp(optarg, "CAN2.0") || !strcasecmp(optarg, "2.0") ||
+                    !strcasecmp(optarg, "CANCC") || !strcasecmp(optarg, "CC") || !strcasecmp(optarg, "CCF"))
                     m_OpMode.byte |= CANMODE_DEFAULT;
 #if (CAN_FD_SUPPORTED != 0)
                 else if (!strcasecmp(optarg, "CANFD") || !strcasecmp(optarg, "FD") || !strcasecmp(optarg, "FDF"))
@@ -816,9 +817,9 @@ void SOptions::ShowUsage(FILE* stream, bool args) {
     fprintf(stream, " -p, --path=<pathname>                search path for JSON configuration files\n");
 #endif
 #if (CAN_FD_SUPPORTED != 0)
-    fprintf(stream, " -m, --mode=(2.0|FDF[+BRS])           CAN operation mode: CAN 2.0 or CAN FD mode\n");
+    fprintf(stream, " -m, --mode=(CCF|FDF[+BRS])           CAN operation mode: CAN CC or CAN FD mode\n");
 #else
-    fprintf(stream, " -m, --mode=2.0                       CAN operation mode: CAN 2.0\n");
+    fprintf(stream, " -m, --mode=CCF                       CAN operation mode: CAN CC mode\n");
 #endif
 #if (CAN_SHARED_SUPPORTED != 0)
     fprintf(stream, "     --shared                         shared CAN controller access (if supported)\n");
@@ -857,7 +858,7 @@ void SOptions::ShowUsage(FILE* stream, bool args) {
     fprintf(stream, "     --version                        show version information and exit\n");
     if (args) {
         fprintf(stream, "Arguments:\n");
-        fprintf(stream, "  <id>           CAN identifier (11-bit)\n");
+        fprintf(stream, "  <id>           CAN identifier (11-bit or 29-bit)\n");
         fprintf(stream, "  <interface>    CAN interface board (list all with /LIST)\n");
         fprintf(stream, "  <baudrate>     CAN baud rate index (default=3):\n");
         fprintf(stream, "                 0 = 1000 kbps\n");

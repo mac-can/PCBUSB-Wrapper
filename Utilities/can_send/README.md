@@ -4,7 +4,7 @@ Copyright &copy; 2025 by Uwe Vogt, UV Software, Berlin
 ```
 Usage: can_send <interface> [<option>...]
 Options:
- -m, --mode=(2.0|FDF[+BRS])           CAN operation mode: CAN 2.0 or CAN FD mode
+ -m, --mode=(CCF|FDF[+BRS])           CAN operation mode: CAN CC or CAN FD mode
      --listen-only                    monitor mode (listen-only mode)
      --error-frames                   allow reception of error frames
      --no-remote-frames               suppress remote frames (RTR frames)
