@@ -453,12 +453,12 @@ int main(int argc, const char * argv[]) {
             fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_HARDWARE_NAME): value = '%s'\n", szVal);
         else
             fprintf(stderr, "+++ error: myDriver.GetProperty(PEAKCAN_PROPERTY_HARDWARE_NAME) returned %i\n", retVal);
-        retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_DEVICE_GUID, (void*)szVal, CANPROP_MAX_BUFFER_SIZE);
+#if (0)
+            retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_DEVICE_GUID, (void*)szVal, CANPROP_MAX_BUFFER_SIZE);
         if (retVal == CCanApi::NoError)
             fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_DEVICE_GUID): value = '%s'\n", szVal);
         //else [optional property]
         //    fprintf(stderr, "+++ error: myDriver.GetProperty(PEAKCAN_PROPERTY_DEVICE_GUID) returned %i\n", retVal);
-#if (0)
         retVal = myDriver.GetProperty(PEAKCAN_PROPERTY_SERIAL_NUMBER, (void*)szVal, CANPROP_MAX_BUFFER_SIZE);
         if (retVal == CCanApi::NoError)
             fprintf(stdout, ">>> myDriver.GetProperty(PEAKCAN_PROPERTY_SERIAL_NUMBER): value = '%s'\n", szVal);
