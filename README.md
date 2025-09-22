@@ -156,9 +156,9 @@ Type `can_port --help` to display all program options.
 - macOS Ventura (13.7.4) on a MacBook Pro (2019)
 - Apple clang version 14.0.3 (clang-1403.0.22.14.1)
 
-#### Debian 12.9 ("bookworm")
-- Debian 6.1.128-1 (2025-02-07) x86_64 GNU/Linux
-- gcc (Debian 12.2.0-14) 12.2.0
+#### Debian 13.1 ("trixie")
+- Debian 6.12.43-1 (2025-08-27) x86_64 GNU/Linux
+- gcc (Debian 14.2.0-19) 14.2.0
 
 ### Required Library
 
