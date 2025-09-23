@@ -7,8 +7,8 @@
  *
  *  This file is part of CAN API V3.
  *
- *  CAN API V3 is dual-licensed under the BSD 2-Clause "Simplified" License
- *  and under the GNU General Public License v2.0 (or any later version). You can
+ *  CAN API V3 is dual-licensed under the BSD 2-Clause "Simplified" License and
+ *  under the GNU General Public License v2.0 (or any later version). You can
  *  choose between one of them if you use CAN API V3 in whole or in part.
  *
  *  (1) BSD 2-Clause "Simplified" License
@@ -47,26 +47,11 @@
  *  You should have received a copy of the GNU General Public License along
  *  with CAN API V3; if not, see <https://www.gnu.org/licenses/>.
  */
-/** @file        Version.h
- *
- *  @brief       RocketCAN - Version Number.
- *
- *  @note        This is only a dummy file to have a SVN revision number.
- * 
- *  @author      $Author: sedna $
- *
- *  @version     $Rev: 1473 $
- *
- *  @addtogroup  rocketcan
- *  @{
- */
 #ifndef ROCKETCAN_VERSION_H_INCLUDED
 #define ROCKETCAN_VERSION_H_INCLUDED
-// SVN revision number (update with each commit: XIIIs)
-#define ROCKETCAN_SVN_REV  "$Rev: 1473 $"
+// SVN revision number (update with each commit: XIV)
+#define ROCKETCAN_SVN_REV  "$Rev: 1494 $"
 #endif  /* ROCKETCAN_VERSION_H_INCLUDED */
-/** @}
- */
 /*  ----------------------------------------------------------------------
  *  Uwe Vogt,  UV Software,  Chausseestrasse 33 A,  10115 Berlin,  Germany
  *  Tel.: +49-30-46799872,  Fax: +49-30-46799873,  Mobile: +49-170-3801903

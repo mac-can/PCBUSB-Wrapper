@@ -51,9 +51,9 @@
  *
  *  @brief       Stream Socket Server (TCP/IP).
  *
- *  @author      $Author: quaoar $
+ *  @author      $Author: sedna $
  *
- *  @version     $Rev: 1469 $
+ *  @version     $Rev: 1494 $ of $Date: 2025-03-07 19:27:14 +0100 (Fri, 07 Mar 2025) $
  *
  *  @addtogroup  tcp
  *  @{

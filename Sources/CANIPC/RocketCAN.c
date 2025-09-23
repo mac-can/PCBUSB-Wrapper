@@ -7,8 +7,8 @@
  *
  *  This file is part of CAN API V3.
  *
- *  CAN API V3 is dual-licensed under the BSD 2-Clause "Simplified" License
- *  and under the GNU General Public License v2.0 (or any later version). You can
+ *  CAN API V3 is dual-licensed under the BSD 2-Clause "Simplified" License and
+ *  under the GNU General Public License v2.0 (or any later version). You can
  *  choose between one of them if you use CAN API V3 in whole or in part.
  *
  *  (1) BSD 2-Clause "Simplified" License
@@ -51,9 +51,9 @@
  *
  *  @brief       CAN API V3 message to RocketCAN message and vice versa.
  *
- *  @author      $Author: quaoar $
+ *  @author      $Author: sedna $
  *
- *  @version     $Rev: 1469 $
+ *  @version     $Rev: 1494 $ of $Date: 2025-03-07 19:27:14 +0100 (Fri, 07 Mar 2025) $
  *
  *  @addtogroup  rocketcan
  *  @{
@@ -128,7 +128,8 @@ void rock_msg_to_can(can_message_t *can, can_tcp_message_t *net) {
     can->fdf = (net->flags & CANTCP_FDF_MASK) ? 1 : 0;
     can->brs = (net->flags & CANTCP_BRS_MASK) ? 1 : 0;
     can->esi = (net->flags & CANTCP_ESI_MASK) ? 1 : 0;
-    can->sts = (net->flags & CANTCP_STS_MASK) ? 1 : 0;
+    can->err = (net->flags & CANTCP_ERR_MASK) ? 1 : 0;  /* flag 'sts and/or 'err' should not be set */
+    can->sts = (net->flags & CANTCP_STS_MASK) ? 1 : 0;  /* they cannot be send on the CAN bus */
     can->dlc = len2dlc(net->length);
     memcpy(can->data, net->data, MAX(CANFD_MAX_LEN, CANTCP_MAX_LEN));
 }
@@ -143,7 +144,8 @@ void rock_msg_from_can(can_tcp_message_t *net, const can_message_t *can) {
     net->id = can->id;
     net->flags = CANTCP_XTD_FLAG(can->xtd) | CANTCP_RTR_FLAG(can->rtr) |
                  CANTCP_FDF_FLAG(can->fdf) | CANTCP_BRS_FLAG(can->brs) |
-                 CANTCP_ESI_FLAG(can->esi) | CANTCP_STS_FLAG(can->sts);
+                 CANTCP_ESI_FLAG(can->esi) | CANTCP_STS_FLAG(can->sts) |
+                 CANTCP_ERR_FLAG(can->err);
     net->length = dlc2len(can->dlc);
 	net->ts_sec = (uint64_t)can->timestamp.tv_sec;
 	net->ts_nsec = (uint32_t)can->timestamp.tv_nsec;
@@ -152,7 +154,7 @@ void rock_msg_from_can(can_tcp_message_t *net, const can_message_t *can) {
     CANTCP_MSG_HTON(*net);
     /* set control character (ETX) */
     net->ctrlchar = CANTCP_CTRLCHAR;
-    /* calculate and store the CRC checksum */
+    /* calculate and set the CRC checksum */
     net->checksum = crc_j1850_calc((const uint8_t*)net, 
             sizeof(can_tcp_message_t) - sizeof(net->checksum), NULL);
 }
@@ -189,7 +191,7 @@ void rock_msg_abort(can_tcp_message_t *net) {
     /* create RocketCAN abort message */
     memset(net, 0, sizeof(can_tcp_message_t));
     net->id = 0x001U;
-    net->flags = CANTCP_STS_FLAG(1U);
+    net->flags = CANTCP_STS_FLAG(1);
     net->length = 4U;
     net->status = CANSTAT_RESET;
     net->data[3] = CANSTAT_RESET;
@@ -208,7 +210,7 @@ void rock_msg_abort(can_tcp_message_t *net) {
     net->ctrlchar = CANTCP_EOT_CHAR;
     /* convert RocketCAN message from host to network byte order */
     CANTCP_MSG_HTON(*net);
-    /* calculate and store the CRC checksum */
+    /* calculate and set the CRC checksum */
     net->checksum = crc_j1850_calc((const uint8_t*)net, 
             sizeof(can_tcp_message_t) - sizeof(net->checksum), NULL);
 }

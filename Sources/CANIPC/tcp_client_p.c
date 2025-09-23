@@ -51,9 +51,9 @@
  *
  *  @brief       Stream Socket Client (TCP/IP).
  *
- *  @author      $Author: quaoar $
+ *  @author      $Author: sedna $
  *
- *  @version     $Rev: 1469 $
+ *  @version     $Rev: 1489 $ of $Date: 2025-03-06 20:48:02 +0100 (Thu, 06 Mar 2025) $
  *
  *  @addtogroup  tcp
  *  @{

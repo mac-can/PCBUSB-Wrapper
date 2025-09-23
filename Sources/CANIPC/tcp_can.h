@@ -7,8 +7,8 @@
  *
  *  This file is part of CAN API V3.
  *
- *  CAN API V3 is dual-licensed under the BSD 2-Clause "Simplified" License
- *  and under the GNU General Public License v2.0 (or any later version). You can
+ *  CAN API V3 is dual-licensed under the BSD 2-Clause "Simplified" License and
+ *  under the GNU General Public License v2.0 (or any later version). You can
  *  choose between one of them if you use CAN API V3 in whole or in part.
  *
  *  (1) BSD 2-Clause "Simplified" License
@@ -51,9 +51,9 @@
  *
  *  @brief       RocketCAN Message Format
  *
- *  @author      $Author: quaoar $
+ *  @author      $Author: sedna $
  *
- *  @version     $Rev: 1469 $
+ *  @version     $Rev: 1494 $ of $Date: 2025-03-07 19:27:14 +0100 (Fri, 07 Mar 2025) $
  *
  *  @defgroup    rocketcan RocketCAN - CAN-over-Ethernet
  *  @{
@@ -110,6 +110,7 @@
 #define CANTCP_FDF_FLAG(x)  (uint8_t)((x) ? 0x04 : 0)  /**< flag: CAN FD format */
 #define CANTCP_BRS_FLAG(x)  (uint8_t)((x) ? 0x08 : 0)  /**< flag: bit-rate switching */
 #define CANTCP_ESI_FLAG(x)  (uint8_t)((x) ? 0x10 : 0)  /**< flag: error state indicator */
+#define CANTCP_ERR_FLAG(x)  (uint8_t)((x) ? 0x40 : 0)  /**< flag: error frame (ECC) */
 #define CANTCP_STS_FLAG(x)  (uint8_t)((x) ? 0x80 : 0)  /**< flag: status message */
 
 #define CANTCP_XTD_MASK  (uint8_t)0x01  /**< mask: extended format */
@@ -117,6 +118,7 @@
 #define CANTCP_FDF_MASK  (uint8_t)0x04  /**< mask: CAN FD format */
 #define CANTCP_BRS_MASK  (uint8_t)0x08  /**< mask: bit-rate switching */
 #define CANTCP_ESI_MASK  (uint8_t)0x10  /**< mask: error state indicator */
+#define CANTCP_ERR_MASK  (uint8_t)0x40  /**< mask: error frame (ECC) */
 #define CANTCP_STS_MASK  (uint8_t)0x80  /**< mask: status message */
 /** @} */
 

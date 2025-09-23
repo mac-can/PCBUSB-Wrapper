@@ -1,6 +1,6 @@
 ### RocketCAN - CAN-over-Ethernet
 
-_Copyright &copy; 2008-2025  Uwe Vogt, UV Software, Berlin (info@uv-software.com)_ \
+_Copyright &copy; 2008-2025 Uwe Vogt, UV Software, Berlin (info@uv-software.com)_ \
 _All rights reserved._
 
 # CAN/IPC - CAN Interprocess Communication 

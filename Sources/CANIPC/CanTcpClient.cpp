@@ -7,8 +7,8 @@
 //
 //  This file is part of CAN API V3.
 //
-//  CAN API V3 is dual-licensed under the BSD 2-Clause "Simplified" License
-//  and under the GNU General Public License v2.0 (or any later version). You can
+//  CAN API V3 is dual-licensed under the BSD 2-Clause "Simplified" License and
+//  under the GNU General Public License v2.0 (or any later version). You can
 //  choose between one of them if you use CAN API V3 in whole or in part.
 //
 //  (1) BSD 2-Clause "Simplified" License
@@ -46,6 +46,17 @@
 //
 //  You should have received a copy of the GNU General Public License along
 //  with CAN API V3; if not, see <https://www.gnu.org/licenses/>.
+//
+/// \file        CanTcpClient.cpp
+//
+/// \brief       RocketCAN - CAN-over-Ethernet Client.
+//
+/// \author      $Author: sedna $
+//
+/// \version     $Rev: 1489 $ of $Date: 2025-03-06 20:48:02 +0100 (Thu, 06 Mar 2025) $
+//
+/// \addtogroup  rocketcan
+/// \{
 //
 #include "CanTcpClient.h"
 #include "tcp_client.h"
@@ -146,4 +157,6 @@ CANAPI_Return_t CCanTcpClient::Send(const void *data, size_t size, uint16_t inhi
     (void)inhibitTime;
     return CANERR_NOERROR;
 }
-    
+
+/// \}
+// $Id: CanTcpClient.cpp 1489 2025-03-06 19:48:02Z sedna $  Copyright (c) UV Software //

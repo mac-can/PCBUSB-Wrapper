@@ -53,7 +53,7 @@
  * 
  *  @author      $Author: sedna $
  *
- *  @version     $Rev: 846 $
+ *  @version     $Rev: 852 $ of $Date: 2025-03-06 20:33:58 +0100 (Thu, 06 Mar 2025) $
  *
  *  @addtogroup  crc
  *  @{
