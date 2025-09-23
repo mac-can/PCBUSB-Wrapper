@@ -108,12 +108,12 @@ HEADERS = -I$(HOME_DIR) \
 	-I$(CANAPI_INC) \
 	-I$(CANIPC_DIR)
 
-CFLAGS += -O2 -Wall -Wno-parentheses \
+CFLAGS += -std=c17 -O0 -g -Wall -Wextra -Wno-parentheses \
 	-fno-strict-aliasing \
 	$(DEFINES) \
 	$(HEADERS)
 
-CXXFLAGS += -std=c++14 -O2 -g -Wall -Wextra -pthread \
+CXXFLAGS += -std=c++17 -O0 -g -Wall -Wextra -pthread \
 	$(DEFINES) \
 	$(HEADERS)
 
@@ -152,12 +152,12 @@ HEADERS = -I$(HOME_DIR) \
 	-I$(CANAPI_INC) \
 	-I$(CANIPC_DIR)
 
-CFLAGS += -O2 -Wall -Wno-parentheses \
+CFLAGS += -std=c17 -O0 -g -Wall -Wextra -Wno-parentheses \
 	-fno-strict-aliasing \
 	$(DEFINES) \
 	$(HEADERS)
 
-CXXFLAGS += -std=c++14 -O2 -g -Wall -Wextra -pthread \
+CXXFLAGS += -std=c++17 -O0 -g -Wall -Wextra -pthread \
 	$(DEFINES) \
 	$(HEADERS)
 
