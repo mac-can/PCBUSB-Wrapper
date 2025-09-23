@@ -866,4 +866,4 @@ int COptions::ShowHelp() {
     return m_fShowHelp;
 }
 
-// $Id: Options.cpp 1478 2025-02-27 08:25:36Z sedna $  Copyright (c) UV Software, Berlin //
+// $Id: Options.cpp 1486 2025-03-02 15:50:07Z quaoar $  Copyright (c) UV Software, Berlin //

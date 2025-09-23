@@ -49,8 +49,10 @@
 //
 #ifndef VERSION_H_INCLUDED
 #define VERSION_H_INCLUDED
-// SVN revision number (update with each commit: V)
-#define REVISION_NO  "$Rev: 1478 $"
+// SVN revision number (update with each commit: XXXVI)
+#define REVISION_NO  "$Rev: 1541 $"
+// GoogleTest does not offer its own version number
+#define GTEST_VERSION "1.17.0"
 #endif // VERSION_H_INCLUDED
 
-// $Id: Version.h 1478 2025-02-27 08:25:36Z sedna $  Copyright (c) UV Software, Berlin //
+// $Id: Version.h 1541 2025-09-23 16:34:04Z quaoar $  Copyright (c) UV Software, Berlin //

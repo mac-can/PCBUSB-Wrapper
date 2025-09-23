@@ -49,11 +49,11 @@
 //
 #include <cstdio>
 #include <iostream>
-#include "anykey.h"
 #include "pch.h"
+#include "anykey.h"
 
 GTEST_API_ int main(int argc, char **argv) {
-    std::cout << "CAN API V3 C++ Testing (";
+    std::cout << "CAN API V3 C++ Testing (GoogleTest " << GTEST_VERSION << ", ";
 #if !defined(_MSC_VER)
     std::cout << __VERSION__ << ")" << std::endl;
 #else
@@ -108,4 +108,4 @@ GTEST_API_ int main(int argc, char **argv) {
     return res;
 }
 
-// $Id: main.cpp 1456 2025-02-19 21:22:16Z sedna $  Copyright (c) UV Software, Berlin //
+// $Id: main.cpp 1541 2025-09-23 16:34:04Z quaoar $  Copyright (c) UV Software, Berlin //

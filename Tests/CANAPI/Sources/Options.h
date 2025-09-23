@@ -183,4 +183,4 @@ extern COptions g_Options;          // global access to testing options
 
 #endif // OPTIONS_H_INCLUDED
 
-// $Id: Options.h 1456 2025-02-19 21:22:16Z sedna $  Copyright (c) UV Software, Berlin.
+// $Id: Options.h 1486 2025-03-02 15:50:07Z quaoar $  Copyright (c) UV Software, Berlin.
