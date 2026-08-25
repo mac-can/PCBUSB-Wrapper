@@ -3,7 +3,7 @@
 #	CAN Interface API, Version 3 (for PEAK-System PCAN Interfaces)
 #
 #	Copyright (c) 2005-2012 Uwe Vogt, UV Software, Friedrichshafen
-#	Copyright (c) 2013-2025 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+#	Copyright (c) 2013-2026 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 #	All rights reserved.
 #
 #	This file is part of PCBUSB-Wrapper.
@@ -108,7 +108,7 @@ HEADERS = -I$(HOME_DIR) \
 	-I$(CANAPI_INC) \
 	-I$(CANIPC_DIR)
 
-CFLAGS += -std=c17 -O0 -g -Wall -Wextra -Wno-parentheses \
+CFLAGS += -O0 -g -Wall -Wextra -Wno-parentheses \
 	-fno-strict-aliasing \
 	$(DEFINES) \
 	$(HEADERS)
@@ -152,7 +152,7 @@ HEADERS = -I$(HOME_DIR) \
 	-I$(CANAPI_INC) \
 	-I$(CANIPC_DIR)
 
-CFLAGS += -std=c17 -O0 -g -Wall -Wextra -Wno-parentheses \
+CFLAGS += -O0 -g -Wall -Wextra -Wno-parentheses \
 	-fno-strict-aliasing \
 	$(DEFINES) \
 	$(HEADERS)
