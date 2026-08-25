@@ -1,6 +1,6 @@
 ### macOS&reg; Wrapper Library for PCAN Interfaces from PEAK-System
 
-_Copyright&copy; 2005-2010, 2012-2025  Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
+_Copyright&copy; 2005-2010, 2012-2026 Uwe Vogt, UV Software, Berlin (info@mac-can.com)_
 
 ![macOS Build](https://github.com/mac-can/PCBUSB-Wrapper/actions/workflows/macos-build.yml/badge.svg)
 
@@ -143,14 +143,14 @@ Implement appropriate security measures to mitigate these risks._
 Type `can_port --help` to display all program options.
 
 ### Target Platforms
-- macOS 13.0 and later (Intel x64 and Apple silicon)
+- macOS 15.0 and later (Intel x64 and Apple silicon)
 - Debian GNU/Linux 12 (Linux Kernel 6.x)
 
 ### Development Environments
 
 #### macOS Sequoia
-- macOS Sequoia (15.3.1) on a Mac mini (M4 Pro, 2024)
-- Apple clang version 16.0.0 (clang-1600.0.26.6)
+- macOS Sequoia (15.7.9) on a Mac mini (M4 Pro, 2024)
+- Apple clang version 17.0.0 (clang-1700.6.4.2)
 
 #### macOS Ventura
 - macOS Ventura (13.7.4) on a MacBook Pro (2019)
