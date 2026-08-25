@@ -156,8 +156,8 @@ Type `can_port --help` to display all program options.
 - macOS Ventura (13.7.4) on a MacBook Pro (2019)
 - Apple clang version 14.0.3 (clang-1403.0.22.14.1)
 
-#### Debian 13.1 ("trixie")
-- Debian 6.12.43-1 (2025-08-27) x86_64 GNU/Linux
+#### Debian 13.6 ("trixie")
+- Debian 6.12.101-1 (2026-08-05) x86_64 GNU/Linux
 - gcc (Debian 14.2.0-19) 14.2.0
 
 ### Required Library
@@ -166,7 +166,7 @@ Type `can_port --help` to display all program options.
 - `libPCBUSB.x.y.dylib` - Version 0.13 or later _(Latest is Greatest!)_
 
 #### Linux
-- `libpcanbasic.so` - PCAN Driver and Library for Linux, Version 8.20
+- `libpcanbasic.so` - PCAN Driver and Library for Linux, Version 9.2
 
 ## Known Bugs and Caveats
 
