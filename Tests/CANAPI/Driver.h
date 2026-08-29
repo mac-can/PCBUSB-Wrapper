@@ -3,7 +3,7 @@
 //  CAN Interface API, Version 3 (for PEAK-System PCAN Interfaces)
 //
 //  Copyright (c) 2005-2012 Uwe Vogt, UV Software, Friedrichshafen
-//  Copyright (c) 2013-2025 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+//  Copyright (c) 2013-2026 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 //  All rights reserved.
 //
 //  This file is part of PCBUSB-Wrapper.
@@ -133,8 +133,8 @@ typedef CPeakCAN  CCanDriver;
 
 #if (CAN_FD_SUPPORTED == FEATURE_SUPPORTED)
 //  (§10) define macros for CAN FD bit-rate settings
-//       at least BITRATE_FD_1M8M, BITRATE_FD_500K4M, BITRATE_FD_250K2M, BITRATE_FD_125K1M,
-//                BITRATE_FD_1M, BITRATE_FD_500K, BITRATE_FD_250K, BITRATE_FD_125K
+//        at least BITRATE_FD_1M8M, BITRATE_FD_500K4M, BITRATE_FD_250K2M, BITRATE_FD_125K1M,
+//                 BITRATE_FD_1M, BITRATE_FD_500K, BITRATE_FD_250K, BITRATE_FD_125K
 #define BITRATE_FD_1M(x)      PEAKCAN_FD_BR_1M(x)
 #define BITRATE_FD_500K(x)    PEAKCAN_FD_BR_500K(x)
 #define BITRATE_FD_250K(x)    PEAKCAN_FD_BR_250K(x)

@@ -1,5 +1,5 @@
-__CAN-over-Ethernet Server Simulator, Version 0.4__ \
-Copyright &copy; 2008,2025 by Uwe Vogt, UV Software, Berlin
+__CAN-over-Ethernet Server Simulator, Version 0.4.1__ \
+Copyright &copy; 2008,2025-2026 by Uwe Vogt, UV Software, Berlin
 
 ```
 Usage: can_port <port> [<option>...]

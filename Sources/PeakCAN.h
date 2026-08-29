@@ -3,7 +3,7 @@
 //  CAN Interface API, Version 3 (for PEAK-System PCAN Interfaces)
 //
 //  Copyright (c) 2005-2012 Uwe Vogt, UV Software, Friedrichshafen
-//  Copyright (c) 2013-2025 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+//  Copyright (c) 2013-2026 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
 //  All rights reserved.
 //
 //  This file is part of PCBUSB-Wrapper.
@@ -62,7 +62,7 @@
 #define PEAKCAN_LIBRARY_NAME  CANDLL_PCANBASIC
 #define PEAKCAN_LIBRARY_VENDOR  "UV Software, Berlin"
 #define PEAKCAN_LIBRARY_LICENSE  "BSD-2-Clause OR GPL-2.0-or-later"
-#define PEAKCAN_LIBRARY_COPYRIGHT  "Copyright (c) 2005-2025 by Uwe Vogt, UV Software, Berlin"
+#define PEAKCAN_LIBRARY_COPYRIGHT  "Copyright (c) 2005-2026 by Uwe Vogt, UV Software, Berlin"
 #define PEAKCAN_LIBRARY_HAZARD_NOTE  "If you connect your CAN device to a real CAN network when using this library,\n" \
                                      "you might damage your application."
 /// \}
@@ -179,6 +179,7 @@ public:
 //#define PEAKCAN_PROPERTY_TRM_QUEUE_HIGH     (CANPROP_GET_TRM_QUEUE_HIGH)
 //#define PEAKCAN_PROPERTY_TRM_QUEUE_OVFL     (CANPROP_GET_TRM_QUEUE_OVFL)
 #define PEAKCAN_PROPERTY_DEVICE_ID          (CANPROP_GET_VENDOR_PROP + PCAN_DEVICE_ID)
+//#define PEAKCAN_PROPERTY_DEVICE_GUID        (CANPROP_GET_VENDOR_PROP + PCAN_DEVICE_GUID)
 #define PEAKCAN_PROPERTY_API_VERSION        (CANPROP_GET_VENDOR_PROP + PCAN_API_VERSION)
 #define PEAKCAN_PROPERTY_CHANNEL_VERSION    (CANPROP_GET_VENDOR_PROP + PCAN_CHANNEL_VERSION)
 #define PEAKCAN_PROPERTY_HARDWARE_NAME      (CANPROP_GET_VENDOR_PROP + PCAN_HARDWARE_NAME)

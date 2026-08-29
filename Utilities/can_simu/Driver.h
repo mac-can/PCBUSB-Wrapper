@@ -3,7 +3,7 @@
 //  CAN-over-Ethernet Server Simulator (RocketCAN)
 //
 //  Copyright (c) 2008 by Uwe Vogt, UV Software, Friedrichshafen
-//  Copyright (c) 2025 by Uwe Vogt, UV Software, Berlin (info@uv-software.com)
+//  Copyright (c) 2025-2026 by Uwe Vogt, UV Software, Berlin (info@uv-software.de)
 //
 //  This program is free software; you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 #define CAN_TRACE_SUPPORTED 0  // write trace file (1=PCAN)
 #endif
 #define SERVER_INTERFACE  "Generic CAN Interfaces"
-#define SERVER_COPYRIGHT  "2008,2025 by Uwe Vogt, UV Software, Berlin"
+#define SERVER_COPYRIGHT  "2008,2025-2026 by Uwe Vogt, UV Software, Berlin"
 #if defined(_WIN32) || defined(_WIN64)
 #define SERVER_PLATFORM   "Windows"
 #elif defined(__linux__)

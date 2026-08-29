@@ -76,6 +76,7 @@ public:
 };
 /// \}
 ```
+See header file `PeakCAN.h` for a description of the provided methods.
 
 ### Build Targets
 
@@ -144,17 +145,17 @@ Type `can_port --help` to display all program options.
 
 ### Target Platforms
 - macOS 15.0 and later (Intel x64 and Apple silicon)
-- Debian GNU/Linux 12 (Linux Kernel 6.x)
+- Debian GNU/Linux 13 (Linux Kernel 6.x)
 
 ### Development Environments
 
-#### macOS Sequoia
-- macOS Sequoia (15.7.9) on a Mac mini (M4 Pro, 2024)
-- Apple clang version 17.0.0 (clang-1700.6.4.2)
+#### macOS Tahoe
+- macOS Tahoe (26.6.2) on a Mac mini (M4 Pro, 2024)
+- Apple clang version 21.0.0 (clang-2100.1.1.101)
 
-#### macOS Ventura
-- macOS Ventura (13.7.4) on a MacBook Pro (2019)
-- Apple clang version 14.0.3 (clang-1403.0.22.14.1)
+#### macOS Sequoia
+- macOS Sequoia (15.7.9) on a MacBook Pro (2019)
+- Apple clang version 17.0.0 (clang-1700.6.4.2)
 
 #### Debian 13.6 ("trixie")
 - Debian 6.12.101-1 (2026-08-05) x86_64 GNU/Linux

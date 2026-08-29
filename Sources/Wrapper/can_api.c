@@ -3,7 +3,7 @@
  *  CAN Interface API, Version 3 (for PEAK-System PCAN Interfaces)
  *
  *  Copyright (c) 2005-2012 Uwe Vogt, UV Software, Friedrichshafen
- *  Copyright (c) 2013-2025 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
+ *  Copyright (c) 2013-2026 Uwe Vogt, UV Software, Berlin (info@mac-can.com)
  *  All rights reserved.
  *
  *  This file is part of PCBUSB-Wrapper.
@@ -13,7 +13,7 @@
  *  choose between one of them if you use PCBUSB-Wrapper in whole or in part.
  *
  *  (1) BSD 2-Clause "Simplified" License
- * 
+ *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions are met:
  *  1. Redistributions of source code must retain the above copyright notice, this
