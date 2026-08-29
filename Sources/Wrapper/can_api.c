@@ -1087,10 +1087,6 @@ char *can_firmware(int handle)
     if (!IS_HANDLE_OPENED(handle))      // must be an open handle
         return NULL;
 
-    // return firmware version (zero-terminated string)
-#ifndef PCAN_EXT_HARDWARE_VERSION
-    // TODO: activate this code snippet once parameter PCAN_FIRMWARE_VERSION is realized
-    //       if so, don't forget to update the compatibility check!
     if (CAN_GetValue(can[handle].board, PCAN_HARDWARE_NAME, (void*)str, MAX_LENGTH_HARDWARE_NAME) != PCAN_ERROR_OK)
         return NULL;
     if ((ptr = strchr(str, '\n')) != NULL)
@@ -1103,14 +1099,6 @@ char *can_firmware(int handle)
     firmware[CANPROP_MAX_BUFFER_SIZE] = '\0';
     strncat(firmware, ver, CANPROP_MAX_BUFFER_SIZE);
     firmware[CANPROP_MAX_BUFFER_SIZE] = '\0';
-#else
-    if(CAN_GetValue(can[handle].board, PCAN_EXT_HARDWARE_VERSION, (void*)ver, 256) != PCAN_ERROR_OK)
-        return NULL;
-    (void)str;
-    (void)ptr;
-    strncpy(firmware, ver, 256);
-    firmware[CANPROP_MAX_BUFFER_SIZE] = '\0';
-#endif
     return (char*)firmware;
 }
 
@@ -1731,8 +1719,14 @@ static int drv_parameter(int handle, uint16_t param, void *value, size_t nbyte)
         rc = CANERR_NOTSUPP;
         break;
     case CANPROP_GET_CAN_CHANNEL:       // active CAN channel on the CAN interface (uint8_t)
-        // TODO: check if PCAN_CONTROLLER_NUMBER is supported with PCBUSB Gen. 1
-        //       if so, don't forget to update the compatibility check!
+        if (nbyte >= sizeof(uint8_t)) {
+            if ((sts = CAN_GetValue(can[handle].board, (BYTE)PCAN_CONTROLLER_NUMBER,
+                (void*)value, (DWORD)nbyte)) == PCAN_ERROR_OK)
+                rc = CANERR_NOERROR;
+            else
+                rc = pcan_error(sts);
+        }
+        break;
     case CANPROP_GET_CAN_CLOCK:         // frequency of the CAN controller clock in [Hz] (int32_t)
         // TODO: insert coin here
         rc = CANERR_NOTSUPP;
@@ -1759,7 +1753,7 @@ static int drv_parameter(int handle, uint16_t param, void *value, size_t nbyte)
     case CANPROP_GET_RCV_QUEUE_HIGH:    // maximum number of message the receive queue has hold (uint32_t)
     case CANPROP_GET_RCV_QUEUE_OVFL:    // overflow counter of the receive queue (uint64_t)
         // note: cannot be determined
-        rc = CANERR_NOTSUPP;  // TODO: check UVS parameter extension
+        rc = CANERR_NOTSUPP;
         break;
     case CANPROP_GET_FILTER_11BIT:      // acceptance filter code and mask for 11-bit identifier (uint64_t)
         if (nbyte >= sizeof(uint64_t)) {
